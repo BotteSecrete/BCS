@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" horizontalAlign="center" width="100%">
+	<mx:Script>
+		<![CDATA[
+			// Define a property for returning the new value to the cell.
+			public var result:Number;
+			
+			override public function set data(value:Object):void 
+			{
+				super.data = value;
+				if (value != null) 
+				{					
+					if (value.GEOL_GEO2 == null){
+						numStep2.value = 0;
+					}
+					else
+					{
+						var currentValue:Number = parseFloat(value.GEOL_GEO2);
+						numStep2.value = currentValue;
+					}
+				}
+				numStep2.enabled = true;
+			}
+			
+			public function onChange():void 
+			{
+				result = numStep2.value;
+			}  
+		]]>
+	</mx:Script>
+	<mx:NumericStepper id="numStep2"  minimum="0" stepSize="1" maximum="50" value="{data.quantity}" change="onChange()"/>
+</mx:VBox>

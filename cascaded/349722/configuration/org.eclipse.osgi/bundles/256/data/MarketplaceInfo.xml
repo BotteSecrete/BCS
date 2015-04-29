@@ -1,0 +1,1076 @@
+<?xml version="1.0" encoding="UTF-8"?> 
+<java version="1.6.0_31" class="java.beans.XMLDecoder"> 
+ <object class="org.eclipse.epp.internal.mpc.ui.catalog.MarketplaceInfo"> 
+  <void property="iuToNodeKey"> 
+   <void method="put"> 
+    <string>com.zeroturnaround.eclipse.optimizer.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#2231050</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.googlecode.jslint4java.eclipse.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#30823</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.batch.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.mds.jqm.license</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#30823</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.eclipse.plugin.kpax.beaninspector.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#2155844</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.nodeclipse.enide.editors.gradle.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1640500</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.autowire.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.ancit.github.utils.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#945463</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.mds.phonegapForAndroid</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#30823</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.chromium.debug</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.google.eclipse.protobuf</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#100598</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>code.google.restclient.tool.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>markdown.editor.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>pm.eclipse.editbox.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1640500</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.gradle.toolingapi.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1799756</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>no.resheim.eclipse.utils.quicklook</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#782176</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.mylyn.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.data.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.eclipse.rcp.java8patch</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1392433</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.mds.phonegap.license</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#30823</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.codehaus.groovy.eclipse.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725770</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.eclipse.egit</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1336</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.ajdt.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.eclipse.jgit</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1336</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.zeroturnaround.eclipse.m2e.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#29591</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.palantir.typescript.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1060522</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>database creation</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1984031</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.webflow.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.zeroturnaround.eclipse.wtp.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#29591</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.entirej.ide.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#867720</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.vmware.vfabric.ide.eclipse.tcserver</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725770</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.codeaffine.gonsole.egit.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1789454</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.maven.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.wangzw.cppstyle.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#2192883</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.codehaus.groovy20.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725770</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.codehaus.groovy.jdt.patch</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725770</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.oneclicklabs.php.restful</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#2179767</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.eclipse.jdt.java8patch</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1392433</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>SQL graphs</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1984031</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springsource.ide.eclipse.gradle.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1640500</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1799756</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>hu.ngms.opencl.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#2235823</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>gitaddon.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1076754</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.entirej.fx.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#867720</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>code.satyagraha.gfm.viewer.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#900708</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.eclipse.mylyn.github.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1147</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.grails.ide.eclipse</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725770</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>oracle.eclipse.tools.indigo.adf.doc.v11116</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#686984</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>oracle.eclipse.tools.indigo.adf.doc.v11115</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#686984</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>oracle.eclipse.tools.indigo.adf.doc.v11114</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#686984</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>de.bastiankrol.startexplorer.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1640500</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.zeroturnaround.eclipse.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#29591</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.nodeclipse</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.nodeclipse.enide.gradle.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1640500</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springsource.ide.eclipse.commons.quicksearch.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725770</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.eclipsesource.jshint.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.nodeclipse.pluginslist.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1076754</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1640500</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.codeaffine.gonsole.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1789454</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>oracle.eclipse.tools.indigo.adf</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#686984</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springsource.ide.eclipse.dashboard</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725770</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.vmware.vfabric.ide.eclipse.tcserver.insight</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725770</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.roo.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.jetbrains.kotlin.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#2257536</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.security.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.chromium.sdk</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1160101</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.integration.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.eclipse.wst.jsdt.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#30823</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>AnyEditTools</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#87</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>net.sf.sveditor</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1136</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.eclipse.pde.java8patch</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1392433</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>zipeditor</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1640500</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>org.springframework.ide.eclipse.aop.feature</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#156</string> 
+     </void> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#725760</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>com.vaadin.integration.eclipse</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>http://marketplace.eclipse.org#1023</string> 
+     </void> 
+    </object> 
+   </void> 
+  </void> 
+  <void property="nodeKeyToIU"> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#100598</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>com.google.eclipse.protobuf</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#782176</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>no.resheim.eclipse.utils.quicklook</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#2155844</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.eclipse.plugin.kpax.beaninspector.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1147</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.eclipse.mylyn.github.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1640500</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>pm.eclipse.editbox.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springsource.ide.eclipse.gradle.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.nodeclipse.enide.gradle.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.nodeclipse.enide.editors.gradle.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>zipeditor</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.nodeclipse.pluginslist.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>de.bastiankrol.startexplorer.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#686984</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>oracle.eclipse.tools.indigo.adf.doc.v11116</string> 
+     </void> 
+     <void method="add"> 
+      <string>oracle.eclipse.tools.indigo.adf.doc.v11115</string> 
+     </void> 
+     <void method="add"> 
+      <string>oracle.eclipse.tools.indigo.adf.doc.v11114</string> 
+     </void> 
+     <void method="add"> 
+      <string>oracle.eclipse.tools.indigo.adf</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#2179767</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.oneclicklabs.php.restful</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#2192883</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.wangzw.cppstyle.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1160101</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.chromium.sdk</string> 
+     </void> 
+     <void method="add"> 
+      <string>code.google.restclient.tool.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>markdown.editor.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.nodeclipse</string> 
+     </void> 
+     <void method="add"> 
+      <string>gitaddon.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>code.satyagraha.gfm.viewer.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>com.eclipsesource.jshint.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.nodeclipse.pluginslist.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>de.bastiankrol.startexplorer.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.chromium.debug</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1799756</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.gradle.toolingapi.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springsource.ide.eclipse.gradle.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1336</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.eclipse.egit</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.eclipse.jgit</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#2231050</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>com.zeroturnaround.eclipse.optimizer.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#900708</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>code.satyagraha.gfm.viewer.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1060522</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>com.palantir.typescript.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#725760</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springsource.ide.eclipse.dashboard</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.batch.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.ajdt.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>com.vmware.vfabric.ide.eclipse.tcserver.insight</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.autowire.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.webflow.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.security.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.integration.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.mylyn.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>com.vmware.vfabric.ide.eclipse.tcserver</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.data.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springsource.ide.eclipse.commons.quicksearch.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.aop.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.maven.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#867720</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.entirej.ide.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.entirej.fx.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1076754</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>gitaddon.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.nodeclipse.pluginslist.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1392433</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.eclipse.jdt.java8patch</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.eclipse.rcp.java8patch</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.eclipse.pde.java8patch</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#29591</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.zeroturnaround.eclipse.m2e.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.zeroturnaround.eclipse.wtp.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.zeroturnaround.eclipse.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#2257536</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.jetbrains.kotlin.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#2235823</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>hu.ngms.opencl.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#156</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.security.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.batch.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.integration.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.data.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.aop.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.maven.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.roo.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.autowire.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springframework.ide.eclipse.webflow.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1136</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>net.sf.sveditor</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1984031</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>SQL graphs</string> 
+     </void> 
+     <void method="add"> 
+      <string>database creation</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#87</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>AnyEditTools</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#30823</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>com.googlecode.jslint4java.eclipse.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>com.mds.jqm.license</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.eclipse.wst.jsdt.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>com.mds.phonegap.license</string> 
+     </void> 
+     <void method="add"> 
+      <string>com.mds.phonegapForAndroid</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1023</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>com.vaadin.integration.eclipse</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#945463</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.ancit.github.utils.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#1789454</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>com.codeaffine.gonsole.egit.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>com.codeaffine.gonsole.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+   <void method="put"> 
+    <string>http://marketplace.eclipse.org#725770</string> 
+    <object class="java.util.ArrayList"> 
+     <void method="add"> 
+      <string>org.codehaus.groovy.jdt.patch</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springsource.ide.eclipse.dashboard</string> 
+     </void> 
+     <void method="add"> 
+      <string>com.vmware.vfabric.ide.eclipse.tcserver</string> 
+     </void> 
+     <void method="add"> 
+      <string>com.vmware.vfabric.ide.eclipse.tcserver.insight</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.springsource.ide.eclipse.commons.quicksearch.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.grails.ide.eclipse</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.codehaus.groovy20.feature</string> 
+     </void> 
+     <void method="add"> 
+      <string>org.codehaus.groovy.eclipse.feature</string> 
+     </void> 
+    </object> 
+   </void> 
+  </void> 
+ </object> 
+</java> 

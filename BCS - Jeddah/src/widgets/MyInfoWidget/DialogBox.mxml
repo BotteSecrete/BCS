@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:customRenderer="customRenderer.*"
+		 layout="vertical"
+		 title="Warning"
+		 showCloseButton="true"
+		 width="200" height="150"
+		 close="cancelPopUp(event)">
+	
+	<fx:Declarations> 
+		<!-- Placer ici les éléments non visuels (services et objets de valeur, par exemple). -->
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			
+			import mx.events.CloseEvent;
+			import mx.managers.PopUpManager;
+			
+			import benContainers.CollapsiblePanelSkin;
+			
+			private function cancelPopUp(evt:CloseEvent):void {
+				PopUpManager.removePopUp(this);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup horizontalAlign="center">
+		<mx:TextArea id="Info" toolTip="Raisons du rejet de ce Batiments"/>
+	</s:HGroup>
+	
+	<s:HGroup horizontalAlign="center">
+		<mx:Button id="Yes" label="Yes" />
+		<mx:Button id="Cancel" label="Cancel" />
+	</s:HGroup>
+	
+	
+	
+</mx:TitleWindow>

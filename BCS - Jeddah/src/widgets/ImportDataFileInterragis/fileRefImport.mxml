@@ -1,0 +1,386 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx" 
+		 xmlns:viewer="com.esri.viewer.*"
+		 xmlns:esri="http://www.esri.com/2008/ags"
+		 width="0" height="0">
+	<fx:Declarations>
+		<!-- Placer ici les éléments non visuels (services et objets de valeur, par exemple). -->
+		
+		<esri:FeatureLayer id="featLayer" url="https://sygdev.systra.info/arcgis/rest/services/SYG/SVBakuGeotech/FeatureServer/1" 
+						   token="4T34n5Td1E_fE6kbqsapHeAw5jrgQ-6eBBNFxmhY6eLwJGUtGq5knqhval9E3gy7"
+						   disableClientCaching="true"/>
+		
+		<esri:FeatureLayer id="mapLayer" url="https://sygdev.systra.info/arcgis/rest/services/SYG/SVBakuGeotech/MapServer/1" 
+						   token="4T34n5Td1E_fE6kbqsapHeAw5jrgQ-6eBBNFxmhY6eLwJGUtGq5knqhval9E3gy7" 
+						   disableClientCaching="true"/>
+		
+		<esri:FeatureLayer id="geolLayer" url="https://sygdev.systra.info/arcgis/rest/services/SYG/SVBakuGeotech/FeatureServer/3" 
+						   token="4T34n5Td1E_fE6kbqsapHeAw5jrgQ-6eBBNFxmhY6eLwJGUtGq5knqhval9E3gy7" 
+						   disableClientCaching="true"/>
+		
+		
+	</fx:Declarations>
+	
+	<fx:Script>
+		<![CDATA[
+			
+			import com.as3xls.xls.ExcelFile;
+			import com.as3xls.xls.Sheet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.FeatureLayerEvent;
+			import com.esri.ags.events.FlareMouseEvent;
+			import com.esri.ags.events.GeometryServiceEvent;
+			import com.esri.ags.events.GraphicEvent;
+			import com.esri.ags.events.LayerEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.FeatureLayer;
+			import com.esri.ags.layers.GraphicsLayer;
+			import com.esri.ags.portal.PopUpRenderer;
+			import com.esri.ags.portal.supportClasses.PopUpInfo;
+			import com.esri.ags.portal.supportClasses.PopUpMediaInfo;
+			import com.esri.ags.symbols.SimpleMarkerSymbol;
+			import com.esri.ags.tasks.GeometryServiceSingleton;
+			import com.esri.ags.tasks.supportClasses.ProjectParameters;
+			import com.esri.ags.utils.GraphicUtil;
+			import com.esri.ags.utils.JSONUtil;
+			import com.esri.viewer.ViewerContainer;
+			import com.fnicollet.toaster.Toaster;
+			import com.fnicollet.toaster.message.ubuntu.ToastMessageUbuntu;
+			import com.google.analytics.utils.URL;
+			
+			import mx.collections.ArrayCollection;
+			import mx.collections.IList;
+			import mx.controls.Alert;
+			import mx.rpc.events.FaultEvent;
+			import mx.utils.ObjectUtil;
+			
+			private var _fr:FileReference;
+			//file reference to access local file
+			private var fr:FileReference = new FileReference;
+			private var frl:FileReferenceList = new FileReferenceList;
+			//array to store header of the xls file, first row
+			private var tempHead:Array = new Array;
+			
+			private var popUpRenderer:PopUpRenderer = new PopUpRenderer();
+			[Bindable]
+			private var fileLoaded:Boolean = false;
+			
+			private var validColumnHeaders:Boolean = false;
+			private var tempData:ArrayCollection = null;
+			//private var tempHeader:Array = null;
+			private var headers:Array = null;
+			
+			private var csvdata: Array = [];
+			
+			//Resources
+			[Embed(source="assets/images/i_about.png")]
+			private var iconClass:Class;
+			
+			private var graphicsLayer1:GraphicsLayer = null;
+			private var locateResult:LocateResult = null;
+			private var graphicGeoArray:Array = [];
+			
+			private var simpleToaster:Toaster = new Toaster;
+			
+			private var xlsHole:ExcelFile;
+			private var xlsGeol:ExcelFile;
+			private var xlsGrad:ExcelFile;
+			private var xlsPobs:ExcelFile;
+			
+			private var sheetHole:Sheet;
+			private var sheetGeol:Sheet;
+			private var sheetGrad:Sheet;
+			private var sheetPobs:Sheet;
+			
+			private var dataHoleTemp:ArrayCollection;
+			private var dataGeolTemp:ArrayCollection;
+			private var dataGradTemp:ArrayCollection;
+			private var dataPobsTemp:ArrayCollection;
+			
+			private var dataHole:ArrayCollection;
+			private var dataGeol:ArrayCollection;
+			private var dataGrad:ArrayCollection;
+			private var dataPobs:ArrayCollection;
+			
+			private var objToId:Array;
+			
+			
+			var xlsNameTest:String;
+			var nbLoad:int;
+			
+			var myxls:ExcelFile;
+			var mySheet:Sheet;
+			
+			
+			function featLayer_updateEditsComplete(ev:FeatureLayerEvent):void
+			{
+				//				Alert.show("mise a jour ","featLayer_updateEditsComplete");
+				var lgth:int = ev.featureEditResults.addResults.length;
+				for (var i:int=0;i<lgth;i++){
+					//					Alert.show(ev.featureEditResults.addResults[i].objectId,"featLayer_updateEditsComplete");
+					objToId[i].OBJECTID = ev.featureEditResults.addResults[i].objectId;
+					
+				}
+				var addGeol:Array = [];
+				var holId:Number;
+				var lgthGeol:int = dataGeol.length
+				for (var i:int=1;i<lgthGeol;i++)
+				{
+					var attributes:Object = {};
+					for (var j:int=0;j<lgth;j++){
+						if (dataGeol[i][0].value == objToId[j].HOLE_ID){holId = objToId[j].OBJECTID; break}
+					}
+					attributes = {HOLEID:holId,GEOL_TOP:dataGeol[i][1].value as Number,GEOL_BASE:dataGeol[i][2].value as Number,GEOL_DESC:dataGeol[i][3].value,
+						GEOL_LEG:dataGeol[i][4].value,GEOL_GEOL:dataGeol[i][5].value};
+					//							var mp:MapPoint = new MapPoint(dataGeol[i][1].value as Number,dataGeol[i][2].value as Number,new SpatialReference(wkidList.selectedItem.data[0]));
+					
+					var feature:Graphic = new Graphic(null, null, attributes);
+					//							Alert.show("deuxième boucle \n"+dataGeol[i][0].value+"\n i : "+i,"Debugg");
+					addGeol.push(feature);
+				}
+				geolLayer.applyEdits(addGeol,null,null);
+				var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+				toastMessage.imageSource = "assets/images/save.png";
+				toastMessage.sampleCaption = "Updated Test";
+				toastMessage.timeToLive = 2;
+				simpleToaster.toast(toastMessage);
+				
+				featLayer.clearSelection();
+				featLayer.refresh();
+				
+//				map.getLayer("BoreHoleInEdition").refresh();
+				mapLayer.refresh();
+				
+				featLayer.addEventListener(LayerEvent.UPDATE_END, featLayer_updateEndHandler); 
+				
+				function featLayer_updateEndHandler(evt:LayerEvent):void
+				{	
+					Alert.show("Mise a jour finie ! ","updateEndHandler");
+					
+					//						featLayer.addEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler)
+					featLayer.removeEventListener(LayerEvent.UPDATE_END, featLayer_updateEndHandler); 
+				}
+				//				}
+			}
+			
+			function myFeatureLayer_selectionCompleteHandler(ev:FeatureLayerEvent):void
+			{
+				
+			}
+			
+			function geolLayer_updateEditsComplete(ev:FeatureLayerEvent):void
+			{
+				if(ev.featureEditResults.updateResults.length > 0)
+				{
+					var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+					toastMessage.imageSource = "assets/images/save.png";
+					toastMessage.sampleCaption = "Updated Test";
+					toastMessage.timeToLive = 2;
+					simpleToaster.toast(toastMessage);
+					
+					geolLayer.clearSelection();
+					geolLayer.refresh();
+					
+					//				map.getLayer("BatiInEdition").refresh();
+					mapLayer.refresh();
+					
+					geolLayer.addEventListener(LayerEvent.UPDATE_END, geolLayer_updateEndHandler); 
+					
+					function geolLayer_updateEndHandler(evt:LayerEvent):void
+					{						
+						geolLayer.addEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler)
+						geolLayer.removeEventListener(LayerEvent.UPDATE_END, geolLayer_updateEndHandler); 
+					}
+				}
+			}
+			
+			function dataUpload():void
+			{
+				Alert.show("dataupload","fileRefImport");
+				featLayer.addEventListener(FeatureLayerEvent.EDITS_COMPLETE,featLayer_updateEditsComplete);
+				geolLayer.addEventListener(FeatureLayerEvent.EDITS_COMPLETE,geolLayer_updateEditsComplete);
+				
+//				var fileFilter:FileFilter = null;
+					//filter to only upload .xls files
+				var fileFilter:FileFilter = new FileFilter("excel files", "*.xls;*.xlsx");
+				frl = new FileReferenceList;
+				frl.addEventListener(Event.SELECT, dataFileSelected);
+				frl.browse([fileFilter]);
+				Alert.show("Normalement tu devrais pouvoir choisir un fichier ....","fileRefImport");
+				
+				//				fr = FileReference(frl[0]);
+				//				fr.addEventListener(Event.SELECT, dataFileSelected);
+				//				fr.browse([fileFilter]);
+			}
+			
+			function dataFileSelected(event:Event):void
+			{
+				frl.removeEventListener(Event.SELECT,dataFileSelected);
+				
+				xlsNameTest = "";
+				
+				nbLoad = 0;
+				
+				for(var i:int=0;i<frl.fileList.length;i++){
+					fr = FileReference(frl.fileList[i]);
+					
+					//listen for when the file has loaded
+					fr.addEventListener(Event.COMPLETE, uploadCompleteHandler);
+					
+					//listen for any errors reading the file
+					fr.addEventListener(IOErrorEvent.IO_ERROR, onLoadError);
+					
+					//upload select file
+					fr.load();
+				}
+				
+				//				Alert.show(nbLoad+"","datafileselected");
+				
+			}
+			
+			//called if an error occurs while loading the file contents
+			private function onLoadError(error:IOErrorEvent):void
+			{
+				Alert.show("Error loading file : " + error.text);			
+			}
+			
+			private var MGRSGrid:int = 0;
+			private var headerColumns:IList = null;
+			
+			protected function uploadCompleteHandler(event:Event):void
+			{
+				var file:FileReference = FileReference(event.target);
+				nbLoad++;
+				switch (file.name)
+				{
+					case "GEOL Table.xls":
+						var myByteArray:ByteArray =  new ByteArray();
+						//get uploaded file as ByteArray
+						myByteArray = file.data as ByteArray;
+						//create new xls file
+						xlsGeol = new ExcelFile();
+						xlsGeol.loadFromByteArray(myByteArray);
+						//get first sheet from .xls wookbook
+						sheetGeol = xlsGeol.sheets[1];
+						dataGeol = sheetGeol.values;
+						dataGeol.filterFunction = proutFilter;dataGeol.refresh();
+						//						var r:int=dataGeol.length;
+						//						Alert.show("length : "+r+"\n last one : "+dataGeolTemp[r-1][0]+"\n first one : "+dataGeolTemp[0][0],"");
+						break;
+					
+					case "HOLE Table.xls":
+						var myByteArray:ByteArray =  new ByteArray();
+						//get uploaded file as ByteArray
+						myByteArray = file.data as ByteArray;
+						//create new xls file
+						xlsHole = new ExcelFile();
+						xlsHole.loadFromByteArray(myByteArray);
+						//get first sheet from .xls wookbook
+						sheetHole = xlsHole.sheets[1];
+						//						if (sheetHole.getCell(1000,1).value == "") {Alert.show(sheetHole.getCell(1000,1)+"","");}
+						//						else {Alert.show("pas null ......","");}
+						dataHole = sheetHole.values;
+						//						Alert.show(dataHoleTemp[][0]+"","");
+						dataHole.filterFunction = proutFilter;dataHole.refresh();
+						//						var r:int=dataHole.length;
+						//						Alert.show("length : "+r+"\n last one : "+dataHoleTemp[r-1][0]+"\n first one : "+dataHoleTemp[0][0],"");
+						//						for (var i:int=1;i<r;i++){if(dataHoleTemp[i][0] != ""){dataHole.addItem(dataHoleTemp[i])}}
+						break;
+					
+					//					case "GRAD Table.xls":
+					//						var myByteArray:ByteArray =  new ByteArray();
+					//						//get uploaded file as ByteArray
+					//						myByteArray = file.data as ByteArray;
+					//						//create new xls file
+					//						xlsGrad = new ExcelFile();
+					//						xlsGrad.loadFromByteArray(myByteArray);
+					//						//get first sheet from .xls wookbook
+					//						sheetGrad = xlsGrad.sheets[0];
+					//						dataGrad = sheetGrad.values;
+					//						break;
+					
+					//					case "POBS Table.xls":
+					//						var myByteArray:ByteArray =  new ByteArray();
+					//						//get uploaded file as ByteArray
+					//						myByteArray = file.data as ByteArray;
+					//						//create new xls file
+					//						xlsPobs = new ExcelFile();
+					//						xlsPobs.loadFromByteArray(myByteArray);
+					//						//get first sheet from .xls wookbook
+					//						sheetPobs = xlsPobs.sheets[1];
+					//						dataPobs = sheetPobs.values;
+					//						break;
+				}
+				
+				if(nbLoad == frl.fileList.length){
+					
+					loadxlsInFeat();
+				}
+				
+				function proutFilter(o:Object):Boolean {
+					return (o[0] != "");
+				}
+			
+			function loadxlsInFeat():void
+			{
+				//					var mySheet2:Sheet = myxls.sheets[1];
+				//	var tempData3:ArrayCollection = new ArrayCollection();
+				//	tempData3 = mySheet2.values;
+				//	Alert.show(tempData3[2][2]+"\ length sheets","Debugg");
+				var addHole:Array = [];
+				var addGeol:Array = [];
+				objToId = [];
+				//	Alert.show(wkidList.selectedItem.data[0]+"\n"+tempData.length,"");
+				//				
+				//						for (var i:int=1;i<dataHole.length;i++){
+				////							dataHole
+				//							Alert.show("boucle "+i+"\n testTempData[2][2] : "+dataHole[i][2]+"\n length "+dataHole.length,"Debugg");
+				//						}
+				
+				var lgthHole:int = dataHole.length
+				for (var i:int=1;i<lgthHole;i++)
+				{
+					var attOTI:Object = {};
+					attOTI = {HOLE_ID:dataHole[i][0],OBJECTID:0};
+					var attributes:Object = {};
+					attributes = {HOLE_ID:dataHole[i][0].value,HOLE_TYPE:dataHole[i][1].value,HOLE_FDEP:dataHole[i][5].value,
+						HOLE_LOCX:dataHole[i][13].value,HOLE_LOCY:dataHole[i][14].value,HOLE_LOCZ:dataHole[i][15].value};
+					var mp:MapPoint = new MapPoint(dataHole[i][13].value as Number,dataHole[i][14].value as Number,new SpatialReference(32239));
+					
+					var feature:Graphic = new Graphic(mp, null, attributes);
+					//							Alert.show("première boucle \n"+dataHole[i][0].value+"\n i : "+i,"Debugg");
+					addHole.push(feature);
+					objToId.push(attOTI);
+				}
+				
+				//						Alert.show(addHole[2].attributes.HOLE_ID+"","Debugg");
+				
+				var lgthGeol:int = dataGeol.length
+				for (var i:int=1;i<lgthGeol;i++)
+				{
+					var attributes:Object = {};
+					attributes = {HOLEID:dataGeol[i][0].value as Number ,GEOL_TOP:dataGeol[i][1].value as Number,GEOL_BASE:dataGeol[i][2].value as Number,GEOL_DESC:dataGeol[i][3].value,
+						GEOL_LEG:dataGeol[i][4].value,GEOL_GEOL:dataGeol[i][5].value};
+					//							var mp:MapPoint = new MapPoint(dataGeol[i][1].value as Number,dataGeol[i][2].value as Number,new SpatialReference(wkidList.selectedItem.data[0]));
+					
+					var feature:Graphic = new Graphic(null, null, attributes);
+					//							Alert.show("deuxième boucle \n"+dataGeol[i][0].value+"\n i : "+i,"Debugg");
+					addGeol.push(feature);
+				}
+				//						Alert.show(objToId[2].HOLE_ID+"\n"+objToId[2].OBJECTID,"loadXlsToFeat");	
+				featLayer.applyEdits(addHole,null,null);
+				//						geolLayer.applyEdits(addGeol,null,null);
+			}
+		}
+			
+			
+		]]>
+	</fx:Script>
+	
+	
+</s:Group>

@@ -1,0 +1,457 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<workbench progressCount="39" version="2.0">
+<workbenchAdvisor/>
+<window height="768" maximized="true" width="1024" x="47" y="-8">
+<fastViewData fastViewLocation="1024">
+<orientation position="512" view="org.eclipse.ui.views.ContentOutline"/>
+</fastViewData>
+<perspectiveBar>
+<itemSize x="160"/>
+</perspectiveBar>
+<coolbarLayout>
+<coolItem id="group.file" itemType="typeGroupMarker"/>
+<coolItem id="org.eclipse.ui.workbench.file" itemType="typeToolBarContribution" x="191" y="22"/>
+<coolItem id="additions" itemType="typeGroupMarker"/>
+<coolItem id="org.eclipse.debug.ui.launchActionSet" itemType="typeToolBarContribution" x="198" y="22"/>
+<coolItem id="org.eclipse.search.searchActionSet" itemType="typeToolBarContribution" x="99" y="22"/>
+<coolItem id="org.eclipse.ui.edit.text.actionSet.presentation" itemType="typeToolBarContribution" x="84" y="22"/>
+<coolItem id="org.eclipse.wst.xml.ui.perspective.NewFileToolBar" itemType="typeToolBarContribution" x="-1" y="-1"/>
+<coolItem id="org.eclipse.wst.xml.ui.design.DesignToolBar" itemType="typeToolBarContribution" x="-1" y="-1"/>
+<coolItem id="group.nav" itemType="typeGroupMarker"/>
+<coolItem id="org.eclipse.ui.workbench.navigate" itemType="typeToolBarContribution" x="190" y="22"/>
+<coolItem id="group.editor" itemType="typeGroupMarker"/>
+<coolItem id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" itemType="typePlaceholder" x="-1" y="-1"/>
+<coolItem id="com.adobe.flexbuilder.editors.mxml.MXMLEditor" itemType="typeToolBarContribution" x="-1" y="-1"/>
+<coolItem id="group.help" itemType="typeGroupMarker"/>
+<coolItem id="org.eclipse.ui.workbench.help" itemType="typeToolBarContribution" x="-1" y="-1"/>
+</coolbarLayout>
+<page aggregateWorkingSetId="Aggregate for window 1429517024195" focus="true" label="Espace de travail - Flash">
+<editors>
+<editorArea activeWorkbook="DefaultEditorWorkbook">
+<info part="DefaultEditorWorkbook">
+<folder appearance="1" expanded="2">
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+</presentation>
+</folder>
+</info>
+</editorArea>
+<editor activePart="true" focus="true" id="com.adobe.flexbuilder.editors.mxml.MXMLEditor" name="MyInfoWidget.mxml" partName="MyInfoWidget.mxml" path="C:/Users/llefresne/Adobe Flash Builder 4.7/Workspaces/BCS/BCS - Jeddah/src/widgets/MyInfoWidget/MyInfoWidget.mxml" title="MyInfoWidget.mxml" tooltip="BCS - Jeddah/src/widgets/MyInfoWidget/MyInfoWidget.mxml" workbook="DefaultEditorWorkbook">
+<input factoryID="org.eclipse.ui.part.FileEditorInputFactory" path="/BCS - Jeddah/src/widgets/MyInfoWidget/MyInfoWidget.mxml"/>
+</editor>
+</editors>
+<views>
+<view id="org.eclipse.ui.views.ProblemView" partName="Erreurs">
+<viewState PRIMARY_SORT_FIELD="org.eclipse.ui.ide.severityAndDescriptionField" categoryGroup="org.eclipse.ui.ide.severity" markerContentGenerator="org.eclipse.ui.ide.problemsGenerator" partName="Erreurs">
+<expanded>
+<category IMemento.internal.id="Avertissements (100 sur 1872 éléments)"/>
+</expanded>
+<columnWidths org.eclipse.ui.ide.locationField="90" org.eclipse.ui.ide.markerType="90" org.eclipse.ui.ide.pathField="317" org.eclipse.ui.ide.resourceField="202" org.eclipse.ui.ide.severityAndDescriptionField="1284"/>
+<visible IMemento.internal.id="org.eclipse.ui.ide.severityAndDescriptionField"/>
+<visible IMemento.internal.id="org.eclipse.ui.ide.resourceField"/>
+<visible IMemento.internal.id="org.eclipse.ui.ide.pathField"/>
+<visible IMemento.internal.id="org.eclipse.ui.ide.locationField"/>
+<visible IMemento.internal.id="org.eclipse.ui.ide.markerType"/>
+</viewState>
+</view>
+<view id="com.adobe.flexbuilder.packageexplorer" partName="Explorateur de packages">
+<viewState LINK_NAVIGATOR_TO_EDITOR="0" fpeIsFlat="0" fpeSortBy="1" sorter="1">
+<fpeExpanded>
+<fpeElement fpePath="/BCS - Jeddah"/>
+<fpeElement fpePath="/BCS - Jeddah/src"/>
+<fpeElement fpePath="/BCS - Jeddah/src/%typeDefaultPackage"/>
+<fpeElement fpePath="/BCS - Jeddah/src/widgets"/>
+<fpeElement fpePath="/BCS - Jeddah/src/widgets/MyInfoWidget"/>
+<fpeElement fpePath="/FlexViewer"/>
+<fpeElement fpePath="/FlexViewer/src"/>
+<fpeElement fpePath="/FlexViewer/src/widgets"/>
+<fpeElement fpePath="/FlexViewer/src/widgets/MyWidget"/>
+<fpeElement fpePath="/FlexViewer/src/widgets/MyWidget/Attachments"/>
+<fpeElement fpePath="/FlexViewer/src/widgets/MyWidget/General"/>
+<fpeElement fpePath="/FlexViewer/src/widgets/MyWidget/InfoWindow"/>
+</fpeExpanded>
+<fpeSelection>
+<fpeElement fpePath="/BCS - Jeddah/src/widgets/MyInfoWidget/MyInfoWidget.mxml"/>
+</fpeSelection>
+<filters>
+<filter element=".flexProperties" isEnabled="true"/>
+<filter element=".actionScriptProperties" isEnabled="true"/>
+<filter element=".project" isEnabled="true"/>
+<filter element=".settings" isEnabled="true"/>
+<filter element=".flexLibProperties" isEnabled="true"/>
+<filter element=".DS_Store" isEnabled="true"/>
+<filter element=".model" isEnabled="true"/>
+<filter element="*.class" isEnabled="false"/>
+<filter element=".*" isEnabled="false"/>
+<filter element=".flexProperties" isEnabled="true"/>
+<filter element=".actionScriptProperties" isEnabled="true"/>
+<filter element=".project" isEnabled="true"/>
+<filter element=".settings" isEnabled="true"/>
+<filter element=".flexLibProperties" isEnabled="true"/>
+<filter element=".DS_Store" isEnabled="true"/>
+<filter element=".model" isEnabled="true"/>
+<filter element="*.class" isEnabled="false"/>
+<filter element=".*" isEnabled="false"/>
+</filters>
+<expanded>
+<element path="/BCS - Jeddah"/>
+<element path="/FlexViewer"/>
+</expanded>
+<selection>
+<element path="/BCS - Jeddah/src/widgets/MyInfoWidget/MyInfoWidget.mxml"/>
+</selection>
+</viewState>
+</view>
+<view id="com.adobe.flexbuilder.monitors.network.view.NetworkMonitorView" partName="Moniteur de réseau">
+<viewState/>
+</view>
+<view id="com.adobe.flexbuilder.dcrad.views.DataServicesView" partName="Données/Services">
+<viewState/>
+</view>
+<view id="org.eclipse.ui.views.ContentOutline" partName="Structure">
+<viewState/>
+</view>
+<view id="com.adobe.flexbuilder.as.editor.asdocviewer" partName="ASDoc">
+<viewState/>
+</view>
+</views>
+<perspectives activePart="com.adobe.flexbuilder.editors.mxml.MXMLEditor" activePerspective="com.adobe.flexbuilder.editors.mxml.ui.perspectives.development">
+<perspective editorAreaTrimState="2" editorAreaVisible="1" fixed="0" version="0.016">
+<descriptor class="com.adobe.flexbuilder.mxml.editor.ui.perspectives.DevelopmentPerspectiveFactory" id="com.adobe.flexbuilder.editors.mxml.ui.perspectives.development" label="Flash"/>
+<alwaysOnActionSet id="com.adobe.flexbuilder.flashbridge.flashproject.actionSet"/>
+<alwaysOnActionSet id="org.eclipse.egit.ui.navigation"/>
+<alwaysOnActionSet id="org.eclipse.mylyn.context.ui.actionSet"/>
+<alwaysOnActionSet id="org.eclipse.mylyn.doc.actionSet"/>
+<alwaysOnActionSet id="org.eclipse.mylyn.tasks.ui.navigation"/>
+<alwaysOnActionSet id="org.eclipse.ui.cheatsheets.actionSet"/>
+<alwaysOnActionSet id="org.eclipse.search.searchActionSet"/>
+<alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.annotationNavigation"/>
+<alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.navigation"/>
+<alwaysOnActionSet id="org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo"/>
+<alwaysOnActionSet id="org.eclipse.ui.externaltools.ExternalToolsSet"/>
+<alwaysOnActionSet id="org.eclipse.ui.actionSet.keyBindings"/>
+<alwaysOnActionSet id="org.eclipse.ui.actionSet.openFiles"/>
+<alwaysOnActionSet id="org.eclipse.wb.core.ui.actionset"/>
+<alwaysOnActionSet id="org.eclipse.debug.ui.launchActionSet"/>
+<alwaysOnActionSet id="org.eclipse.debug.ui.profileActionSet"/>
+<alwaysOnActionSet id="org.eclipse.ui.NavigateActionSet"/>
+<alwaysOnActionSet id="org.eclipse.debug.ui.debugActionSet"/>
+<alwaysOnActionSet id="org.eclipse.debug.ui.breakpointActionSet"/>
+<alwaysOnActionSet id="com.adobe.flexbuilder.debug.ui.flexDebuggingActionSet"/>
+<alwaysOnActionSet id="com.adobe.flexbuilder.zzz.editors.common.ui.project.publish"/>
+<alwaysOnActionSet id="com.adobe.flexbuilder.exportimport.actionSet1"/>
+<alwaysOnActionSet id="com.adobe.flexbuilder.dcrad.actionSet"/>
+<alwaysOnActionSet id="com.adobe.flexbuilder.as.editor.ui.NavigationActions"/>
+<show_view_action id="com.adobe.flexbuilder.packageexplorer"/>
+<show_view_action id="org.eclipse.ui.views.ContentOutline"/>
+<show_view_action id="org.eclipse.ui.views.ProblemView"/>
+<show_view_action id="com.adobe.flexbuilder.dcrad.views.DataServicesView"/>
+<new_wizard_action id="com.adobe.flexbuilder.editorcore.ui.project.wizards.newproject"/>
+<new_wizard_action id="com.adobe.flexbuilder.project.ui.wizards.FlexLibraryProjectWizard"/>
+<new_wizard_action id="com.adobe.flashbuilder.project.multiplatform.ui.MultiPlatformProjectWizard"/>
+<new_wizard_action id="com.adobe.flexbuilder.project.ui.wizards.NewActionScriptProjectWizard"/>
+<new_wizard_action id="com.adobe.flexbuilder.project.ui.wizards.ActionScriptLibraryProjectWizard"/>
+<new_wizard_action id="com.adobe.flashbuilder.project.multiplatform.ui.MultiPlatformActionScriptProjectWizard"/>
+<new_wizard_action id="com.adobe.flexbuilder.flashbridge.NewFlashProProjectWizard"/>
+<new_wizard_action id="com.adobe.flexbuilder.mxml.editor.ui.wizards.NewMXMLApplication"/>
+<new_wizard_action id="com.adobe.flexbuilder.mxml.editor.ui.wizards.NewMXMLComponent"/>
+<new_wizard_action id="com.adobe.flexbuilder.mxml.editor.ui.wizards.NewMXMLItemRenderer"/>
+<new_wizard_action id="com.adobe.flexbuilder.mxml.editor.ui.wizards.NewMXMLModule"/>
+<new_wizard_action id="com.adobe.flexbuilder.mxml.editor.ui.wizards.NewMXMLSkin"/>
+<new_wizard_action id="com.adobe.flexbuilder.as.editor.wizards.NewActionScriptFile.flex"/>
+<new_wizard_action id="com.adobe.flexbuilder.as.editor.classWizard.flex"/>
+<new_wizard_action id="com.adobe.flexbuilder.as.editor.interfaceWizard.flex"/>
+<new_wizard_action id="com.adobe.flexbuilder.as.editor.skinnableComponentWizard.flex"/>
+<new_wizard_action id="com.adobe.flexbuilder.as.editor.workerWizard.flex"/>
+<new_wizard_action id="com.adobe.flexbuilder.css.editor.wizards.NewCSSFile"/>
+<new_wizard_action id="com.adobe.flexbuilder.as.editor.flexUnitClassWizard.flex"/>
+<new_wizard_action id="com.adobe.flexbuilder.as.editor.flexUnitTestSuiteClassWizard.flex"/>
+<new_wizard_action id="com.adobe.flexbuilder.as.editor.packageWizard.flex"/>
+<new_wizard_action id="org.eclipse.ui.wizards.new.folder"/>
+<new_wizard_action id="org.eclipse.ui.wizards.new.file"/>
+<perspective_action id="com.adobe.flexbuilder.editors.mxml.ui.perspectives.development"/>
+<perspective_action id="com.adobe.flexbuilder.debug.ui.perspectives.debug"/>
+<perspective_action id="com.adobe.flash.profiler.ui.ProfilingPerspective"/>
+<hide_toolbar_item_id id="org.eclipse.jdt.ui.actions.OpenProjectWizard"/>
+<hide_toolbar_item_id id="org.eclipse.ui.edit.text.toggleShowSelectedElementOnly"/>
+<view id="com.adobe.flexbuilder.packageexplorer"/>
+<view id="org.eclipse.ui.views.ProblemView"/>
+<view id="com.adobe.flexbuilder.dcrad.views.DataServicesView"/>
+<view id="com.adobe.flexbuilder.monitors.network.view.NetworkMonitorView"/>
+<view id="com.adobe.flexbuilder.as.editor.asdocviewer"/>
+<view id="org.eclipse.ui.views.ContentOutline"/>
+<fastViewBars/>
+<layout>
+<mainWindow>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@29da5d65">
+<folder activePageID="com.adobe.flexbuilder.packageexplorer" appearance="2" expanded="2">
+<page content="com.adobe.flexbuilder.packageexplorer" label="Explorateur de packages"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+</presentation>
+</folder>
+</info>
+<info folder="true" part="stickyFolderRight" ratio="0.75" ratioLeft="750" ratioRight="250" relationship="2" relative="org.eclipse.ui.internal.ViewStack@29da5d65">
+<folder appearance="2" expanded="2">
+<page content="org.eclipse.help.ui.HelpView" label="LabelNotFound"/>
+<page content="org.eclipse.ui.internal.introview" label="LabelNotFound"/>
+<page content="org.eclipse.ui.cheatsheets.views.CheatSheetView" label="LabelNotFound"/>
+</folder>
+</info>
+<info part="org.eclipse.ui.editorss" ratio="0.21809466" ratioLeft="364" ratioRight="1305" relationship="2" relative="org.eclipse.ui.internal.ViewStack@29da5d65"/>
+<info folder="true" part="bottomLayout" ratio="0.8004435" ratioLeft="722" ratioRight="180" relationship="4" relative="org.eclipse.ui.editorss">
+<folder activePageID="org.eclipse.ui.views.ProblemView" appearance="2" expanded="2">
+<page content="org.eclipse.ui.views.ProblemView" label="Erreurs"/>
+<page content="com.adobe.flexbuilder.dcrad.views.DataServicesView" label="Données/Services"/>
+<page content="com.adobe.flexbuilder.monitors.network.view.NetworkMonitorView" label="Moniteur de réseau"/>
+<page content="com.adobe.flexbuilder.as.editor.asdocviewer" label="ASDoc"/>
+<page content="org.eclipse.ui.console.ConsoleView" label="LabelNotFound"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+<part id="1"/>
+<part id="2"/>
+<part id="3"/>
+</presentation>
+</folder>
+</info>
+<info folder="true" part="org.eclipse.ui.internal.ViewStack@7bae2e4a" ratio="0.8292683" ratioLeft="748" ratioRight="154" relationship="4" relative="org.eclipse.ui.internal.ViewStack@29da5d65">
+<folder activePageID="org.eclipse.ui.views.ContentOutline" appearance="2" expanded="2">
+<page content="org.eclipse.ui.views.ContentOutline" label="Structure"/>
+<presentation id="org.eclipse.ui.presentations.WorkbenchPresentationFactory">
+<part id="0"/>
+</presentation>
+</folder>
+</info>
+</mainWindow>
+</layout>
+</perspective>
+</perspectives>
+<workingSets/>
+<navigationHistory>
+<editors>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.mxml.MXMLEditor" path="/BCS - Jeddah/src/widgets/MyWidget/MyFirstWidget.mxml"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" path="/BCS - Jeddah/src/widgets/MyWidget/InfoWindow/createInfoWindow.as"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" path="/BCS - Jeddah/src/widgets/MyWidget/InfoWindow/editPolygon.as"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" path="/BCS - Jeddah/src/widgets/MyWidget/loadConfigAndLayers.as"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" path="/BCS - Jeddah/src/widgets/MyWidget/widgetPopup.as"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.mxml.MXMLEditor" path="/BCS - Jeddah/src/index.mxml"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" path="/BCS - Jeddah/src/widgets/MyWidget/General/displayGeneralInfo.as"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" path="/BCS - Jeddah/src/widgets/MyWidget/handleBatiLayer.as"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.mxml.MXMLEditor" path="/BCS - Jeddah/src/widgets/MyWidget/MyFirstWidget.mxml"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" path="/BCS - Jeddah/src/widgets/MyWidget/InfoWindow/createInfoWindow.as"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" path="/BCS - Jeddah/src/widgets/MyWidget/General/displayGeneralInfo.as"/>
+<editor factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.mxml.MXMLEditor" path="/BCS - Jeddah/src/widgets/MyInfoWidget/MyInfoWidget.mxml"/>
+</editors>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2329" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="10742" y="0"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2322" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="16435" y="0"/>
+</item>
+<item historyLabel="loadConfigAndLayers.as" index="3">
+<position info="not_deleted" x="1307" y="0"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2396" y="24"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="16494" y="0"/>
+</item>
+<item historyLabel="loadConfigAndLayers.as" index="3">
+<position info="not_deleted" x="1307" y="0"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2396" y="24"/>
+</item>
+<item historyLabel="loadConfigAndLayers.as" index="3">
+<position info="not_deleted" x="1307" y="0"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="16494" y="0"/>
+</item>
+<item historyLabel="MyFirstWidget.mxml" index="0">
+<position info="not_deleted" x="10192" y="0"/>
+</item>
+<item historyLabel="widgetPopup.as" index="4">
+<position info="not_deleted" x="3547" y="2"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="3060" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="16494" y="0"/>
+</item>
+<item historyLabel="widgetPopup.as" index="4">
+<position info="not_deleted" x="3547" y="2"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2369" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="16583" y="0"/>
+</item>
+<item historyLabel="index.mxml" index="5">
+<position info="not_deleted" x="19569" y="0"/>
+</item>
+<item historyLabel="MyFirstWidget.mxml" index="0">
+<position info="not_deleted" x="10192" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position/>
+</item>
+<item historyLabel="displayGeneralInfo.as" index="6">
+<position info="not_deleted" x="11644" y="3"/>
+</item>
+<item historyLabel="index.mxml" index="5">
+<position info="not_deleted" x="19569" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="16250" y="0"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2412" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="16250" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="10595" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="16691" y="0"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2598" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="15122" y="0"/>
+</item>
+<item historyLabel="displayGeneralInfo.as" index="6">
+<position info="not_deleted" x="11644" y="3"/>
+</item>
+<item historyLabel="index.mxml" index="5">
+<position info="not_deleted" x="19569" y="0"/>
+</item>
+<item historyLabel="displayGeneralInfo.as" index="6">
+<position info="not_deleted" x="11644" y="3"/>
+</item>
+<item historyLabel="widgetPopup.as" index="4">
+<position info="not_deleted" x="3547" y="2"/>
+</item>
+<item historyLabel="displayGeneralInfo.as" index="6">
+<position info="not_deleted" x="11644" y="3"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="681" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="15122" y="0"/>
+</item>
+<item historyLabel="MyFirstWidget.mxml" index="0">
+<position info="not_deleted" x="10192" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="1">
+<position info="not_deleted" x="16740" y="0"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2884" y="0"/>
+</item>
+<item historyLabel="handleBatiLayer.as" index="7">
+<position info="not_deleted" x="1693" y="35"/>
+</item>
+<item historyLabel="handleBatiLayer.as" index="7">
+<position info="not_deleted" x="2026" y="0"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2886" y="0"/>
+</item>
+<item historyLabel="handleBatiLayer.as" index="7">
+<position info="not_deleted" x="1868" y="0"/>
+</item>
+<item historyLabel="editPolygon.as" index="2">
+<position info="not_deleted" x="2230" y="0"/>
+</item>
+<item historyLabel="MyFirstWidget.mxml" index="8">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+<item historyLabel="createInfoWindow.as" index="9">
+<position info="not_deleted" x="16740" y="0"/>
+</item>
+<item historyLabel="displayGeneralInfo.as" index="10"/>
+<item active="true" historyLabel="MyInfoWidget.mxml" index="11">
+<position info="not_deleted" x="0" y="0"/>
+</item>
+</navigationHistory>
+<input factoryID="org.eclipse.ui.internal.model.ResourceFactory" path="/" type="8"/>
+</page>
+<workbenchWindowAdvisor/>
+<actionBarAdvisor/>
+<trimLayout>
+<trimArea IMemento.internal.id="128">
+<trimItem IMemento.internal.id="org.eclipse.ui.internal.WorkbenchWindow.topBar"/>
+<trimItem IMemento.internal.id="org.eclipse.mylyn.tasks.ui.trim.container"/>
+</trimArea>
+<trimArea IMemento.internal.id="1024">
+<trimItem IMemento.internal.id="org.eclise.ui.internal.FastViewBar"/>
+<trimItem IMemento.internal.id="org.eclipse.jface.action.StatusLineManager"/>
+<trimItem IMemento.internal.id="org.eclipse.ui.internal.progress.ProgressRegion"/>
+</trimArea>
+</trimLayout>
+</window>
+<mruList>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.mxml.MXMLEditor" name="MyInfoWidget.mxml" tooltip="BCS - Jeddah/src/widgets/MyInfoWidget/MyInfoWidget.mxml">
+<persistable path="/BCS - Jeddah/src/widgets/MyInfoWidget/MyInfoWidget.mxml"/>
+</file>
+<file factoryID="com.adobe.flexbuilder.editors.derived.ui.startpage.StartPageEditorInput" id="com.adobe.flexbuilder.ui.StartPage" name="Navigateur web" tooltip="Ecran de bienvenue de Flash Builder">
+<persistable iconpath="platform:/plugin/com.adobe.flexbuilder.ui/icons/fb_app_16.png" style="20" tooltip="Ecran de bienvenue de Flash Builder" url="file:/C:/Program Files/Adobe/Adobe Flash Builder 4.7 (64 Bit)/eclipse/plugins/com.adobe.flexbuilder.ui.nl1_4.7.0.349722/nl/fr/welcome/index.html?firstLaunch=false&amp;edition=prem&amp;version=470"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="handleBatiLayer.as" tooltip="BCS - Jeddah/src/widgets/MyWidget/handleBatiLayer.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyWidget/handleBatiLayer.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="displayGeneralInfo.as" tooltip="BCS - Jeddah/src/widgets/MyWidget/General/displayGeneralInfo.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyWidget/General/displayGeneralInfo.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.mxml.MXMLEditor" name="index.mxml" tooltip="BCS - Jeddah/src/index.mxml">
+<persistable path="/BCS - Jeddah/src/index.mxml"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="widgetPopup.as" tooltip="BCS - Jeddah/src/widgets/MyWidget/widgetPopup.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyWidget/widgetPopup.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="loadConfigAndLayers.as" tooltip="BCS - Jeddah/src/widgets/MyWidget/loadConfigAndLayers.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyWidget/loadConfigAndLayers.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="deleteFeatures.as" tooltip="BCS - Jeddah/src/widgets/MyWidget/InfoWindow/deleteFeatures.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyWidget/InfoWindow/deleteFeatures.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="editPolygon.as" tooltip="BCS - Jeddah/src/widgets/MyWidget/InfoWindow/editPolygon.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyWidget/InfoWindow/editPolygon.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="createInfoWindow.as" tooltip="BCS - Jeddah/src/widgets/MyWidget/InfoWindow/createInfoWindow.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyWidget/InfoWindow/createInfoWindow.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.mxml.MXMLEditor" name="MyFirstWidget.mxml" tooltip="BCS - Jeddah/src/widgets/MyWidget/MyFirstWidget.mxml">
+<persistable path="/BCS - Jeddah/src/widgets/MyWidget/MyFirstWidget.mxml"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="editAttachments.as" tooltip="BCS - Jeddah/src/widgets/MyInfoWidget/InfoWindow/editAttachments.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyInfoWidget/InfoWindow/editAttachments.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="displayGeneralInfo.as" tooltip="BCS - Jeddah/src/widgets/MyInfoWidget/General/displayGeneralInfo.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyInfoWidget/General/displayGeneralInfo.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="createInfoWindow.as" tooltip="BCS - Jeddah/src/widgets/MyInfoWidget/InfoWindow/createInfoWindow.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyInfoWidget/InfoWindow/createInfoWindow.as"/>
+</file>
+<file factoryID="org.eclipse.ui.part.FileEditorInputFactory" id="com.adobe.flexbuilder.editors.actionscript.ActionScriptEditor" name="queryStruct.as" tooltip="BCS - Jeddah/src/widgets/MyWidget/Structure/queryStruct.as">
+<persistable path="/BCS - Jeddah/src/widgets/MyWidget/Structure/queryStruct.as"/>
+</file>
+</mruList>
+</workbench>

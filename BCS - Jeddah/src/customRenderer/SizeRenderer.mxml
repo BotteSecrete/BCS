@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml"  horizontalAlign="center"> <!--initialize="init()"-->
+	<mx:Style>
+		.comboDropDown
+		{
+			color : #d22228;	
+		}
+	</mx:Style>
+	<mx:Script>
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.events.ListEvent;
+			public var result:String="";
+			
+			[Bindable]
+			private var dpValue:ArrayCollection; 
+			
+			// Override the set method for the data property.
+			override public function set data(value:Object):void 
+			{
+				editor.setStyle("color",0xd22228);
+				dpValue = parentApplication.cbTest.dataProvider;
+				super.data = value;
+				if (value != null) 
+				{					
+					if (value.GEOL_LEG == null){
+						editor.selectedIndex = 0;
+					}
+					else
+					{
+						var currentValue:String = value.GEOL_LEG;
+						var len:int = dpValue.length;
+						for (var i:int = 0; i < len; i++) 
+						{						
+							
+							if (dpValue[i].data == currentValue)
+//							if (val == val2)
+							{
+								editor.selectedIndex = i;
+								break;
+							}
+						}
+					}
+					
+				}
+				editor.enabled = true;
+			} 
+			
+			
+			public function onChange():void 
+			{
+				var index:int = editor.selectedIndex;
+				result = dpValue[index].data;
+			}          
+		]]>
+	</mx:Script>
+	<mx:ComboBox id="editor" name="cb" dataProvider="{dpValue}" width="180" dropdownFactory="customRenderer.ListSearch" dropdownStyleName="comboDropDown" itemRenderer="mx.controls.Label" change="onChange()"/> 
+</mx:VBox>

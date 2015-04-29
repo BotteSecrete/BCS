@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+///////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2010-2011 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
+				   xmlns:s="library://ns.adobe.com/flex/spark"
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:viewer="com.esri.viewer.*"
+				   xmlns:esri="http://www.esri.com/2008/ags"
+				   preinitialize="getStateApp()">
+				  <!-- widgetConfigLoaded="init()"-->
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.FeatureLayerEvent;
+			import com.esri.ags.layers.FeatureLayer;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.viewer.AppEvent;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.CheckBox;
+			import mx.events.CollectionEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			import mx.utils.StringUtil;
+
+			[Bindable]private var gridSource:ArrayCollection = new ArrayCollection();
+			private var listeItemSelected : ArrayCollection = new ArrayCollection;
+			private var featLayer:FeatureLayer;
+			private var query:Query = new Query();
+			
+			
+			private function getStateApp():void
+			{
+				AppEvent.addListener(AppEvent.BOTTOM_PANEL_OPENED, init);
+				AppEvent.addListener(AppEvent.BOTTOM_PANEL_OPENED, disableFunction);
+			}
+			
+			//this function called when the widget's configuration is loaded
+			private function init(event:AppEvent):void
+			{
+				this.percentWidth = this.percentHeight = 100;
+				TermTable.percentWidth = TermTable.percentHeight = 100;
+				listeItemSelected.removeAll();
+				gridSource.removeAll();
+				listeItemSelected.addEventListener(CollectionEvent.COLLECTION_CHANGE, listItemSelected);
+				//saveBut.addEventListener(MouseEvent.CLICK,onSaveButtonClick);
+				featLayer = map.getLayer("BatiInEdition") as FeatureLayer;
+				featLayer.addEventListener(FeatureLayerEvent.EDITS_COMPLETE,myFeatureLayer_editsCompleteHandler);
+			}
+						
+			private function onExecuteButtonClick(event:MouseEvent):void
+			{
+				query = new Query();
+				featLayer.outFields = ["CODE"];
+				query.where = "Terminated = 'OUI' AND  (Validated = 'NON' OR Validated IS NULL)";
+				featLayer.queryFeatures(query,new AsyncResponder(onQueryResult, onQueryFault));
+			}
+			
+			protected function onQueryResult(featureSet:FeatureSet, token:Object = null):void
+			{
+				lblResultsCount.text = StringUtil.substitute("Found: {0} features.", featureSet.features.length);
+				gridSource.removeAll();
+				//gridSource = new ArrayCollection();
+				for each(var gr:Graphic in featureSet.features)
+				{
+					gridSource.addItem(gr.attributes);
+				}
+				gridSource.refresh();				
+			}
+			
+			protected function onQueryFault(fault:Fault, token:Object = null):void
+			{
+				Alert.show("FAUTE !!!");
+			}
+			
+			private function gridClickEvent(event:MouseEvent):void 
+			{
+				var objectId:Number = dataResults.selectedItem.OBJECTID;
+				var featLayer:FeatureLayer = map.getLayer("BatiInEdition") as FeatureLayer;
+				var query:Query = new Query();
+				query.where = "OBJECTID =" + objectId;
+				featLayer.queryFeatures(query,new AsyncResponder(onZoomResult, onQueryFault));
+				//featLayer.selectFeatures(query);
+ 			} 
+			
+			private function onZoomResult(featureSet:FeatureSet, token:Object = null):void
+			{
+				map.extent = featureSet.features[0].geometry.extent.expand(5);
+				map.infoWindow.hide();		
+			}
+			
+			private function cbAllHandler(evt : Event):void{
+				listeItemSelected.removeAll();
+				
+				for each (var item:Object in gridSource){
+					item.selected = cbAll.selected;
+					if(item.selected){
+						listeItemSelected.addItem(item);
+					}
+				}
+				gridSource.refresh();
+			}
+			
+			public function onItemChanged(item : Object):void{
+				//Si l'item n'est pas déja dans la liste
+				if(listeItemSelected.getItemIndex(item)==-1) {
+					//on l'ajoute
+					listeItemSelected.addItem(item);
+				}else{
+					listeItemSelected.removeItemAt(listeItemSelected.getItemIndex(item)); //sinon on le supprime
+				}
+			}	
+			
+			private function onSaveButtonClick(event:MouseEvent):void
+			{
+				var attributes:Object = {};
+				
+				var updates:Array = [];
+
+				for (var i:Number = 0; i<listeItemSelected.length; i++){
+					var item:Object = listeItemSelected.getItemAt(i);
+					attributes = {OBJECTID:item.OBJECTID,
+						Validated:"OUI",
+						Concaten:"OONN"
+					};
+					var feature:Graphic = new Graphic(null, null, attributes);
+					updates.push(feature);
+				}
+				
+				featLayer.applyEdits(null,updates,null);
+			}
+			
+			private function myFeatureLayer_editsCompleteHandler(event:FeatureLayerEvent):void
+			{
+				//Alert.show("COMPLETE !!");
+				if(event.featureEditResults.updateResults.length > 0)
+				{
+					listeItemSelected.removeAll();
+					cbAll.selected = false;
+					featLayer.refresh();
+					map.getLayer("BatiValidated").refresh();
+					var ev:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+					onExecuteButtonClick(ev);
+				}
+			}
+			
+			private function listItemSelected(event:CollectionEvent):void
+			{
+				if(listeItemSelected.length > 0)
+				{
+					saveBut.enabled = true;	
+				}
+				else
+				{
+					saveBut.enabled = false;	
+				}
+			}
+			
+			private function disableFunction(event:AppEvent):void
+			{
+				featLayer.removeEventListener(FeatureLayerEvent.EDITS_COMPLETE,myFeatureLayer_editsCompleteHandler);
+			}
+
+		]]>
+	</fx:Script>
+	<viewer:WidgetTemplate id="TermTable"
+						   width="100%" height="100%">
+		<viewer:layout>
+			<s:VerticalLayout horizontalAlign="center" verticalAlign="middle"/>
+		</viewer:layout>
+		<mx:HBox id="buttonBox">
+			<s:Button id="exe" label="Execute" click="onExecuteButtonClick(event)" />
+			<s:Button id="saveBut" label="Save" click="onSaveButtonClick(event)" enabled="false"/>
+		</mx:HBox>
+		<s:Panel title="Results" 
+				 width="100%"
+				 height="100%">
+			<s:VGroup gap="5" 
+					  paddingLeft="5" 
+					  paddingTop="5" 
+					  paddingRight="5" 
+					  paddingBottom="5" 
+					  width="100%"
+					  height="100%">
+				<s:HGroup width="100%">
+					<mx:Label id="lblResultsCount" width="100%"/>
+					<mx:CheckBox id="cbAll" label="{(cbAll.selected)?'Unselect All':'Select All'}" change="cbAllHandler(event)" right="0"/>	
+				</s:HGroup>
+				<mx:DataGrid width="100%"
+							height="100%"
+							id="dataResults"
+							dataProvider="{gridSource}"
+							doubleClickEnabled="true"
+							doubleClick="gridClickEvent(event);">
+					<mx:columns>
+						<mx:DataGridColumn headerText="ObjectID" dataField="OBJECTID"/>
+						<mx:DataGridColumn headerText="CODE" dataField="CODE"/>
+						<mx:DataGridColumn  headerText="Valide?" width="50" paddingLeft="5" paddingRight="5">
+							<mx:itemRenderer>
+								<fx:Component>
+									<mx:CheckBox label="" selected="{data.selected}"  click="{data.selected=!data.selected;outerDocument.onItemChanged(data)}" paddingLeft="20"/>
+								</fx:Component>
+							</mx:itemRenderer>
+						</mx:DataGridColumn>
+					</mx:columns>
+				</mx:DataGrid>
+			</s:VGroup>
+		</s:Panel>
+
+	</viewer:WidgetTemplate>
+</viewer:BaseWidget>

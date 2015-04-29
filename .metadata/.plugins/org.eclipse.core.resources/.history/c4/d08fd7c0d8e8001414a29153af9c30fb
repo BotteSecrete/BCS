@@ -1,0 +1,495 @@
+<?xml version="1.0" encoding="utf-8"?>
+<viewer:BaseWidget  xmlns:fx="http://ns.adobe.com/mxml/2009"
+					xmlns:s="library://ns.adobe.com/flex/spark"
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					xmlns:viewer="com.esri.viewer.*"
+					xmlns:esri="http://www.esri.com/2008/ags"
+					xmlns:customRenderer="customRenderer.*"
+				    initialize="basewidget_widgetConfigLoaded()">
+	
+		<fx:Style> 
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		
+		mx|Alert{
+			borderColor: red;
+			backgroundColor: yellow;
+			dropShadowVisible: true;
+			chromeColor: red;
+			titleStyleName: alertTitle;
+			messageStyleName: alertMessage;
+			buttonStyleName: alertButton;
+		}
+		.alertTitle{
+			fontSize: 20;
+			fontWeight: bold;
+			color: yellow;
+		}
+		.alertMessage {
+			fontWeight: bold;
+			color: red;
+		}
+		.alertButton {
+			color: yellow;
+		}
+		
+		.headerStyleName
+		{
+			color:#FFFFFF; 
+		}
+			
+	</fx:Style>
+	
+	<fx:Script source="InfoWindow/infoWindowCloseHandler.as"/>
+	<fx:Script source="loadConfigAndLayers.as"/>
+	<fx:Script source="InfoWindow/createInfoWindow.as"/>
+	<fx:Script source="InfoWindow/changeStatus.as"/>
+	<fx:Script source="VarGlob.as"/>
+	<fx:Script source="widgetPopup.as"/>
+	<fx:Script source="handleBatiLayer.as"/>
+	<fx:Script source="moveBatiFeature.as"/>
+	<fx:Script source="InfoWindow/openRelated.as"/>
+	<fx:Script source="General/displayGeneralInfo.as"/>
+	<fx:Script source="General/saveGeneral.as"/>
+	<fx:Script source="Structure/displayStructTable.as"/>
+	<fx:Script source="Structure/queryStruct.as"/>
+	<fx:Script source="InfoWindow/editAttachments.as"/>
+	<fx:Script source="InfoWindow/sendMail.as"/>
+	<fx:Script source="General/queryBati.as"/>
+	<fx:Script source="Attachments/queryAttach.as"/>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.FeatureLayerEvent;
+			import com.esri.ags.events.GeometryServiceEvent;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.geometry.Polygon;
+			import com.esri.ags.tasks.GeometryService;
+			import com.esri.ags.tasks.supportClasses.ProjectParameters;
+			import com.esri.ags.utils.WebMercatorUtil;
+			import com.esri.ags.events.DrawEvent;
+			
+			import flash.utils.setTimeout;
+			
+			import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			import mx.rpc.events.FaultEvent;
+			import mx.utils.ObjectUtil;
+			
+			import benContainers.CollapsiblePanelSkin;
+			
+			var xBefore:Number;
+			var yBefore:Number;
+			
+			private function widgetOpenedHandler(event:Event):void
+			{
+				var infoOpened:Boolean = false;
+				map.addEventListener(MapMouseEvent.MAP_CLICK,map_mapClickHandler);
+				for each (var widgetId:Number in ViewerContainer.getInstance().widgetManager.getAllLoadedWidgetIds())
+				{
+					
+					if(ViewerContainer.getInstance().widgetManager.getWidget(widgetId).widgetTitle == "Info")
+					{
+						infoOpened = true;
+						AppEvent.dispatch(AppEvent.WIDGET_CLOSE, widgetId);
+					}
+				}
+				if(infoOpened){
+					setTimeout(closeTimeout, 500);
+					function closeTimeout():void
+					{
+						
+						isOpened = true;
+						isPlan = true;
+						if(opened)
+						{
+							basewidget_widgetConfigLoaded();
+						}
+					}
+				}
+				else
+				{
+					isOpened = true;
+					isPlan = true;
+					if(opened)
+					{
+						basewidget_widgetConfigLoaded();
+						featLayer.refresh();
+						struct.refresh();
+//						cond.refresh();
+					}
+				}
+			}
+			
+			private function map_mapClickHandler(event:MapMouseEvent):void
+			{
+				if (!clickToAdd && !clickToMove)
+				{
+					// We create a bounding box around where the user click to intersect the feature's point.
+					const point:Point = map.toScreen(map.toMapFromStage(event.stageX, event.stageY));
+					var topLeft:MapPoint = map.toMap(new Point(point.x - 10, point.y + 10));
+					var bottomRight:MapPoint = map.toMap(new Point(point.x + 10, point.y - 10));
+					const spatialReference:SpatialReference = map.spatialReference;
+					var selectionExtent:Extent = WebMercatorUtil.webMercatorToGeographic(new Extent(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, spatialReference)) as Extent; // create an extent of the clicked point
+					queryMapClick.geometry = selectionExtent;
+					featLayer.selectionColor = 0x19EBEF;
+					featLayer.selectFeatures(queryMapClick);
+					
+					featLayer.addEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler);
+				} 
+				else if (clickToAdd && !clickToMove)
+				{
+					setMapAction(null,null,null,null);
+					var addPointCoordinates:MapPoint;
+					addPointCoordinates = map.toMapFromStage(event.stageX, event.stageY);
+					addPoint(addPointCoordinates);
+				} 
+				else if (!clickToAdd && clickToMove)
+				{
+					setMapAction(null,null,null,null);
+					var movePointCoordinates:MapPoint;
+					movePointCoordinates = map.toMapFromStage(event.stageX, event.stageY);
+					movePoint(movePointCoordinates,objectIdToMove);
+				} 
+			}
+			
+			public function numericSortByField(fieldName:String):Function
+			{
+				return function(obj1:Object, obj2:Object):int
+				{
+					var virRegExp:RegExp = /[,]/gi;
+					
+					var string1:String = (obj1[fieldName] == null) ? "" : (obj1[fieldName]).toString();
+					var string2:String = (obj2[fieldName] == null) ? "" : (obj2[fieldName]).toString();
+					
+					if(string1.search(',') > -1)
+					{
+						string1 = string1.replace(virRegExp,".");
+					}
+						
+					else if((string2.search(virRegExp)>-1))
+					{
+						string2 = string2.replace(virRegExp,".");
+					}
+					var value1:Number = (isNaN(parseFloat(string1)) || string1 == null) ? 999999 : parseFloat(string1);
+					var value2:Number = (isNaN(parseFloat(string2)) || string2 == null) ? 999999 : parseFloat(string2);
+					
+					return ObjectUtil.numericCompare(value1, value2);
+				}
+			}
+			
+			private function buildToolTip(item:Object):String{
+				var myString:String = "";
+				if(item != null && item.GEOL_DESC != null){
+					myString = item.GEOL_DESC.toString().length.toString() + "/255";
+				}
+				return myString;
+			}
+			
+			
+			private function geolOnFault(event:FaultEvent):void
+			{
+				Alert.show("Sorry, the edition can't be done!", "Error");  	
+			}
+			
+			private function dataGridDefaultSort(dgName:Object, dgColumn:int):void
+			{ 
+				dgName.dispatchEvent(new DataGridEvent(DataGridEvent.HEADER_RELEASE,false,true,dgColumn,null,0,null,null,0));
+				dgName.sortableColumns = false;
+			}
+			
+			
+			
+			private function widgetClosedHandler(event:Event):void
+			{
+				isOpened = false;
+				var ev:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+				map.infoWindow.removeEventListener(flash.events.Event.CLOSE, infoWindowCloseButtonClickHandler);
+				map.infoWindow.hide();
+				featLayer.clearSelection();
+				featLayer.refresh();
+				struct.clearSelection();
+				struct.refresh();
+//				cond.clearSelection();
+//				cond.refresh();
+				status.text = "";
+				
+				featLayer.clearSelection();
+//				cond.clearSelection();
+				struct.clearSelection();
+				index.ws0.removeAllChildren();
+				index.ws1.removeAllChildren();
+				index.ws2.removeAllChildren();
+				index.ws3.removeAllChildren();
+				index.ws0.visible = index.ws1.visible = index.ws2.visible = index.ws3.visible = false;
+				
+				map.removeEventListener(MapMouseEvent.MAP_CLICK,map_mapClickHandler);
+				featLayer.removeEventListener(FeatureLayerEvent.EDITS_COMPLETE,myFeatureLayer_editsCompleteHandler);
+				featLayer.removeEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler);
+				
+				if(clickToAdd){
+					clickToAdd = false;
+				}
+				if (clickToMove)
+				{
+					clickToMove =  false;
+				}
+				
+				status.text="";
+				featLayer.outFields = ["*"];
+				struct.outFields = ["*"];
+//				cond.outFields = ["*"];
+				map.infoWindow.hide();
+				featLayer.clearSelection();
+				featLayer.refresh();
+				struct.clearSelection();
+				struct.refresh();
+//				cond.clearSelection();
+//				cond.refresh();
+//				map.addEventListener(MapMouseEvent.MAP_CLICK,map_mapClickHandler);
+//				featLayer.removeEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler);
+				
+			}
+			
+			
+			private function rollOutFnc(event:MouseEvent):void
+			{
+				Mouse.cursor = MouseCursor.ARROW;
+				fadeColorOut.target = event.target;
+				fadeColorOut.play();
+			}
+			
+			private function rollOverFnc(event:MouseEvent):void
+			{
+				Mouse.cursor = MouseCursor.BUTTON;
+				fadeColorIn.target = event.target;
+				fadeColorIn.play();
+			}
+			
+			
+			protected function attachmentInspector_queryAttachmentInfosCompleteHandler(event:AttachmentEvent):void
+			{
+//				Alert.show("Prout : "+event.attachmentInfos.length,"Pupute");
+//				attachmentInspector.attachmentInfos.removeItemAt(0);
+//				Alert.show("Prout2 : "+attachmentInspector.attachmentInfos.length,"Pupute");
+				
+			}
+			
+			
+			protected function tbb_itemClickHandler(event:Event):void
+			{
+				if (tbb.selectedIndex < 0)
+				{
+					// when toggling a tool off, deactivate it
+					myDrawTool.deactivate();
+				}
+				else
+				{
+					switch (event.item.label)
+					{
+						case "POLYGON":
+						{
+							myDrawTool.activate(DrawTool.POLYGON);
+							break;
+						}
+					}
+				}
+			}
+			
+			protected function drawTool_drawEndHandler(event:DrawEvent):void
+			{
+				// reset after finished drawing a feature
+				myDrawTool.deactivate();
+				tbb.selectedIndex = -1;
+				Alert.show (event.graphic+"","drawTool_drawEndHandler");
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		<!-- Placer ici les éléments non visuels (services et objets de valeur, par exemple). -->
+		
+		<esri:GeometryService id="myGeometryService"
+							  url="http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"/>
+		<esri:Query id="queryMapClick"/>
+		
+		<esri:AttachmentInspector id="attachmentInspector"
+								  width="{Math.max(map.infoWindowContent.width, 300)}"
+								  height="{Math.max(map.infoWindowContent.height, 300)}"
+								  infoWindowLabel="{attachmentsLabel}"
+								  initialize="attachmentInspector_initializeHandler(event)"
+								  queryAttachmentInfosComplete="attachmentInspector_queryAttachmentInfosCompleteHandler(event)"
+								  skinClass="widgets.MyWidget.EditWidgetAttachmentInspectorSkin"/>
+		
+		<s:AnimateColor id="fadeColorIn" colorPropertyName="backgroundColor" colorTo="#F2F2F2" duration="100"/>
+		<s:AnimateColor id="fadeColorOut" colorPropertyName="backgroundColor" colorTo="0xffffff"  duration="400"/>
+		
+		
+		<mx:VBox id="pan1" verticalScrollPolicy="off" label="Grain Size Analysis" height="450">
+			
+		</mx:VBox>
+		<mx:HBox id="nextToPrev" height = "90%" width="100%"/>
+		
+		
+		
+		<mx:HBox id="pan2" label="Identification Tests">
+			<mx:Label text="TabNavigator container panel 2"/>
+		</mx:HBox>
+		
+		<mx:VBox id="pan3" label="Triaxial">
+			<mx:Label text="TabNavigator container panel 3"/>
+		</mx:VBox>
+		
+		<mx:ViewStack 
+			id="content"
+			width="90%" height="100%">
+		</mx:ViewStack>
+		
+		
+		<mx:Image 
+			id="animateImage"
+			visible="false"
+			includeInLayout="false" />
+		
+		<mx:Parallel id="showEffect" >
+			<mx:Move 
+				id="contentMove" />
+			<mx:Move 
+				id="imageMove" 
+				target="{animateImage}"/>
+			<mx:effectEnd>
+				<![CDATA[
+				animateImage.visible = false;
+				animateImage.includeInLayout = false;
+				]]>
+			</mx:effectEnd>
+		</mx:Parallel>
+		
+		
+		<mx:Canvas id="goToLeftCan" 
+				   width="{5*(pan1.width)/100}" left="0" bottom="0" height="100%" 
+				   backgroundColor="white" alpha="0.9" 
+				   rollOut="rollOutFnc(event)" rollOver="rollOverFnc(event)">
+			<mx:LinkButton id="goToLeft" left = "10" top="{45*goToLeftCan.height/100}"
+						   upSkin="@Embed(source='assets/images/leftArrowBis.png')"
+						   downSkin="@Embed(source='assets/images/leftArrowBis.png')"
+						   overSkin="@Embed(source='assets/images/leftArrowBis.png')"
+						   disabledSkin="@Embed(source='assets/images/leftArrowBis.png')"
+						   width = "15" height = "30"/>
+			
+		</mx:Canvas>
+		
+		<mx:Canvas id="goToRightCan" 
+				   width="{5*(pan1.width)/100}" bottom="0" height="100%" 
+				   backgroundColor="white" alpha="0.9" 
+				   rollOut="rollOutFnc(event)" rollOver="rollOverFnc(event)">
+			<mx:LinkButton id="goToRight" x="10" top="{45*goToRightCan.height/100}" 
+						   upSkin="@Embed(source='assets/images/rightArrowBis.png')"
+						   downSkin="@Embed(source='assets/images/rightArrowBis.png')"
+						   overSkin="@Embed(source='assets/images/rightArrowBis.png')"
+						   disabledSkin="@Embed(source='assets/images/rightArrowBis.png')"
+						   width = "15" height = "30"/>
+		</mx:Canvas>
+		
+		<mx:SeriesInterpolate id="interpolateIn" duration="500" />
+		
+		<customRenderer:CustomMarkerSymbol id="customSymbol"/>
+		
+		<mx:HTTPService id="emailService" url="php/mail.php" method="POST"
+						resultFormat="xml" useProxy="false"/>
+		
+		<esri:SimpleFillSymbol id="sfs"
+							   color="0xFFFFFF"
+							   style="diagonalcross">
+			<esri:outline>
+				<esri:SimpleLineSymbol width="2" color="0x00FF00"/>
+			</esri:outline>
+		</esri:SimpleFillSymbol>
+		
+		<esri:DrawTool id="myDrawTool"
+					   drawEnd="drawTool_drawEndHandler(event)"
+					   fillSymbol="{sfs}"
+					   graphicsLayer="{myGraphicsLayer}"
+					   map="{map}"/>
+		
+		
+		
+	</fx:Declarations>
+	
+	<!--<viewer:WidgetTemplate id="MyEdit" width="300" height="350"  closed="{widgetClosedHandler(event);  map.infoWindowRenderersEnabled = true;}"
+						   open="{widgetOpenedHandler(event); map.infoWindowRenderersEnabled = false;}" >
+		<mx:VBox top="0">
+			
+			<mx:Label id="hello" top="10" text="{'\n'}"/>
+			<mx:Form id="addForm" width="100%" borderColor="0xffffff" borderStyle="solid"
+					 cornerRadius="20">
+				<mx:FormHeading label="Add a feature with Coordinates"/>
+				<mx:FormItem label="X">
+					<s:TextInput id="lon"  prompt="Ex: -215083.975"/>
+				</mx:FormItem>
+				<mx:FormItem label="Y">
+					<s:TextInput id="lat" prompt="Ex: 4504594.951"/>
+				</mx:FormItem>
+				<mx:FormItem>
+					<mx:Button id="addButton" label="Add a Feature"
+							   click="addToFeatureLayerHandler()"/>
+				</mx:FormItem>
+			</mx:Form>
+			
+			<mx:Form id="clickAddForm" width="100%" borderColor="white" borderStyle="solid"	cornerRadius="20">
+				<mx:FormHeading label="Add a feature by click"/>
+				<mx:FormItem label=" ">
+					<s:ToggleButton id="addButtonByClick" label="Click to add"
+									click="addOnClickToFeatureLayerHandler(event)"
+									toolTip="Click on the map to add a point"/>
+				</mx:FormItem>
+			</mx:Form>
+			<mx:Label id="status" bottom="10" text=""/>
+		</mx:VBox>
+	</viewer:WidgetTemplate> <mx:Form id="clickDrawSelect" width="100%" borderColor="white" borderStyle="solid"	cornerRadius="20">
+				<mx:FormHeading label="Draw a polygon to add"/>
+				<mx:FormItem label=" ">
+					<s:HGroup width="100%" paddingBottom="5">
+						<mx:ToggleButtonBar id="tbb"
+											 itemClick="tbb_itemClickHandler(event)"
+											 labelField="null"
+											 selectedIndex="-1"
+											 toggleOnClick="true">
+							 <fx:Object icon="@Embed(source='assets/images/i_draw_poly.png')" label="POLYGON"/>
+						 </mx:ToggleButtonBar>
+					</s:HGroup>
+				</mx:FormItem>
+			</mx:Form>      -->
+	
+	<viewer:WidgetTemplate id="MyEdit" width="250" height="200"  closed="{widgetClosedHandler(event);  map.infoWindowRenderersEnabled = true;}"
+						   open="{widgetOpenedHandler(event); map.infoWindowRenderersEnabled = false;}" >
+		<mx:VBox top="0">
+			
+			<mx:Label id="hello" top="10" text="{'\n'}"/>
+			<mx:Label id="st" top="5" text="{'\n'}"/>
+			<mx:Form id="clickDrawSelect" width="100%" borderColor="white" borderStyle="solid"	cornerRadius="20">
+				<mx:FormHeading label="Draw a polygon to add"/>
+				<mx:FormItem label=" ">
+					<s:HGroup width="100%" paddingBottom="5">
+						<mx:Button id="tbb"
+						click="tbb_itemClickHandler(event)"
+						icon="@Embed(source='assets/images/i_draw_poly.png')"
+						label="POLYGON">
+						</mx:Button>
+					</s:HGroup>
+				</mx:FormItem>
+			</mx:Form>
+			
+			
+			<mx:Label id="status" bottom="10" text=""/>
+		</mx:VBox>
+	</viewer:WidgetTemplate>
+	
+</viewer:BaseWidget>

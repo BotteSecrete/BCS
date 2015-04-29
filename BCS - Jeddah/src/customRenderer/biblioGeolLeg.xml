@@ -1,0 +1,571 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<AbbrGeolLegTable>
+	<NewsItemRow>
+		<ABBR_CODE>101</ABBR_CODE>
+		<ABBR_DESC>TOPSOIL    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>102</ABBR_CODE>
+		<ABBR_DESC>MADE GROUND   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>104</ABBR_CODE>
+		<ABBR_DESC>CONCRETE    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>201</ABBR_CODE>
+		<ABBR_DESC>CLAY    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>202</ABBR_CODE>
+		<ABBR_DESC>Silty CLAY   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>203</ABBR_CODE>
+		<ABBR_DESC>Sandy CLAY   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>204</ABBR_CODE>
+		<ABBR_DESC>Gravelly CLAY   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>205</ABBR_CODE>
+		<ABBR_DESC>Cobbly CLAY   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>206</ABBR_CODE>
+		<ABBR_DESC>Bouldery CLAY   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>207</ABBR_CODE>
+		<ABBR_DESC>Silty sandy CLAY  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>208</ABBR_CODE>
+		<ABBR_DESC>Silty gravelly CLAY  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>209</ABBR_CODE>
+		<ABBR_DESC>Silty cobbly CLAY  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>210</ABBR_CODE>
+		<ABBR_DESC>Silty bouldery CLAY  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>211</ABBR_CODE>
+		<ABBR_DESC>Silty sandy gravelly CLAY </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>212</ABBR_CODE>
+		<ABBR_DESC>Silty sandy cobbly CLAY </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>213</ABBR_CODE>
+		<ABBR_DESC>Silty sandy bouldery CLAY </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>214</ABBR_CODE>
+		<ABBR_DESC>Silty sandy gravelly cobbly CLAY</ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>215</ABBR_CODE>
+		<ABBR_DESC>Silty sandy gravelly bouldery CLAY</ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>216</ABBR_CODE>
+		<ABBR_DESC>Silty sandy gravelly cobbly bouldery CLAY</ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>217</ABBR_CODE>
+		<ABBR_DESC>Silty sandy organic CLAY </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>218</ABBR_CODE>
+		<ABBR_DESC>Silty sandy gravelly organic CLAY</ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>219</ABBR_CODE>
+		<ABBR_DESC>Silty organic CLAY  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>220</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly CLAY  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>222</ABBR_CODE>
+		<ABBR_DESC>Sandy cobbly CLAY  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>223</ABBR_CODE>
+		<ABBR_DESC>Sandy bouldery CLAY  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>224</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly cobbly CLAY </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>225</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly bouldery CLAY </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>226</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly cobbly bouldery CLAY</ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>227</ABBR_CODE>
+		<ABBR_DESC>Sandy organic CLAY  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>228</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly organic CLAY </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>229</ABBR_CODE>
+		<ABBR_DESC>Organic CLAY   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>301</ABBR_CODE>
+		<ABBR_DESC>SILT    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>302</ABBR_CODE>
+		<ABBR_DESC>CLAY/SILT    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>303</ABBR_CODE>
+		<ABBR_DESC>Sandy SILT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>304</ABBR_CODE>
+		<ABBR_DESC>Gravelly SILT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>305</ABBR_CODE>
+		<ABBR_DESC>Organic SILT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>310</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly SILT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>314</ABBR_CODE>
+		<ABBR_DESC>Clayey sandy gravelly organic cobbly SILT</ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>316</ABBR_CODE>
+		<ABBR_DESC>Sandy cobbly SILT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>317</ABBR_CODE>
+		<ABBR_DESC>Sandy bouldery SILT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>318</ABBR_CODE>
+		<ABBR_DESC>Sandy organic SILT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>319</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly organic SILT </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>320</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly cobbly SILT </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>321</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly organic cobbly SILT</ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>322</ABBR_CODE>
+		<ABBR_DESC>Gravelly cobbly SILT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>323</ABBR_CODE>
+		<ABBR_DESC>Gravelly bouldery SILT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>324</ABBR_CODE>
+		<ABBR_DESC>Gravelly organic SILT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>325</ABBR_CODE>
+		<ABBR_DESC>Gravelly organic cobbly SILT </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>326</ABBR_CODE>
+		<ABBR_DESC>Cobbly SILT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>327</ABBR_CODE>
+		<ABBR_DESC>Cobbly bouldery SILT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>328</ABBR_CODE>
+		<ABBR_DESC>Organic cobbly SILT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>331</ABBR_CODE>
+		<ABBR_DESC>Bouldery SILT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>401</ABBR_CODE>
+		<ABBR_DESC>SAND    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>402</ABBR_CODE>
+		<ABBR_DESC>Clayey SAND   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>403</ABBR_CODE>
+		<ABBR_DESC>Silty SAND   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>404</ABBR_CODE>
+		<ABBR_DESC>Gravelly SAND   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>405</ABBR_CODE>
+		<ABBR_DESC>Cobbly SAND   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>406</ABBR_CODE>
+		<ABBR_DESC>Bouldery SAND   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>410</ABBR_CODE>
+		<ABBR_DESC>Clayey gravelly SAND  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>411</ABBR_CODE>
+		<ABBR_DESC>Clayey gravelly cobbly SAND </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>412</ABBR_CODE>
+		<ABBR_DESC>Silty gravelly SAND  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>413</ABBR_CODE>
+		<ABBR_DESC>Silty gravelly cobbly SAND </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>414</ABBR_CODE>
+		<ABBR_DESC>Silty gravelly cobbly bouldery SAND</ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>415</ABBR_CODE>
+		<ABBR_DESC>Gravelly cobbly SAND  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>416</ABBR_CODE>
+		<ABBR_DESC>Gravelly cobbly bouldery SAND </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>417</ABBR_CODE>
+		<ABBR_DESC>Gravelly bouldery SAND  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>418</ABBR_CODE>
+		<ABBR_DESC>Cobbly bouldery SAND  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>430</ABBR_CODE>
+		<ABBR_DESC>SAND and GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>431</ABBR_CODE>
+		<ABBR_DESC>Organic SAND   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>433</ABBR_CODE>
+		<ABBR_DESC>Silty organic SAND  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>434</ABBR_CODE>
+		<ABBR_DESC>Gravelly organic SAND  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>435</ABBR_CODE>
+		<ABBR_DESC>Cobbly organic SAND  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>436</ABBR_CODE>
+		<ABBR_DESC>Bouldery organic SAND  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>501</ABBR_CODE>
+		<ABBR_DESC>GRAVEL    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>502</ABBR_CODE>
+		<ABBR_DESC>Clayey GRAVEL   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>503</ABBR_CODE>
+		<ABBR_DESC>Silty GRAVEL   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>504</ABBR_CODE>
+		<ABBR_DESC>Sandy GRAVEL   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>505</ABBR_CODE>
+		<ABBR_DESC>Organic GRAVEL   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>506</ABBR_CODE>
+		<ABBR_DESC>Cobbly GRAVEL   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>507</ABBR_CODE>
+		<ABBR_DESC>Bouldery GRAVEL   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>509</ABBR_CODE>
+		<ABBR_DESC>Clayey sandy GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>510</ABBR_CODE>
+		<ABBR_DESC>Clayey cobbly GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>511</ABBR_CODE>
+		<ABBR_DESC>Clayey bouldery GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>512</ABBR_CODE>
+		<ABBR_DESC>Clayey organic GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>517</ABBR_CODE>
+		<ABBR_DESC>Clayey sandy organic GRAVEL </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>520</ABBR_CODE>
+		<ABBR_DESC>Silty sandy GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>521</ABBR_CODE>
+		<ABBR_DESC>Silty cobbly GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>522</ABBR_CODE>
+		<ABBR_DESC>Silty bouldery GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>523</ABBR_CODE>
+		<ABBR_DESC>Silty organic GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>524</ABBR_CODE>
+		<ABBR_DESC>Silty organic sandy GRAVEL </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>525</ABBR_CODE>
+		<ABBR_DESC>Sandy cobbly GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>526</ABBR_CODE>
+		<ABBR_DESC>Sandy bouldery GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>527</ABBR_CODE>
+		<ABBR_DESC>Sandy organic GRAVEL  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>528</ABBR_CODE>
+		<ABBR_DESC>Silty sandy cobbly GRAVEL </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>601</ABBR_CODE>
+		<ABBR_DESC>PEAT    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>602</ABBR_CODE>
+		<ABBR_DESC>Clayey PEAT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>603</ABBR_CODE>
+		<ABBR_DESC>Silty PEAT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>604</ABBR_CODE>
+		<ABBR_DESC>Sandy PEAT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>605</ABBR_CODE>
+		<ABBR_DESC>Gravelly PEAT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>606</ABBR_CODE>
+		<ABBR_DESC>Cobbly PEAT   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>608</ABBR_CODE>
+		<ABBR_DESC>Clayey sandy PEAT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>609</ABBR_CODE>
+		<ABBR_DESC>Clayey gravelly PEAT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>612</ABBR_CODE>
+		<ABBR_DESC>Silty sandy PEAT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>613</ABBR_CODE>
+		<ABBR_DESC>Silty sandy gravelly PEAT </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>614</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly PEAT  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>701</ABBR_CODE>
+		<ABBR_DESC>COBBLES    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>702</ABBR_CODE>
+		<ABBR_DESC>Clayey COBBLES   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>703</ABBR_CODE>
+		<ABBR_DESC>Silty COBBLES   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>704</ABBR_CODE>
+		<ABBR_DESC>Sandy COBBLES   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>705</ABBR_CODE>
+		<ABBR_DESC>Gravelly COBBLES   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>706</ABBR_CODE>
+		<ABBR_DESC>Organic COBBLES   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>708</ABBR_CODE>
+		<ABBR_DESC>Clayey sandy COBBLES  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>709</ABBR_CODE>
+		<ABBR_DESC>Clayey gravelly COBBLES  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>713</ABBR_CODE>
+		<ABBR_DESC>Silty sandy COBBLES  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>714</ABBR_CODE>
+		<ABBR_DESC>Silty gravelly COBBLES  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>715</ABBR_CODE>
+		<ABBR_DESC>Silty organic COBBLES  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>716</ABBR_CODE>
+		<ABBR_DESC>Silty gravelly sandy COBBLES </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>717</ABBR_CODE>
+		<ABBR_DESC>Silty sandy organic COBBLES </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>718</ABBR_CODE>
+		<ABBR_DESC>Silty sandy gravelly organic COBBLES</ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>719</ABBR_CODE>
+		<ABBR_DESC>Sandy gravelly COBBLES  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>720</ABBR_CODE>
+		<ABBR_DESC>Sandy organic COBBLES  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>721</ABBR_CODE>
+		<ABBR_DESC>Gravelly organic COBBLES  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>725</ABBR_CODE>
+		<ABBR_DESC>COBBLES and BOULDERS  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>730</ABBR_CODE>
+		<ABBR_DESC>BOULDERS    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>731</ABBR_CODE>
+		<ABBR_DESC>Gravelly cobbly BOULDERS  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>801</ABBR_CODE>
+		<ABBR_DESC>MUDSTONE    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>802</ABBR_CODE>
+		<ABBR_DESC>SILTSTONE    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>803</ABBR_CODE>
+		<ABBR_DESC>SANDSTONE    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>804</ABBR_CODE>
+		<ABBR_DESC>LIMESTONE    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>805</ABBR_CODE>
+		<ABBR_DESC>CHALK    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>806</ABBR_CODE>
+		<ABBR_DESC>COAL    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>807</ABBR_CODE>
+		<ABBR_DESC>BRECCIA    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>808</ABBR_CODE>
+		<ABBR_DESC>CONGLOMERATE    </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>809</ABBR_CODE>
+		<ABBR_DESC>Fine grained IGNEOUS  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>810</ABBR_CODE>
+		<ABBR_DESC>Medium grained IGNEOUS  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>811</ABBR_CODE>
+		<ABBR_DESC>Coarse grained IGNEOUS  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>812</ABBR_CODE>
+		<ABBR_DESC>Fine grained METAMORPHIC  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>813</ABBR_CODE>
+		<ABBR_DESC>Medium grained METAMORPHIC  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>814</ABBR_CODE>
+		<ABBR_DESC>Coarse grained METAMORPHIC  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>815</ABBR_CODE>
+		<ABBR_DESC>Pyroclastic (volcanic ash)  </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>816</ABBR_CODE>
+		<ABBR_DESC>Gypsum, Rocksalt   </ABBR_DESC>
+	</NewsItemRow>
+	<NewsItemRow>
+		<ABBR_CODE>999</ABBR_CODE>
+		<ABBR_DESC>Void    </ABBR_DESC>
+	</NewsItemRow>
+</AbbrGeolLegTable>

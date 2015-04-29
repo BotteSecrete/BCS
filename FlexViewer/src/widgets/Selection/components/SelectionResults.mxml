@@ -1,0 +1,487 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:esri="http://www.esri.com/2008/ags"
+		 creationComplete="init(event)">
+	
+	<!--
+	Dispatches events:
+	SelectionGraphicEvent.CLICK_GRID
+	SelectionGraphicEvent.OVER_GRID
+	
+	Listens for events:
+	SelectionFeatureLayerEvent.LAYER_RESULTS
+	SelectionFeatureLayerEvent.SHOW_RESULTS
+	SelectionGraphicEvent.OVER_GRAPHIC
+	"alllayersadded"
+	-->
+	
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10" paddingRight="10" paddingTop="10"/>
+	</s:layout>
+	
+	<fx:Script source="../varGlob.as"/>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.as3xls.xls.ExcelFile;
+			import com.as3xls.xls.Sheet;
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.events.FeatureLayerEvent;
+			import com.esri.ags.layers.FeatureLayer;
+			import com.esri.ags.layers.supportClasses.Field;
+			import com.esri.ags.tasks.supportClasses.Query;
+			
+			import mx.controls.Alert;
+			import mx.controls.DataGrid;
+			import mx.controls.dataGridClasses.DataGridColumn;
+			import mx.core.FlexGlobals;
+			import mx.core.ScrollPolicy;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.Fault;
+			
+			import spark.components.NavigatorContent;
+			import spark.events.IndexChangeEvent;
+			
+			import nochump.util.zip.ZipEntry;
+			import nochump.util.zip.ZipOutput;
+			
+			import widgets.Selection.SelectionWidget;
+			import widgets.Selection.events.SelectionFeatureLayerEvent;
+			import widgets.Selection.events.SelectionGraphicEvent;
+			import widgets.Selection.utils.SelectionWidgetUtil;
+			
+			[Bindable] public var selectionLayers:Array;
+			[Bindable] private var targetLayer:FeatureLayer;
+			private var _configXML:XML;
+						
+			
+			[Bindable]
+			public function get configXML():XML
+			{
+				return _configXML;
+			}
+
+			public function set configXML(value:XML):void
+			{
+				_configXML = value;
+				
+				var backgroundColors:Array = dg.getStyle("alternatingItemColors");
+				
+				var resultColor1:String = configXML.datagrid.@alternatingColor1 || backgroundColors[0];
+				var resultColor2:String = configXML.datagrid.@alternatingColor2 || backgroundColors[1];
+				var resultBackgroundAlpha:String = configXML.datagrid.@backgroundAlpha || "0";
+				var resultGridLines:String = configXML.datagrid.@horizontalGridLines || "true";
+				var resultGridLineColor:String = configXML.datagrid.@horizontalGridLineColor || "0x666666";
+				
+				dg.setStyle("alternatingItemColors",[resultColor1,resultColor2]); 
+				dg.setStyle("backgroundAlpha", resultBackgroundAlpha);
+				dg.setStyle("horizontalGridLines", resultGridLines);
+				dg.setStyle("horizontalGridLineColor", resultGridLineColor); 
+			}
+
+			protected function init(event:FlexEvent):void
+			{
+				//need to listen for when layers selections change 
+				systemManager.addEventListener(SelectionFeatureLayerEvent.LAYER_RESULTS,featureLayer_resultsHandler);
+				systemManager.addEventListener(SelectionFeatureLayerEvent.SHOW_RESULTS,featureLayer_resultsHandler);
+				systemManager.addEventListener("alllayersadded",allLayersAddedHandler);
+				systemManager.addEventListener(SelectionGraphicEvent.OVER_GRAPHIC, overGraphicHandler);
+				queryGeol();
+			}
+			
+			protected function dg_initializeHandler(event:FlexEvent):void
+			{
+				dg.setStyle("backgroundAlpha", "0");
+				dg.setStyle("horizontalGridLines", "true");
+				dg.setStyle("horizontalGridLineColor", "0x666666"); 
+			}
+			
+			private function allLayersAddedHandler(event:Event):void
+			{
+				layersList.selectedIndex = 0;
+				var fl:FeatureLayer = selectionLayers[0].layer;
+				setDataGrid(fl);
+			}
+			
+			private function featureLayer_resultsHandler(event:SelectionFeatureLayerEvent):void
+			{
+				trace("featureLayer_resultsHandler results");
+				for (var i:int = 0; i< selectionLayers.length; i++)
+				{
+					if (selectionLayers[i].label == event.featureLayer.name)
+					{
+						layersList.selectedIndex = i;
+						break;
+					}
+				}
+				layersList.invalidateDisplayList();
+				setDataGrid(event.featureLayer);
+			}
+			
+			private function setDataGrid(featureLayer:FeatureLayer):void
+			{
+				var iTargetLayer:int;
+				for (var i:int = 0; i< selectionLayers.length; i++)
+				{
+					if (selectionLayers[i].label == featureLayer.name)
+					{
+						iTargetLayer = i;
+						break;
+					}
+				}
+				
+				targetLayer = selectionLayers[iTargetLayer].layer;
+				
+				var arrFields:Array;
+				arrFields = selectionLayers[iTargetLayer].fields;
+				
+				var dgColumns:Array = [];
+				for (var icount:int = 0; icount< arrFields.length; icount++)
+				{
+					var fld:Field = arrFields[icount];
+					
+					var dgColumn:DataGridColumn = new DataGridColumn();
+					dgColumn.headerText = fld.alias;
+					dgColumn.labelFunction = labelOf(fld.name);
+					dgColumn.sortCompareFunction = sortOf(fld.name); 
+					
+					dgColumns.push(dgColumn);
+					
+				}
+				
+				dg.columns = dgColumns;
+				
+				var fs:FeatureSet = new FeatureSet(featureLayer.selectedFeatures);
+				dg.dataProvider = fs.attributes;
+//				queryGeol();
+				
+			}
+			
+			function queryGeol():void
+			{
+				var query:Query = new Query();
+				query.outFields = ["*"];
+				query.where = "HOLEID IS NOT NULL";
+				geolLayer.outFields = ["*"];
+				geolLayer.queryFeatures(query,new AsyncResponder(onquerySelectSuccessHandler,onQuerySelectFaultHandler));
+				geolToSheet = []
+				//				
+				function onquerySelectSuccessHandler(featureSet:FeatureSet, token:Object = null):void
+				{
+					//////					onquerySelectSuccess(featureSet, featEditsStarted,featEditsCompleted);
+					////					featToSheet = []
+					for each (var gr:Graphic in featureSet.features)
+					{
+						geolArray = [];
+						geolArray.push(gr.attributes.OBJECTID);
+						geolArray.push(gr.attributes.GEOL_TOP);
+						geolArray.push(gr.attributes.GEOL_BASE);
+						geolArray.push(gr.attributes.GEOL_LEG);
+						geolArray.push(gr.attributes.GEOL_GEOL);
+						geolArray.push(gr.attributes.HOLEID);
+						geolArray.push(gr.attributes.GEOL_DESC);
+						
+						geolToSheet.push(geolArray);
+						
+					}
+				}
+				
+				function onQuerySelectFaultHandler(fault:Fault, token:Object = null):void
+				{
+					//					onQueryAttachFault(fault);
+					Alert.show("FAULT !!!!!! \n"+fault.errorID+"\n"+fault.message,"Error");
+				}
+			}
+			
+			private function labelOf(fullfieldname:String):Function {
+				return 	function (item:Object, column:DataGridColumn):String { 
+					return item[fullfieldname];
+				};
+			}
+			
+			private function sortOf(fullfieldname:String):Function {  
+				return	function (obj1:Object, obj2:Object):int {  
+					if(obj1[fullfieldname] < obj2[fullfieldname]) {  
+						return -1;
+					}
+					else if(obj1[fullfieldname] > obj2[fullfieldname]) {
+						return 1;  
+					}
+					else {  
+						return 0;  
+					} 
+				};
+			}
+			
+			private function layersLabelFunc(item:Object):String 
+			{
+				var fl:FeatureLayer = item.layer as FeatureLayer;
+				if (fl)
+				{
+					return fl.name + " (" + fl.selectedFeatures.length + ")";
+				}
+				else 
+				{
+					return null;
+				}
+			}
+			
+			protected function layersList_changeHandler(event:ListEvent):void
+			{
+				var i:int = layersList.selectedIndex;
+				var fl:FeatureLayer = selectionLayers[i].layer;
+				setDataGrid(fl);
+			}
+			
+			protected function dg_itemClickHandler(event:ListEvent):void
+			{
+				var e:SelectionGraphicEvent = new SelectionGraphicEvent(SelectionGraphicEvent.CLICK_GRID, 
+					event.itemRenderer.data, targetLayer)
+				dispatchEvent(e);
+			}
+			
+			protected function dg_itemRollOverHandler(event:ListEvent):void
+			{
+				var e:SelectionGraphicEvent = new SelectionGraphicEvent(SelectionGraphicEvent.OVER_GRID, 
+					event.itemRenderer.data, targetLayer)
+				dispatchEvent(e);
+			}
+			
+			private function overGraphicHandler(event:SelectionGraphicEvent):void
+			{
+				for (var i:int = 0; i<dg.dataProvider.length; i++)
+				{
+					if (dg.dataProvider[i] == event.attribute)
+					{
+						dg.selectedIndex = i;
+						dg.scrollToIndex(i);
+						break;
+					}
+				}
+			}
+			
+			protected function clearBtn_clickHandler(event:MouseEvent):void
+			{
+				targetLayer.clearSelection();
+			}
+			
+			
+			protected function zoomBtn_clickHandler(event:MouseEvent):void
+			{
+				SelectionWidgetUtil.zoomtoSelectedFeatures(targetLayer);
+			}
+			
+			
+			protected function exportBtn_clickHandler(event:MouseEvent):void
+			{				
+				var tabSeparatedValues:String = "";
+				
+				var iTargetLayer:int;
+				for (var i:int = 0; i< selectionLayers.length; i++)
+				{
+					if (selectionLayers[i].label == targetLayer.name)
+					{
+						iTargetLayer = i;
+						break;
+					}
+				}
+				
+				var arrFields:Array;
+				arrFields = selectionLayers[iTargetLayer].fields;
+				
+				featToSheet = [];
+				var arrFieldsLgth:int = arrFields.length;
+				var lgth:int = dg.dataProvider.length;
+				for (var ii:int = 0; ii < dg.dataProvider.length; ii++)
+				{
+				
+					featArray = [];
+					for (var icount:int = 0; icount< arrFields.length; icount++)
+					{
+				
+						var fld1:Field;
+						fld1 = arrFields[icount];
+						var fldName:String = fld1.name;
+						
+						featArray.push(dg.dataProvider[ii][fldName]);
+						
+					}
+					featToSheet.push(featArray);
+				}
+				
+				
+				objIdHoleId = [];
+				var xls:ExcelFile = new ExcelFile();
+				var sheet:Sheet = new Sheet();
+				sheet.resize(10,10);
+				
+				var lgt:Number=6;
+				for (var i:int=0;i<lgt;i++)
+				{
+					sheet.setCell(0,i,(HeaderColumn[i] as String));
+				}
+				lgt = featToSheet.length;
+				for (var i:int=0;i<lgt;i++)
+				{
+					objIdHoleId.push({ObjectId:featToSheet[i][0],HoleId:featToSheet[i][1]});
+					for (var j:int=1;j<7;j++)
+					{
+						sheet.setCell((i+1),j-1,featToSheet[i][j]);
+					}
+				}
+				
+				
+				sheet.name = "Hole";
+				xls.sheets.addItem(sheet);
+				var bytes:ByteArray = new ByteArray(); 
+				bytes = xls.saveToByteArray();
+				var fileName:String = "HOLE.xls";
+				var zipOut:ZipOutput = new ZipOutput();
+				var ze:ZipEntry = new ZipEntry(fileName);
+				zipOut.putNextEntry(ze);
+				zipOut.write(bytes);
+				zipOut.closeEntry();
+				
+				geolToSheetSelected = [];
+				geolToSheetSelected = geolToSheet.filter(filterGeolArray);
+				
+//				geolToSheetSelected.filter(filterGeolArray);
+				var xls2:ExcelFile = new ExcelFile();
+				var sheet2:Sheet = new Sheet();
+				var lgthOTHI:Number = objIdHoleId.length;
+				lgt = 6;
+				for (var i:int=0;i<lgt;i++)
+				{
+					sheet2.setCell(0,i,(HeaderColumnGeol[i] as String));
+				}
+				lgt = geolToSheetSelected.length;
+				for (var i:int=0;i<lgt;i++)
+				{
+					
+					for (var j:int=0;j<lgthOTHI;j++){
+						if (geolToSheetSelected[i][5] == objIdHoleId[j].ObjectId){sheet2.setCell((i+1),0,objIdHoleId[j].HoleId);break;}
+					}
+					sheet2.setCell((i+1),1,geolToSheetSelected[i][1]);
+					sheet2.setCell((i+1),2,geolToSheetSelected[i][2]);
+					sheet2.setCell((i+1),3,geolToSheetSelected[i][3]);
+					sheet2.setCell((i+1),4,geolToSheetSelected[i][4]);
+					sheet2.setCell((i+1),5,geolToSheetSelected[i][6]);
+					
+				}
+				sheet2.name = "Geol";
+				xls2.sheets.addItem(sheet2);
+				var bytes2:ByteArray = new ByteArray(); 
+				bytes2 = xls2.saveToByteArray();
+				
+				var fileName:String = "GEOL.xls";
+				var ze2:ZipEntry = new ZipEntry(fileName);
+				zipOut.putNextEntry(ze2);
+				zipOut.write(bytes2);
+				zipOut.closeEntry();
+				
+				zipOut.finish();
+				
+				var zipData:ByteArray = zipOut.byteArray;
+				
+				var file:FileReference = new FileReference();
+				file.save(zipData,"AGS.zip");
+				
+				//loop through the fields and add the header
+//				for (var icount:int = 0; icount< arrFields.length; icount++)
+//				{
+//					var fld:Field;
+//					fld = arrFields[icount];
+//					if (icount < arrFields.length - 1)
+//					{
+//						tabSeparatedValues += fld.name + "\t";
+//					}
+//					else
+//					{
+//						tabSeparatedValues += fld.name + "\r\n";
+//					}
+//				}
+//				
+//				//loop through the datagrid and Add the content
+//				for (var ii:int = 0; ii < dg.dataProvider.length; ii++)
+//				{
+//					for (icount = 0; icount< arrFields.length; icount++)
+//					{
+//						var fld1:Field;
+//						fld1 = arrFields[icount];
+//						var fldName:String = fld1.name;
+//						
+//						if (icount < arrFields.length - 1)
+//						{
+//							tabSeparatedValues += dg.dataProvider[ii][fldName] + "\t";
+//						}
+//						else
+//						{
+//							tabSeparatedValues += dg.dataProvider[ii][fldName] + "\r\n";
+//						}
+//					}
+//				} // end for 
+//				
+//				var fileReference:FileReference = new FileReference();
+//				fileReference.save(tabSeparatedValues,targetLayer.name + ".txt");
+			}
+			
+			function filterGeolArray(elmt:*, index:int, arr:Array):Boolean
+			{
+				var good:Boolean = false;
+				var lgth:int = objIdHoleId.length;
+//				Alert.show(""+objIdHoleId[0].HoleId+"\n"+elmt[5],"");
+				for (var i:int=0;i<lgth;i++){if (elmt[5] ==  objIdHoleId[i].ObjectId){good = true; break;}}
+				return good;
+			}
+			
+		]]>
+	</fx:Script>
+	
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		
+		<esri:FeatureLayer id="geolLayer" url="https://sygdev.systra.info/arcgis/rest/services/TSS/TSS_Baku_TestImport_FA_141027/FeatureServer/5" 
+						   token="4T34n5Td1E_fE6kbqsapHeAw5jrgQ-6eBBNFxmhY6eLwJGUtGq5knqhval9E3gy7"
+						   disableClientCaching="true"/>
+	</fx:Declarations>
+	
+	<s:Label text="Selection Results..." 
+			 width="300" paddingBottom="5"
+			 fontSize="12" fontWeight="bold"/>
+	
+	<mx:ComboBox id="layersList" width="100%"
+				 change="layersList_changeHandler(event)"
+				 dataProvider="{selectionLayers}"
+				 labelField="label"
+				 labelFunction="layersLabelFunc"/>
+	
+	<mx:DataGrid id="dg" width="100%" height="100%" minWidth="150"
+				 horizontalScrollPolicy="on"
+				 itemClick="dg_itemClickHandler(event)"
+				 itemRollOver="dg_itemRollOverHandler(event)"
+				 initialize="dg_initializeHandler(event)"/>
+	
+	<s:HGroup verticalAlign="justify" width="300">
+		<s:Button id="clearBtn"
+				  label="Clear"
+				  toolTip="Clear Selected Features"
+				  click="clearBtn_clickHandler(event)"
+				  enabled="{targetLayer.selectedFeatures.length > 0}"/>
+		<s:Button id="zoomBtn"
+				  label="Zoom"
+				  toolTip="Zoom to Selected Features"
+				  click="zoomBtn_clickHandler(event)"
+				  enabled="{targetLayer.selectedFeatures.length > 0}"/>
+		<s:Button id="exportBtn" 
+				  label="Export"
+				  toolTip="Export to tab delimited .txt file"
+				  click="exportBtn_clickHandler(event)"
+				  enabled="{targetLayer.selectedFeatures.length > 0}"/>
+	</s:HGroup>
+</s:Group>

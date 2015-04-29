@@ -1,0 +1,18 @@
+<?xml version="1.0" ?>
+<configuration>
+    <xfield>Longitude</xfield>
+	<yfield>Latitude</yfield>
+	<MGRSfield>MGRS</MGRSfield>
+	<titlefield>Title</titlefield>
+	<linkfield>Link</linkfield>
+	<linkalias></linkalias>
+	<zoomscale>8000</zoomscale>
+	<mgrsenabled>true</mgrsenabled>
+	<inputdataprojection>
+		<proj name="Lat/Long" wkid="4326"/> 
+		<proj name="UTM Zone 41" wkid="32641"/>
+		<proj name="Web Mercator" wkid="102100"/>
+		<proj name="Baku" wkid="32239"/>
+	</inputdataprojection>
+	<defaultproj>map</defaultproj> <!-- set to map default the input projection to be the same as the map projection or to a wkid number from the list above -->
+</configuration>

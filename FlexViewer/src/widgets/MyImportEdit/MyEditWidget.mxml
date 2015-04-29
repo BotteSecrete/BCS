@@ -1,0 +1,438 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+///////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2010-2011 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
+				   xmlns:s="library://ns.adobe.com/flex/spark"
+				   xmlns:mx="library://ns.adobe.com/flex/mx"
+				   xmlns:viewer="com.esri.viewer.*"
+				   xmlns:esri="http://www.esri.com/2008/ags"
+				   xmlns:customRenderer="customRenderer.*"
+				   widgetConfigLoaded="basewidget_widgetConfigLoaded()" >
+	
+	
+		<fx:Style> 
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		
+		mx|Alert{
+			borderColor: red;
+			backgroundColor: yellow;
+			dropShadowVisible: true;
+			chromeColor: red;
+			titleStyleName: alertTitle;
+			messageStyleName: alertMessage;
+			buttonStyleName: alertButton;
+		}
+		.alertTitle{
+			fontSize: 20;
+			fontWeight: bold;
+			color: yellow;
+		}
+		.alertMessage {
+			fontWeight: bold;
+			color: red;
+		}
+		.alertButton {
+			color: yellow;
+		}
+			
+		.headerStyleName
+		{
+			color:#FFFFFF; 
+		}
+	</fx:Style>
+	
+	<fx:Script source="globVarImport.as"/>
+	<fx:Script source="widgetPopup.as"/>
+	<fx:Script source="handleLOCALayer.as"/>
+	<fx:Script source="loadConfigAndLayers.as" />
+	<fx:Script source="infoWindow/createInfoWindow.as" />
+	<fx:Script source="infoWindow/sendMail.as" />
+	<fx:Script source="infoWindow/changeStatus.as" />
+	<fx:Script source="infoWindow/openRelated.as" />
+	<fx:Script source="infoWindow/editAttachments.as" />
+	<fx:Script source="infoWindow/locaSave.as" />
+	<fx:Script source="infoWindow/deleteLOCAFeatures.as" />
+	<fx:Script source="infoWindow/moveLOCAFeature.as" />
+	<fx:Script source="infoWindow/infoWindowCloseHandler.as" />
+	<fx:Script source="GEOL/displayGeolTable.as" />
+	<fx:Script source="GEOL/queryGeol.as" />
+	<fx:Script source="GEOL/addDelRow.as" />
+	<fx:Script source="GEOL/saveGeol.as" />
+	<fx:Script source="GEOL/moveInGrid.as" />
+	<fx:Script source="LabTests/SAMP/displaySAMPPanel.as" />
+	<fx:Script source="LabTests/SAMP/querySAMP.as" />
+	<fx:Script source="LabTests/SAMP/saveSAMP.as" />
+	<fx:Script source="LabTests/SAMP/addDelRow.as" />
+	<fx:Script source="LabTests/SAMP/openLabTestsPanel.as" />
+	<fx:Script source="LabTests/GragGrat/displayGrainSizeAnalysisTable.as" />
+	<fx:Script source="LabTests/GragGrat/onQueryGragRes.as" />
+	<fx:Script source="LabTests/GragGrat/animateGragGratPanel.as" />
+	<fx:Script source="LabTests/GragGrat/createGragPanel.as" />
+	<fx:Script source="LabTests/GragGrat/createGratPanel.as" />
+	<fx:Script source="LabTests/GragGrat/onQueryGratRes.as" />
+	<fx:Script source="LabTests/GragGrat/addDelGrat.as" />
+	<fx:Script source="ISPT/displaySPTTable.as" />
+	<fx:Script source="ISPT/queryISPT.as" />
+	<fx:Script source="ISPT/addDelRow.as" />
+	<fx:Script source="ISPT/openForm.as" />
+	<fx:Script source="CORE/displayCoreTable.as" />
+	<fx:Script source="CORE/queryCore.as" />
+	<fx:Script source="CORE/addDelRow.as" />
+	<fx:Script source="CORE/saveCore.as" />
+
+	<fx:Script>
+		<![CDATA[
+
+			private function widgetOpenedHandler(event:Event):void
+			{
+				var infoOpened:Boolean = false;
+				for each (var widgetId:Number in ViewerContainer.getInstance().widgetManager.getAllLoadedWidgetIds())
+				{
+					
+					if(ViewerContainer.getInstance().widgetManager.getWidget(widgetId).widgetTitle == "Info")
+					{
+						infoOpened = true;
+						AppEvent.dispatch(AppEvent.WIDGET_CLOSE, widgetId);
+					}
+				}
+				if(infoOpened){
+					setTimeout(closeTimeout, 500);
+					function closeTimeout():void
+					{
+						
+						isOpened = true;
+						if(opened)
+						{
+							basewidget_widgetConfigLoaded();
+						}
+					}
+				}
+				else
+				{
+					isOpened = true;
+					if(opened)
+					{
+						basewidget_widgetConfigLoaded();
+						featLayer.refresh();
+					}
+				}
+			}
+
+			private function map_mapClickHandler(event:MapMouseEvent):void
+			{
+				if (!clickToAdd && !clickToMove)
+				{
+					// We create a bounding box around where the user click to intersect the feature's point.
+					const point:Point = map.toScreen(map.toMapFromStage(event.stageX, event.stageY));
+					var topLeft:MapPoint = map.toMap(new Point(point.x - 10, point.y + 10));
+					var bottomRight:MapPoint = map.toMap(new Point(point.x + 10, point.y - 10));
+					const spatialReference:SpatialReference = map.spatialReference;
+					var selectionExtent:Extent = WebMercatorUtil.webMercatorToGeographic(new Extent(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, spatialReference)) as Extent; // create an extent of the clicked point
+					queryMapClick.geometry = selectionExtent;
+					featLayer.selectionColor = 0x19EBEF;
+					featLayer.selectFeatures(queryMapClick);
+					
+					featLayer.addEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler);
+				} 
+				else if (clickToAdd && !clickToMove)
+				{
+					setMapAction(null,null,null,null);
+					var addPointCoordinates:MapPoint;
+					addPointCoordinates = map.toMapFromStage(event.stageX, event.stageY);
+					addPoint(addPointCoordinates);
+				} 
+				else if (!clickToAdd && clickToMove)
+				{
+					setMapAction(null,null,null,null);
+					var movePointCoordinates:MapPoint;
+					movePointCoordinates = map.toMapFromStage(event.stageX, event.stageY);
+					movePoint(movePointCoordinates,objectIdToMove);
+				} 
+			}
+						
+			public function numericSortByField(fieldName:String):Function
+			{
+				return function(obj1:Object, obj2:Object):int
+				{
+					var virRegExp:RegExp = /[,]/gi;
+					
+					var string1:String = (obj1[fieldName] == null) ? "" : (obj1[fieldName]).toString();
+					var string2:String = (obj2[fieldName] == null) ? "" : (obj2[fieldName]).toString();
+					
+					if(string1.search(',') > -1)
+					{
+						string1 = string1.replace(virRegExp,".");
+					}
+						
+					else if((string2.search(virRegExp)>-1))
+					{
+						string2 = string2.replace(virRegExp,".");
+					}
+					var value1:Number = (isNaN(parseFloat(string1)) || string1 == null) ? 999999 : parseFloat(string1);
+					var value2:Number = (isNaN(parseFloat(string2)) || string2 == null) ? 999999 : parseFloat(string2);
+
+					return ObjectUtil.numericCompare(value1, value2);
+				}
+			}
+			
+			private function buildToolTip(item:Object):String{
+				var myString:String = "";
+				if(item != null && item.GEOL_DESC != null){
+					myString = item.GEOL_DESC.toString().length.toString() + "/255";
+				}
+				return myString;
+			}
+			
+
+			private function geolOnFault(event:FaultEvent):void
+			{
+				Alert.show("Sorry, the edition can't be done!", "Error");  	
+			}
+			
+			private function dataGridDefaultSort(dgName:Object, dgColumn:int):void
+			{ 
+				dgName.dispatchEvent(new DataGridEvent(DataGridEvent.HEADER_RELEASE,false,true,dgColumn,null,0,null,null,0));
+				dgName.sortableColumns = false;
+			}
+			
+		
+			
+			private function widgetClosedHandler(event:Event):void
+			{
+				isOpened = false;
+				var ev:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+				
+				map.infoWindow.hide();
+				featLayer.clearSelection();
+				featLayer.refresh();
+				status.text = "";
+
+				
+				map.removeEventListener(MapMouseEvent.MAP_CLICK,map_mapClickHandler);
+				featLayer.removeEventListener(FeatureLayerEvent.EDITS_COMPLETE,myFeatureLayer_editsCompleteHandler);
+				featLayer.removeEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler);
+				
+				if(clickToAdd){
+					clickToAdd = false;
+				}
+				if (clickToMove)
+				{
+					clickToMove =  false;
+				}
+				
+			}
+			
+			
+			private function rollOutFnc(event:MouseEvent):void
+			{
+				Mouse.cursor = MouseCursor.ARROW;
+				fadeColorOut.target = event.target;
+				fadeColorOut.play();
+			}
+			
+			private function rollOverFnc(event:MouseEvent):void
+			{
+				Mouse.cursor = MouseCursor.BUTTON;
+				fadeColorIn.target = event.target;
+				fadeColorIn.play();
+			}
+			
+			
+		]]>
+		
+		
+	</fx:Script>
+	
+	
+	
+	<fx:Declarations>
+		<esri:GeometryService id="myGeometryService"
+							  url="http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"/>
+		<esri:Query id="queryMapClick"/>
+		
+		<esri:AttachmentInspector id="attachmentInspector"
+								  width="{Math.max(map.infoWindowContent.width, 300)}"
+								  height="{Math.max(map.infoWindowContent.height, 300)}"
+								  infoWindowLabel="{attachmentsLabel}"
+								  initialize="attachmentInspector_initializeHandler(event)"
+								  skinClass="widgets.MyImportEdit.EditWidgetAttachmentInspectorSkin"/>
+		
+		<s:Fade id="fadeIn" alphaFrom="0" alphaTo="0.9" duration="700"
+				target="{parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel}"
+				effectEnd="if(isOpened){parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.visible = true}"/>
+		
+		<s:Fade id="fadeOut" alphaFrom="0.9" alphaTo="0" duration="500"
+				effectEnd="if(isOpened){parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.visible = false}"
+				target="{parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel}"/>		   
+		
+		<mx:Move id="panelIn" duration="1000" easingFunction="Bounce.easeOut"
+				 effectEnd="if(isOpened){parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.btn.label='Open'}"
+				 target="{parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel}"
+				 xFrom="{screenWidth - (5*(65*screenWidth/100)/100) - (95*parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.width)/100}"
+				 xTo="{screenWidth - (5*(65*screenWidth/100)/100)}"/>
+		
+		<mx:Move id="panelOut" duration="1200" easingFunction="Bounce.easeOut"
+				 effectEnd="if(isOpened){parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.btn.label='Close'}"
+				 target="{parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel}"
+				 xTo="{screenWidth - (5*(65*screenWidth/100)/100) - (95*parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.width)/100}"
+				 xFrom="{screenWidth - (5*(65*screenWidth/100)/100)}"/>
+		
+		<s:AnimateColor id="fadeColorIn" colorPropertyName="backgroundColor" colorTo="#F2F2F2" duration="100"/>
+		<s:AnimateColor id="fadeColorOut" colorPropertyName="backgroundColor" colorTo="0xffffff"  duration="400"/>
+		<fx:XML id="locaLoca"  source="C:\Users\llefresne\Downloads\LOCA_LOCA.xml"/>
+		
+		<fx:XML format="e4x" id="myMenuData">
+			<root>
+				<editItem label="Stratigraphy"/>
+				<editItem label="Diagraphy"/>
+				<editItem label="In Situ Test">
+					<editItem label="SPT"/>
+					<editItem label="Pressuremeter"/>
+					<editItem label="Dilatometer"/>
+					<editItem label="CPT"/>
+					<editItem label="Vane Shear Tests"/>
+				</editItem>
+				<editItem label="Lab Tests" />
+				<editItem label="Monitoring" >
+					<editItem label="Piezometer"/>
+					<editItem label="Inclinometer"/>
+				</editItem>
+				<editItem label="Coring Information"/>
+			</root>
+		</fx:XML>
+		
+		<fx:XML format="e4x" id="sptType">
+			<root>
+				<editItem label="Cone"/>
+				<editItem label="Split Spoon"/>
+			</root>
+		</fx:XML>
+
+		
+		<fx:XML format="e4x" id="labTests">
+			<root>
+				<editItem label="Grain Size Analysis"/>
+				<editItem label="Identification Tests"/>
+				<editItem label="Triexial" />
+			</root>
+		</fx:XML>
+		
+		<mx:VBox id="pan1" verticalScrollPolicy="off" label="Grain Size Analysis" height="450">
+			
+		</mx:VBox>
+		<mx:HBox id="nextToPrev" height = "90%" width="100%"/>
+		
+
+		
+		<mx:HBox id="pan2" label="Identification Tests">
+			<mx:Label text="TabNavigator container panel 2"/>
+		</mx:HBox>
+		
+		<mx:VBox id="pan3" label="Triaxial">
+			<mx:Label text="TabNavigator container panel 3"/>
+		</mx:VBox>
+		
+		<mx:ViewStack 
+			id="content"
+			width="90%" height="100%">
+		</mx:ViewStack>
+		
+		
+		<mx:Image 
+			id="animateImage"
+			visible="false"
+			includeInLayout="false" />
+		
+		<mx:Parallel id="showEffect" >
+			<mx:Move 
+				id="contentMove" />
+			<mx:Move 
+				id="imageMove" 
+				target="{animateImage}"/>
+			<mx:effectEnd>
+				<![CDATA[
+					animateImage.visible = false;
+					animateImage.includeInLayout = false;
+				]]>
+			</mx:effectEnd>
+		</mx:Parallel>
+		
+		
+		<mx:Canvas id="goToLeftCan" 
+				   width="{5*(pan1.width)/100}" left="0" bottom="0" height="100%" 
+				   backgroundColor="white" alpha="0.9" 
+				   rollOut="rollOutFnc(event)" rollOver="rollOverFnc(event)">
+			<mx:LinkButton id="goToLeft" left = "10" top="{45*goToLeftCan.height/100}"
+					upSkin="@Embed(source='assets/images/leftArrowBis.png')"
+					downSkin="@Embed(source='assets/images/leftArrowBis.png')"
+					overSkin="@Embed(source='assets/images/leftArrowBis.png')"
+					disabledSkin="@Embed(source='assets/images/leftArrowBis.png')"
+					width = "15" height = "30"/>
+			
+		</mx:Canvas>
+		
+		<mx:Canvas id="goToRightCan" 
+				   width="{5*(pan1.width)/100}" bottom="0" height="100%" 
+				   backgroundColor="white" alpha="0.9" 
+				   rollOut="rollOutFnc(event)" rollOver="rollOverFnc(event)">
+			<mx:LinkButton id="goToRight" x="10" top="{45*goToRightCan.height/100}" 
+					  upSkin="@Embed(source='assets/images/rightArrowBis.png')"
+					  downSkin="@Embed(source='assets/images/rightArrowBis.png')"
+					  overSkin="@Embed(source='assets/images/rightArrowBis.png')"
+					  disabledSkin="@Embed(source='assets/images/rightArrowBis.png')"
+					  width = "15" height = "30"/>
+		</mx:Canvas>
+
+		<mx:SeriesInterpolate id="interpolateIn" duration="500" />
+		
+		<customRenderer:CustomMarkerSymbol id="customSymbol"/>
+	</fx:Declarations>
+
+	<viewer:WidgetTemplate id="MyEdit" width="300" height="350"  closed="{widgetClosedHandler(event);  map.infoWindowRenderersEnabled = true;}"
+						   open="{widgetOpenedHandler(event); map.infoWindowRenderersEnabled = false;}" >
+		<mx:VBox top="0">
+
+			<mx:Label id="hello" top="10" text="{'\n'}"/>
+			<mx:Form id="addForm" width="100%" borderColor="0xffffff" borderStyle="solid"
+					 cornerRadius="20">
+				<mx:FormHeading label="Add a feature with Coordinates"/>
+				<mx:FormItem label="X">
+					<s:TextInput id="lon"  prompt="Ex: -215083.975"/>
+				</mx:FormItem>
+				<mx:FormItem label="Y">
+					<s:TextInput id="lat" prompt="Ex: 4504594.951"/>
+				</mx:FormItem>
+				<mx:FormItem>
+					<mx:Button id="addButton" label="Add a Feature"
+							   click="addToFeatureLayerHandler()"/>
+				</mx:FormItem>
+			</mx:Form>
+			
+			<mx:Form id="clickAddForm" width="100%" borderColor="white" borderStyle="solid"	cornerRadius="20">
+				<mx:FormHeading label="Add a feature by click"/>
+				<mx:FormItem label=" ">
+					<s:ToggleButton id="addButtonByClick" label="Click to add"
+									click="addOnClickToFeatureLayerHandler(event)"
+									toolTip="Click on the map to add a point"/>
+				</mx:FormItem>
+			</mx:Form>
+			<mx:Label id="status" bottom="10" text=""/>
+		</mx:VBox>
+	</viewer:WidgetTemplate>
+</viewer:BaseWidget>
+

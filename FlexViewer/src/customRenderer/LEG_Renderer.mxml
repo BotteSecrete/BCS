@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<mx:VBox xmlns:mx="http://www.adobe.com/2006/mxml" xmlns:fx="http://ns.adobe.com/mxml/2009"  styleName="cbGridStyle" horizontalAlign="center"> <!--initialize="init()"-->
+	<fx:Style>
+		.cbGridStyle
+		{
+			color : #FFFFFF;
+			chrome-color: #FFFFFF;	
+		}
+	</fx:Style>
+		
+	<fx:Script>
+		
+		<![CDATA[
+			import mx.collections.ArrayCollection;
+			import mx.events.ListEvent;
+			import mx.controls.Alert;
+			public var result:String="";
+			
+			[Bindable]
+			private var dpValue:ArrayCollection; 
+			
+			
+			// Override the set method for the data property.
+			override public function set data(value:Object):void 
+			{
+				Alert.show("dans set data","LEG_Renderer.mxml");
+				editor.setStyle("color",0xffffff);
+				dpValue = parentApplication.cbTest.dataProvider;
+				super.data = value;
+				if (value != null) 
+				{					
+					if (value.GEOL_LEG == null){
+						editor.selectedIndex = 0;
+						Alert.show("geol_leg null !","LEG_renderer.mxml");
+					}
+					else
+					{
+						Alert.show("geol_leg pas null !","LEG_renderer.mxml");
+						var currentValue:String = value.GEOL_LEG.toString();
+						var len:int = dpValue.length;
+						for (var i:int = 0; i < len; i++) 
+						{
+							if ((dpValue[i].data as String).toLowerCase() == currentValue.toLowerCase()) 
+							{
+								editor.selectedIndex = i;
+								break;
+							}
+						}
+					}
+					
+				}
+				editor.enabled = false;
+			} 
+			
+			
+			public function onChange():void 
+			{
+				var index:int = editor.selectedIndex;
+				result = dpValue[index].data;
+			}          
+		]]>
+	</fx:Script>
+	
+	<mx:ComboBox id="editor" name="cb" editable="false" styleName="cbGridStyle" dataProvider="{dpValue}" width="180" dropdownFactory="customRenderer.ListSearch" itemRenderer="mx.controls.Label" change="onChange()"/> 
+</mx:VBox>

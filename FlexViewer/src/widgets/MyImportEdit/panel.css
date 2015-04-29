@@ -1,0 +1,10 @@
+/* CSS file */
+@namespace s "library://ns.adobe.com/flex/spark";
+@namespace mx "library://ns.adobe.com/flex/mx";
+
+
+.tablePanel{
+	fontSize: 20;
+	color: #000000;
+	backgroung: green;
+}

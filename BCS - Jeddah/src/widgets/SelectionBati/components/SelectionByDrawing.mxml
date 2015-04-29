@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 xmlns:viewer="com.esri.viewer.*"
+		 xmlns:esri="http://www.esri.com/2008/ags"
+		 creationComplete="init(event)">
+	
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10" paddingRight="10" paddingTop="10" />
+	</s:layout>
+	
+	<fx:Declarations>
+		<!-- Placer ici les éléments non visuels (services et objets de valeur, par exemple). -->
+		<esri:SimpleFillSymbol id="sfs"
+							   alpha="0.5"
+							   color="0x000000"
+							   style="solid">
+			<esri:SimpleLineSymbol color="0xFF0000"/>
+		</esri:SimpleFillSymbol>
+		
+		<esri:SimpleMarkerSymbol id="highlightedSymbol"
+								 color="0xFF0000"
+								 style="circle">
+			<esri:SimpleLineSymbol/>
+		</esri:SimpleMarkerSymbol>
+		
+		<esri:SimpleMarkerSymbol id="defaultSymbol"
+								 alpha="0.5"
+								 color="0x0000FF"
+								 size="12"
+								 style="circle">
+			<esri:SimpleLineSymbol/>
+		</esri:SimpleMarkerSymbol>
+		
+		<esri:GraphicsLayer id="myGraphicLayer" />
+		<esri:GraphicsLayer id="myGraphicLayerPtModif" />
+		<esri:GraphicsLayer id="myGraphicLayerPt"/>
+		
+		<esri:DrawTool id="myDrawTool"
+					   drawStart="(event.currentTarget as DrawTool).graphicsLayer.clear()"
+					   drawEnd="drawEndHandler(event)"
+					   fillSymbol="{sfs}"
+					   graphicsLayer="{myGraphicLayer}"/>
+		
+		<esri:GeometryService id="geometryService"
+							  showBusyCursor="true"
+							  url="http://sampleserver6.arcgisonline.com/arcgis/rest/services/Utilities/Geometry/GeometryServer"
+							  fault="geometryService_faultHandler(event)"
+							  projectComplete="geometryService_projectCompleteHandler(event)"
+							  />
+		
+	</fx:Declarations>
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.events.DrawEvent;
+			import com.esri.ags.events.GeometryServiceEvent;
+			import com.esri.ags.events.LayerEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.FeatureLayer;
+			import com.esri.ags.tasks.Geoprocessor;
+			import com.esri.ags.tasks.QueryTask;
+			import com.esri.ags.tasks.supportClasses.ProjectParameters;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.ags.utils.GeometryUtil;
+			import com.esri.ags.utils.WebMercatorUtil;
+			import com.esri.viewer.BaseWidget;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.textClasses.TextRange;
+			import mx.events.FlexEvent;
+			import mx.events.ItemClickEvent;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.events.FaultEvent;
+			
+			import spark.components.Application;
+			
+			import widgets.Selection.SelectionWidget;
+			import widgets.Selection.components.SelectionResults;
+			import widgets.Selection.events.SelectionFeatureLayerEvent;
+			import widgets.Selection.utils.PagingQueryTask;
+			import widgets.Selection.utils.SelectionWidgetUtil;
+			
+			[Bindable] public var selectionLayers:Array = [];
+			[Bindable] public var selectionMethod:String;
+			
+			[Bindable] private var targetLayer:FeatureLayer;
+			
+			[Bindable] private var queryFields:Array = [];
+			
+			[Bindable] private var pagingQueryTask:PagingQueryTask = new PagingQueryTask;
+			
+			
+			public var project:ProjectParameters = new ProjectParameters();
+			
+			protected function init(event:FlexEvent):void
+			{
+				systemManager.addEventListener("alllayersadded",allLayersAddedHandler);
+//				myDrawTool.activate(DrawTool.EXTENT);
+			}
+			
+			private function allLayersAddedHandler(event:Event):void
+			{
+				targetLayerList.selectedIndex = 0;
+				onTargetLayerChange(event);
+			}
+			
+			private function onTargetLayerChange(event:Event):void
+			{
+				queryFields = [];
+				pagingQueryTask = new PagingQueryTask;
+				
+				var i:int = targetLayerList.selectedIndex;
+				targetLayer = selectionLayers[i].layer;	
+				
+				queryFields = selectionLayers[i].fields;
+				
+				targetLayer.removeEventListener(LayerEvent.UPDATE_START, featureLayer_updateStartHandler);
+				targetLayer.removeEventListener(LayerEvent.UPDATE_END, featureLayer_updateEndHandler);
+				targetLayer.addEventListener(LayerEvent.UPDATE_START, featureLayer_updateStartHandler);
+				targetLayer.addEventListener(LayerEvent.UPDATE_END, featureLayer_updateEndHandler);
+				
+			}
+			
+			protected function geometryService_projectCompleteHandler(event:GeometryServiceEvent):void
+			{
+				/*if (isNaN(event.result[0].x){
+				Alert.show("Impossible de faire la projection. Verifiez  les coordonnées en entrée!");}
+				}	
+				else {*/
+				
+//				Alert.show(""+event.result[0].geometry,"");
+				
+				var extent:Extent = event.result[0] as Extent;
+				
+				var query:Query = new Query();
+				query.geometry = extent;
+				
+				targetLayer.selectFeatures(query,selectionMethod,new AsyncResponder(onSelectResult, onSelectFault, targetLayer));
+				
+				myGraphicLayer.clear();
+			
+			}
+			
+			private function onSelectResult(info:Array, token:FeatureLayer = null):void
+			{
+				this.cursorManager.removeBusyCursor();
+				var fl:FeatureLayer = token;
+				SelectionWidgetUtil.zoomtoSelectedFeatures(fl);
+				
+				if (fl.selectedFeatures.length == 0)
+				{
+					Alert.show("Selection completed but found no features. Please check your parameters." , 
+						"Nothing Found", Alert.OK);
+				}
+			}
+			
+			private function onSelectFault(info:Object, token:Object = null):void
+			{
+				this.cursorManager.removeBusyCursor();
+				Alert.show("Could not complete Selection. Please try again.\n" + info.toString(), 
+					"Selection Error", Alert.OK);
+			}
+			
+			protected function geometryService_faultHandler(event:FaultEvent):void
+			{
+				Alert.show("Impossible de faire la projection.");
+			}
+			
+			protected function featureLayer_updateStartHandler(event:LayerEvent):void
+			{
+				this.cursorManager.setBusyCursor();
+				trace("featureLayer_updateStartHandler attributes");
+			}
+			
+			protected function featureLayer_updateEndHandler(event:LayerEvent):void
+			{
+				this.cursorManager.removeBusyCursor();
+				if (targetLayer.selectedFeatures.length > 0)
+				{
+					dispatchEvent(new SelectionFeatureLayerEvent(
+						SelectionFeatureLayerEvent.SHOW_RESULTS,targetLayer));
+				}
+				trace("featureLayer_updateEndHandler attributes");
+			}
+			
+			protected function drawEndHandler(event:DrawEvent):void
+			{
+				var extent:Extent = event.graphic.geometry as Extent;
+				
+				myDrawTool.deactivate();
+				tbb.selectedIndex = -1;
+				
+				var extArr:Array = [];
+				extArr[0] = extent;
+				
+				project.geometries = extArr;
+				project.outSpatialReference = new SpatialReference(32239);
+				geometryService.project(project);
+				
+			}
+			
+			protected function tbb_itemClickHandler(event:ItemClickEvent):void
+			{
+				if (tbb.selectedIndex < 0)
+				{
+					// when toggling a tool off, deactivate it
+					myDrawTool.deactivate();
+				}
+				else
+				{
+					switch (event.item.label)
+					{
+						
+						case "EXTENT":
+						{
+							myDrawTool.activate(DrawTool.EXTENT);
+							break;
+						}
+						case "FREEHAND_POLYGON":
+						{
+							myDrawTool.activate(DrawTool.FREEHAND_POLYGON);
+							break;
+						}	
+					}
+				}
+			}
+			
+			protected function tbb_clickHandler(event:MouseEvent):void
+			{
+				// TODO Auto-generated method stub
+				
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<s:HGroup width="300" 
+			  paddingBottom="5"
+			  verticalAlign="middle">
+		<s:Label text="Target Layer:"/>
+		<mx:ComboBox id="targetLayerList" width="100%"
+					 change="onTargetLayerChange(event)"
+					 dataProvider="{selectionLayers}"
+					 labelField="label"/>
+	</s:HGroup>
+	
+	<s:HGroup width="100%" paddingBottom="5">
+		<!--<s:Button id="tbb"
+				  click="tbb_clickHandler(event)"
+				  icon="@Embed(source='assets/images/i_draw_rect.png')"
+				  label="EXTENT">
+		</s:Button>-->
+		
+		<mx:ToggleButtonBar id="tbb"
+							itemClick="tbb_itemClickHandler(event)"
+							labelField="null"
+							selectedIndex="-1"
+							toggleOnClick="true">
+			<fx:Object icon="@Embed(source='assets/images/i_draw_rect.png')" label="EXTENT"/>
+			<fx:Object icon="@Embed(source='assets/images/i_draw_freepoly.png')" label="FREEHAND_POLYGON"/>
+		</mx:ToggleButtonBar>
+	</s:HGroup>
+</s:Group>
+
+<!--
+/*var myGraphic:Graphic;
+for (var i:int=0;i<event.result.length;i++)
+{
+myGraphic = new Graphic();
+myGraphic.geometry = event.result[i];
+myGraphic.attributes = myGraphicLayerPt.graphicProvider[i].attributes;
+myGraphicLayerPtModif.add(myGraphic);
+
+//					Alert.show("event result : "+event.result[i] 
+//						+"\n myGraphic : "+myGraphic.geometry 
+//						+"\n myGraphicLayerPtModif : "+myGraphicLayerPtModif.graphicProvider[i].attributes.HOLE_ID
+//						+"\n myGraphicLayerPt : "+myGraphicLayerPt.graphicProvider[i].geometry,"");
+}
+
+Alert.show("prout : "+myGraphicLayerPtModif.graphicProvider.length
++"\n graphicProvider 1 : "+myGraphicLayerPtModif.graphicProvider[15].geometry
++"\n graphicProvider 4 : "+myGraphicLayerPtModif.graphicProvider[27].geometry,"");*/
+//				var myGraphic:Graphic=new Graphic();
+//				myGraphicLayer.add(myGraphic);
+//				map.centerAt(event.result[0]);
+//				map.infoWindow.show(event.result[0]);
+//				map.infoWindow.label = "Coordonnées du point";
+//				
+//				map.infoWindowContent=composition;
+//				valeurX.text = event.result[0].x.toString();
+//				valeurY.text = event.result[0].y.toString();
+//				
+//				myGraphic.geometry = event.result[0];
+//				Alert.show(event.result[0].x.toString());
+
+
+//dans le cas ou il ya plusiquers ecouteurs..
+//				if(!map.infoWindow.hasEventListener(Event.CLOSE))
+//					
+//					map.infoWindow.addEventListener(Event.CLOSE,oncloseWindowHandler);
+
+//map.infoWindow.addEventListener(FaultEvent, onCloseWindowHandler);
+
+
+//}
+
+
+
+var queryTask:QueryTask = new QueryTask("https://sygdev.systra.info/arcgis/rest/services/TSS/TSS_Baku_TestImport_FA_141027/MapServer/0");
+var query:Query = new Query();
+query.where = "HOLE_ID IS NOT NULL";
+query.returnGeometry = true;
+query.outFields = [ "*" ];
+queryTask.execute(query, new AsyncResponder(onResult, onFault));
+
+
+function onResult(featureSet:FeatureSet, token:Object = null):void
+{
+var mptArray:Array = [];
+for each (var myGraphic:Graphic in featureSet.features)
+{
+myGraphic.symbol = defaultSymbol;
+myGraphicLayerPt.add(myGraphic);
+
+}
+
+for (var i:int=0;i<myGraphicLayerPt.graphicProvider.length;i++)
+{
+mptArray[i] = myGraphicLayerPt.graphicProvider[i].geometry;
+}
+
+//					project.geometries = mptArray;
+//					project.outSpatialReference = new SpatialReference(102100);
+
+//					project.geometries = mptArray;
+//					project.outSpatialReference = new SpatialReference(102100);
+//					
+//					geometryService.project(project);
+
+}
+function onFault(info:Object, token:Object = null):void
+{
+Alert.show(info.toString());
+}
+
+
+-->
+

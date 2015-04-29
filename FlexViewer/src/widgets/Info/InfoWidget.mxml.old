@@ -1,0 +1,3022 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+///////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2010-2011 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget  xmlns:fx="http://ns.adobe.com/mxml/2009"
+					xmlns:s="library://ns.adobe.com/flex/spark"
+					xmlns:mx="library://ns.adobe.com/flex/mx"
+					xmlns:viewer="com.esri.viewer.*"
+					xmlns:esri="http://www.esri.com/2008/ags"
+					xmlns:MyComps="src"
+					xmlns:utils="com.abdulqabiz.utils.*"
+					widgetConfigLoaded="basewidget_widgetConfigLoaded()">
+	
+	
+		<fx:Style> 
+		@namespace s "library://ns.adobe.com/flex/spark";
+		@namespace mx "library://ns.adobe.com/flex/mx";
+		
+		
+		s|Panel
+		{
+			title-style-name: "myTitle";
+			font-size: 16;
+			
+		}
+		
+		.myTitle
+		{
+			font-size: 16;
+		}	
+		
+		mx|Alert{
+			borderColor: red;
+			backgroundColor: yellow;
+			dropShadowVisible: true;
+			chromeColor: red;
+			titleStyleName: alertTitle;
+			messageStyleName: alertMessage;
+			buttonStyleName: alertButton;
+		}
+		.alertTitle{
+			fontSize: 20;
+			fontWeight: bold;
+			color: yellow;
+		}
+		.alertMessage {
+			fontWeight: bold;
+			color: red;
+		}
+		.alertButton {
+			color: yellow;
+		}
+		
+		
+	</fx:Style>
+	
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.Graphic;
+			import com.esri.ags.Map;
+			import com.esri.ags.SpatialReference;
+			import com.esri.ags.components.supportClasses.InfoWindow;
+			import com.esri.ags.events.FeatureLayerEvent;
+			import com.esri.ags.events.LayerEvent;
+			import com.esri.ags.events.MapMouseEvent;
+			import com.esri.ags.geometry.Extent;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.FeatureLayer;
+			import com.esri.ags.layers.GraphicsLayer;
+			import com.esri.ags.layers.Layer;
+			import com.esri.ags.layers.OpenStreetMapLayer;
+			import com.esri.ags.layers.supportClasses.CodedValue;
+			import com.esri.ags.layers.supportClasses.CodedValueDomain;
+			import com.esri.ags.layers.supportClasses.FeatureEditResults;
+			import com.esri.ags.layers.supportClasses.RangeDomain;
+			import com.esri.ags.portal.supportClasses.PopUpFieldFormat;
+			import com.esri.ags.skins.supportClasses.AttachmentMouseEvent;
+			import com.esri.ags.symbols.Symbol;
+			import com.esri.ags.tasks.QueryTask;
+			import com.esri.ags.tasks.supportClasses.Query;
+			import com.esri.ags.tools.DrawTool;
+			import com.esri.ags.utils.WebMercatorUtil;
+			import com.esri.viewer.AppEvent;
+			import com.esri.viewer.ViewerContainer;
+			import com.esri.viewer.managers.WidgetManager;
+			import com.fnicollet.toaster.message.avast.ToastMessageAvast;
+			import com.fnicollet.toaster.message.ubuntu.ToastMessageUbuntu;
+			
+			import flash.filters.GlowFilter;
+			import flash.net.navigateToURL;
+			import flash.sampler.NewObjectSample;
+			import flash.utils.setTimeout;
+			
+			import mx.charts.AreaChart;
+			import mx.charts.AxisRenderer;
+			import mx.charts.CategoryAxis;
+			import mx.charts.GridLines;
+			import mx.charts.Legend;
+			import mx.charts.LineChart;
+			import mx.charts.LinearAxis;
+			import mx.charts.LogAxis;
+			import mx.charts.chartClasses.AxisBase;
+			import mx.charts.chartClasses.IAxis;
+			import mx.charts.chartClasses.NumericAxis;
+			import mx.charts.renderers.CircleItemRenderer;
+			import mx.charts.series.AreaSeries;
+			import mx.charts.series.LineSeries;
+			import mx.charts.series.PlotSeries;
+			import mx.collections.ArrayCollection;
+			import mx.collections.XMLListCollection;
+			import mx.containers.Box;
+			import mx.containers.Canvas;
+			import mx.containers.Form;
+			import mx.containers.FormItem;
+			import mx.containers.Grid;
+			import mx.containers.GridItem;
+			import mx.containers.GridRow;
+			import mx.containers.HBox;
+			import mx.containers.TitleWindow;
+			import mx.containers.VBox;
+			import mx.containers.VDividedBox;
+			import mx.controls.Alert;
+			import mx.controls.Button;
+			import mx.controls.CheckBox;
+			import mx.controls.ComboBox;
+			import mx.controls.DataGrid;
+			import mx.controls.DateField;
+			import mx.controls.Menu;
+			import mx.controls.PopUpMenuButton;
+			import mx.controls.Text;
+			import mx.controls.TextArea;
+			import mx.controls.TextInput;
+			import mx.controls.ToolTip;
+			import mx.core.ClassFactory;
+			import mx.core.ScrollPolicy;
+			import mx.core.UITextField;
+			import mx.effects.easing.Bounce;
+			import mx.effects.easing.Exponential;
+			import mx.events.CalendarLayoutChangeEvent;
+			import mx.events.CloseEvent;
+			import mx.events.CollectionEvent;
+			import mx.events.DataGridEvent;
+			import mx.events.EffectEvent;
+			import mx.events.FlexEvent;
+			import mx.events.IndexChangedEvent;
+			import mx.events.ItemClickEvent;
+			import mx.events.ListEvent;
+			import mx.events.MenuEvent;
+			import mx.events.ResizeEvent;
+			import mx.events.ValidationResultEvent;
+			import mx.formatters.DateFormatter;
+			import mx.formatters.NumberFormatter;
+			import mx.graphics.ImageSnapshot;
+			import mx.graphics.SolidColor;
+			import mx.graphics.SolidColorStroke;
+			import mx.graphics.codec.PNGEncoder;
+			import mx.managers.CursorManager;
+			import mx.managers.PopUpManager;
+			import mx.messaging.channels.AMFChannel;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.AsyncToken;
+			import mx.rpc.Fault;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			import mx.rpc.http.mxml.HTTPService;
+			import mx.states.AddChild;
+			import mx.utils.Base64Encoder;
+			import mx.utils.ObjectUtil;
+			import mx.utils.object_proxy;
+			import mx.validators.NumberValidator;
+			
+			import spark.components.Panel;
+			import spark.components.TitleWindow;
+			import spark.components.VGroup;
+			
+			import DataGridToolTipColumn;
+			
+			import ImageRadioButton;
+			
+			import customRenderer.MyTabComponent;
+			import customRenderer.RadioDgRenderer;
+			import customRenderer.SizeRenderer;
+			
+			import flashx.textLayout.debug.assert;
+			
+			import flexlib.charts.HorizontalAxisDataSelector;
+			
+			import mySkins.MySkins2;
+			
+			import widgets.Edit.EditWidgetAttachmentInspectorSkin;
+			import widgets.MyWidget.MyFirstWidget;
+			
+			// Define a variable to hold the cursor ID.
+			private var cursorID:Number = 0;
+			
+			private var lastClicked:String;
+			
+			[Embed(source='assets/images/rightArrow.png')]
+			private static var rightArrow:Class;
+			
+			[Embed(source='assets/images/leftArrow.png')]
+			private static var leftArrow:Class;
+			// Embed the cursor symbol.
+			
+			[Embed(source="assets/images/ajax-loader.gif")]
+			private var waitCursorSymbol:Class;	
+			
+			[Bindable] 
+			public var attachmentsLabel:String;
+			
+			[Bindable] 
+			public static var featLayer:FeatureLayer;
+			public static var mapLayer:FeatureLayer;
+			
+			private var geol:FeatureLayer;
+			private var samp:FeatureLayer;
+			private var grag:FeatureLayer;
+			private var grat:FeatureLayer;
+			private var ispt:FeatureLayer;
+			private var core:FeatureLayer;
+			private var cond:FeatureLayer;
+			private var struct:FeatureLayer;
+			
+			
+			var qResultsFI:Array = [];
+			var qResultsUIZ:Array = [];
+			var qResultsUB:Array = [];
+			var qResultsHB:Array = [];
+			var qResultsBC:Array = [];
+			var qResultsSR:Array = [];
+			var qResultsRT:Array = [];
+			var qResultsSI:Array = [];
+			var qResultsFM:Array = [];
+			var qResultsSRS:Array = [];
+			var qResultsSRD:Array = [];
+			var qResultsFMS:Array = [];
+			var qResultsFMD:Array = [];
+			var qResultsDR:Array = [];
+			var qResultsTF:Array = [];
+			var qResultsOD:Array = [];
+			var qResultsCD:Array = [];
+			
+			var batiArray:Array = [];
+			var structArray:Array = [];
+			var condArray:Array = [];
+			
+			var field:String;
+			var indRow:Number;
+			
+			
+			var isIn:Boolean;
+			var isInCond:Boolean;
+			
+			[Bindable]
+			public static var dpProj:Array = [];
+			
+			
+			
+			[Bindable]
+			public static var isOpened:Boolean;
+			
+			private var dpSiteLocation:ArrayCollection =  new ArrayCollection();			
+			[Bindable]
+			
+			private var featLayerGraphic:Graphic;
+			
+			private var changedStatus:Boolean;
+			private var clickToAdd:Boolean;
+			private var coordToMove:Boolean;
+			private var clickToMove:Boolean;
+			private var objectIdToMove:Number;
+			private var dontDisplay:Boolean = false;
+			private var opened:Boolean = false;
+			public static var index:Object = new Object();
+			private var HButtonBox:HBox = new HBox();
+			private var addResults:Number = -1;
+			private var VPanelBox:VBox = new VBox();
+			private var tooltip:mx.controls.ToolTip;  
+			private var form:Form = new Form();
+			private var grid:Grid = new Grid();
+			private var sampGridSource:ArrayCollection = new ArrayCollection();
+			private var sampGridCopie:ArrayCollection = new ArrayCollection();		
+			private var geolGridSource:ArrayCollection = new ArrayCollection();
+			private var geolGridCopie:ArrayCollection = new ArrayCollection();
+			private var isptGridSource:ArrayCollection = new ArrayCollection();
+			private var isptGridCopie:ArrayCollection = new ArrayCollection();
+			private var sizeRen:ClassFactory;
+			private var coreGridSource:ArrayCollection = new ArrayCollection();
+			private var coreGridCopie:ArrayCollection = new ArrayCollection();
+			var bord:Canvas = new Canvas();
+			var bordbis:Canvas = new Canvas();
+			var myMiniMap:Map = new Map();
+			var myGraphicsLayer:GraphicsLayer = new GraphicsLayer();
+			var minLayer:FeatureLayer; 
+			
+			
+			[Bindable]
+			private var screenWidth:Number;
+			
+			[Bindable]
+			private var screenHeight:Number;			
+			
+			
+			private function basewidget_widgetConfigLoaded():void
+			{
+				Alert.show("basewidget_widgetConfigLoaded", "Debugg");
+				map.addEventListener(MapMouseEvent.MAP_CLICK,map_mapClickHandler);
+				//Alert.show("Onload");
+				attachmentsLabel = getDefaultString("attachmentsLabel");
+				attachmentInspector.addEventListener("attributeGroupClicked", attributeGroupClickedHandler);
+				addEventListener("attachmentGroupClicked", attachmentGroupClickedHandler);
+				
+				
+				parentApplication.addEventListener(ResizeEvent.RESIZE, resizeApplication);
+				map.infoWindow.hide();
+				clickToAdd = false;
+				clickToMove = false;
+				
+				if(!opened){
+					index = parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument;
+					screenWidth = stage.stageWidth;
+					screenHeight = stage.stageHeight;
+				}
+				
+				index.leftPan.addEventListener(MouseEvent.CLICK, clickClosePanelHandler)
+				HButtonBox.id = "HBBox";
+				HButtonBox.name = "HBBox";
+				VPanelBox.id = "VPBox";
+				VPanelBox.name = "VPBox";
+				VPanelBox.percentHeight = 90;
+				VPanelBox.percentWidth = 95;
+				VPanelBox.right = 0;
+				VPanelBox.top = 20;
+				
+				var blueLoginPanel:CSSStyleDeclaration = new CSSStyleDeclaration;
+				blueLoginPanel.setStyle("corneRadius",10);
+				blueLoginPanel.setStyle("chromeColor",0x32b4de);
+				blueLoginPanel.setStyle("color",0xFFFFFF);
+				blueLoginPanel.setStyle("backgroundColor",0xffffff);
+				blueLoginPanel.setStyle("borderVisible", true);
+				blueLoginPanel.setStyle("borderColor", 0x32b4de);
+				blueLoginPanel.setStyle("borderAlpha", 0.8);
+				blueLoginPanel.setStyle("dropShadowVisible", true);
+				index.panel.setStyle("styleName",blueLoginPanel)
+				
+				featLayer = map.getLayer("BatiInEdition") as FeatureLayer;
+				featLayer.token = configData.opLayers[0].token;
+//				mapLayer = map.getLayer("BatiValidated") as FeatureLayer;
+				featLayer.disableClientCaching = true;
+				//mapLayer.addEventListener(LayerEvent.LOAD, mLayerLoadedHandler);
+				
+				//mLayer.addEventListener(LayerEvent.LOAD, mLayerLoadedHandler);
+				
+				}
+			
+			private function map_mapClickHandler(event:MapMouseEvent):void
+			{
+				Alert.show("map_mapClickHandler","Debugg");
+				// We create a bounding box around where the user click to intersect the feature's point.
+				const point:Point = map.toScreen(map.toMapFromStage(event.stageX, event.stageY));
+				var topLeft:MapPoint = map.toMap(new Point(point.x - 10, point.y + 10));
+				var bottomRight:MapPoint = map.toMap(new Point(point.x + 10, point.y - 10));
+				const spatialReference:SpatialReference = map.spatialReference;
+				var selectionExtent:Extent = WebMercatorUtil.webMercatorToGeographic(new Extent(topLeft.x, topLeft.y, bottomRight.x, bottomRight.y, spatialReference)) as Extent; // create an extent of the clicked point
+				queryMapClick.geometry = selectionExtent;
+				featLayer.selectionColor = 0x19EBEF;
+				featLayer.selectFeatures(queryMapClick);
+				
+//				if(!index.btn.label == "Close")
+//				{
+//					map.infoWindow.hide();
+//				}
+				featLayer.addEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler);
+//				mapLayer.addEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler);
+			}
+			
+			private function featLayerSelectFault(fault:Fault, token:Object = null):void
+			{
+				if(index.panel.visible)
+				{
+					if(index.btn.label == "Close")
+					{
+						panelIn.play();
+						index.btnArrow.setStyle("upSkin",leftArrow);
+						index.btnArrow.setStyle("downSkin",leftArrow);
+						index.btnArrow.setStyle("overSkin",leftArrow);
+						index.btnArrow.setStyle("disableSkin",leftArrow);
+					}
+					fadeOut.play();
+				}
+			}
+			
+			private function createInfoWindow(k:uint, event:FeatureLayerEvent, ndFeatSel:Number):void
+			{	
+				Alert.show("createInfoWindow","Debugg");
+				map.addEventListener(MapMouseEvent.MAP_CLICK,map_mapClickHandler);
+				AppEvent.addListener(AppEvent.COLLAPSE_PANEL_RESIZE, resizeFormHandler);
+				openStructTable();
+				openCondTable();
+				
+				form = new Form();
+				form.id = "testWindow";
+				
+				
+				index.ws0.width = index.collapsingPanel.explicitWidth;
+				index.ws0.label = "Edit building information, "+event.features[k].attributes.OBJECTID.toString();
+				form.setStyle('horizontalScrollPolicy', ScrollPolicy.AUTO);
+				form.name = "testWindow";
+				
+				if (ndFeatSel>1)
+				{
+					var nextPrevBut:FormItem = new FormItem();
+					var hBox11:HBox = new HBox();
+					var next:Button = new Button(); 
+					next.label=">";
+					var prev:Button = new Button(); 
+					prev.label="<";
+					var num:Text = new Text();
+					num.text = (k+1).toString() +"/" + ndFeatSel.toString();
+					hBox11.addChild(prev);
+					hBox11.addChild(num);
+					hBox11.addChild(next);
+					form.addChild(hBox11);
+					next.addEventListener(MouseEvent.CLICK,nextWindowToDisplay);
+					prev.addEventListener(MouseEvent.CLICK,prevWindowToDisplay);
+					
+					function nextWindowToDisplay(ev:MouseEvent):void
+					{
+						if(k==(ndFeatSel-1)){
+							k=0;
+						}else{
+							k++;
+						}
+						
+						createInfoWindow(k,event,ndFeatSel);
+					}
+					
+					function prevWindowToDisplay(ev:MouseEvent):void
+					{
+						if(k==0){
+							k=ndFeatSel-1;
+						}else{ 
+							k--;
+						}
+						createInfoWindow(k,event,ndFeatSel);
+					}
+				}
+				
+				var hbox12:HBox = new HBox();
+				
+				var IDItem:FormItem = new FormItem();
+				IDItem.label="Building Code";
+				var IDText:mx.controls.TextInput = new mx.controls.TextInput();
+				IDText.setStyle('color',0x000000);
+				IDText.width = 100;
+				if (event.features[k].attributes.CODE == null)
+				{
+					IDText.text = "";
+				}
+				else
+				{
+					IDText.text = event.features[k].attributes.CODE;
+				}
+				IDText.name = "IDTBC";
+				IDText.editable = false;
+				//	IDItem.required = true;
+				//IDItem.setStyle('indicatorGap',43);
+				IDItem.setStyle('paddingRight',13);
+				IDItem.addChild(IDText);
+				
+				var gridItemDate:GridItem = new GridItem();
+				gridItemDate.setStyle("verticalAlign","middle");
+				var dateLabel:mx.controls.Label = new mx.controls.Label();
+				dateLabel.text = "Date of survey : ";
+				gridItemDate.addChild(dateLabel);
+				
+				var dateChooseItem:GridItem = new GridItem();
+				dateChooseItem.setStyle("verticalAlign","middle");
+				var dateChoose:DateField = new DateField();
+				dateChoose.setStyle("color","0x000000");
+				dateChoose.formatString = "YYYY-MM-DD";
+				if (event.features[k].attributes.DATE_SURVEY != null)
+				{
+					var myDate:Date = new Date(event.features[k].attributes.DATE_SURVEY);
+					var myDF:DateFormatter = new DateFormatter();
+					myDF.formatString = "YYYY-MM-DD";
+					
+					dateChoose.text = myDF.format(myDate);
+				}
+				dateChoose.yearNavigationEnabled = true;
+				dateChoose.setStyle('paddingRight',13);
+				dateChoose.editable = false;
+				dateChooseItem.addChild(gridItemDate);
+				dateChooseItem.addChild(dateChoose);
+				
+				var IDName:FormItem = new FormItem();
+				IDName.label="Name of surveyor";
+				var IDTxt:mx.controls.TextInput = new mx.controls.TextInput();
+				IDTxt.setStyle('color',0x000000);
+				IDTxt.width = 100;
+				if (event.features[k].attributes.NAME_SURVEY == null)
+				{
+					IDTxt.text = "";
+				}
+				else
+				{
+					IDTxt.text = event.features[k].attributes.NAME_SURVEY
+				}
+				IDTxt.width = 100;
+				IDTxt.editable = false;
+				IDTxt.name = "IDTName";
+				//	IDItem.required = true;
+				//IDItem.setStyle('indicatorGap',43);
+				IDItem.setStyle('paddingRight',13);
+				IDName.addChild(IDTxt);
+				
+				hbox12.addChild(IDItem);
+				hbox12.addChild(dateChooseItem);
+				hbox12.addChild(IDName);
+				
+				var hboxAddress:HBox = new HBox();
+				
+				var AddLab:FormItem = new FormItem();
+				AddLab.label="Address ";
+				var AddTxt:mx.controls.TextInput = new mx.controls.TextInput();
+				AddTxt.setStyle('color',0x000000);
+				if (event.features[k].attributes.Address == null)
+				{
+					AddTxt.text = "";
+				}
+				else
+				{
+					AddTxt.text = event.features[k].attributes.Address;
+				}
+				AddTxt.width = 500;
+				AddTxt.editable = false;
+				AddTxt.name = "AddTxt";
+				//	IDItem.required = true;
+				AddLab.setStyle('indicatorGap',51);
+				AddLab.setStyle('paddingRight',13);
+				AddLab.addChild(AddTxt);
+				hboxAddress.addChild(AddLab);
+				
+				var hboxContact:HBox = new HBox();
+				var ContactLab:FormItem = new FormItem();
+				ContactLab.label="Contact person ";
+				var ContactTxt:mx.controls.TextInput = new mx.controls.TextInput();
+				ContactTxt.setStyle('color',0x000000);
+				if (event.features[k].attributes.Contact == null)
+				{
+					ContactTxt.text = "";
+				}
+				else
+				{
+					ContactTxt.text = event.features[k].attributes.Contact;
+				}
+				ContactTxt.width = 500;
+				ContactTxt.editable = false;
+				ContactTxt.name = "ContactTxt";
+				//	IDItem.required = true;
+				//IDItem.setStyle('indicatorGap',43);
+				IDItem.setStyle('paddingRight',13);
+				ContactLab.addChild(ContactTxt);
+				hboxContact.addChild(ContactLab);
+				
+				var hBoxAttach:HBox = new HBox();
+				var attachButGene:Button = new Button();
+				attachButGene.name = "attachButGene";
+				attachButGene.label = "Edit attachments";
+//				attachButGene.addEventListener(MouseEvent.CLICK,editAttachFeaturesHandler);
+				hBoxAttach.addChild(attachButGene);
+				hBoxAttach.visible = true;
+				
+				var hBoxBas:HBox = new HBox();
+				hBoxBas.name = "hBoxBas";
+				
+				var hBoxBtn:HBox = new HBox();
+				hBoxBtn.setStyle('paddingRight',100);
+				
+				var GnrlBtn:Button = new Button();
+				GnrlBtn.name = "general";
+				GnrlBtn.label = "General";
+				GnrlBtn.addEventListener(MouseEvent.CLICK,onButtClick);
+				
+				var StructBtn:Button = new Button();
+				StructBtn.name = "structure";
+				StructBtn.label = "Structure";
+				StructBtn.addEventListener(MouseEvent.CLICK,onButtClick);
+				
+				var CdtnBtn:Button = new Button();
+				CdtnBtn.name = "condition";
+				CdtnBtn.label = "Condition";
+				CdtnBtn.addEventListener(MouseEvent.CLICK,onButtClick);
+				
+				hBoxBtn.addChild(GnrlBtn);
+				hBoxBtn.addChild(StructBtn);
+				hBoxBtn.addChild(CdtnBtn);
+				
+				var hBoxGenRem:HBox = new HBox();
+				hBoxGenRem.name = "gridRow8";
+				var genRemItem:GridItem = new GridItem();
+				genRemItem.setStyle("verticalAlign", "middle");
+				var genLabel:mx.controls.Label = new mx.controls.Label();
+				genLabel.text = "General remarks : ";
+				genRemItem.addChild(genLabel);
+				hBoxGenRem.addChild(genRemItem);
+				
+				var genRemValue:GridItem = new GridItem();
+				var genRemInput:spark.components.TextArea = new spark.components.TextArea();
+				
+				genRemInput.setStyle('color', 0x000000);
+				if (event.features[k].attributes.Comments == null)
+				{
+					genRemInput.text = "";
+				}
+				else
+				{
+					genRemInput.text = event.features[k].attributes.Comments;
+				}
+				genRemValue.colSpan = (4);
+				genRemInput.name = "genRemInput";
+				genRemInput.editable = false;
+				genRemInput.percentWidth = 100;
+				genRemInput.height = 60;
+				genRemValue.addChild(genRemInput);
+				
+				hBoxGenRem.addChild(genRemValue);
+				
+				var hBoxCB:HBox = new HBox();
+				
+				var completeCheck:spark.components.CheckBox = new spark.components.CheckBox();
+				completeCheck.label = "Terminated";
+				completeCheck.setStyle('skinClass', Class(mySkins.MySkins2));
+				
+				hBoxCB.addChild(completeCheck);
+				
+				var checkCheck:spark.components.CheckBox = new spark.components.CheckBox();
+				checkCheck.label = "Returned";
+				checkCheck.setStyle('skinClass', Class(mySkins.MySkins2));
+				
+				hBoxCB.addChild(checkCheck);
+				
+				var validCheck:spark.components.CheckBox = new spark.components.CheckBox();
+				validCheck.label = "Validated";
+				validCheck.setStyle('skinClass', Class(mySkins.MySkins2));
+				
+				hBoxCB.addChild(validCheck);
+				
+				var reportCheck:spark.components.CheckBox = new spark.components.CheckBox();
+				reportCheck.label = "Report";
+				reportCheck.setStyle('skinClass', Class(mySkins.MySkins2));
+				
+				hBoxCB.addChild(reportCheck);
+				completeCheck.selected = event.features[k].attributes.Terminated == "OUI" ? true : false; 
+				checkCheck.selected = event.features[k].attributes.Returned == "OUI" ? true : false; 
+				validCheck.selected = event.features[k].attributes.Validated == "OUI" ? true : false; 
+				reportCheck.selected = event.features[k].attributes.Returned == "OUI" ? true : false;
+				
+				
+				
+				checkCheck.enabled = false; 
+				validCheck.enabled = false; 
+				reportCheck.enabled = false;
+				
+//				if(event.features[k].attributes.COMPLETE == "NON")
+//				{
+//					status.text="Borehole uncompleted"
+//				}
+//				else if ((event.features[k].attributes.COMPLETE == "OUI") && (event.features[k].attributes.VALIDE == "NON"))
+//				{
+//					status.text="Borehole completed"
+//				}
+//				else if(event.features[k].attributes.VALIDE == "OUI")
+//				{
+//					status.text="Borehole validated"
+//				}
+				
+				
+				hBoxBas.addChild(hBoxBtn);
+				hBoxBas.addChild(hBoxCB);
+				
+				form.addChild(hbox12);
+				form.addChild(hboxAddress);
+				form.addChild(hboxContact);
+				form.addChild(hBoxGenRem);
+				form.addChild(hBoxAttach);
+				form.addChild(hBoxBas);
+				
+				function resizeFormHandler(ev:AppEvent):void
+				{
+					if(index.collapsingPanel.fullScreen)
+					{
+						if(index.ws0.owns(bord))
+							index.ws0.removeChild(bord);
+						
+						form.percentWidth = 100; 
+						
+						bordbis.setStyle("borderStyle","solid");
+						bordbis.setStyle("borderColor", 0xd22228);
+						bordbis.setStyle("borderThickness", 10);
+						bordbis.setStyle("cornerRadius",40);
+						if (!bord.owns(bordbis))
+							bord.addChild(bordbis);
+						
+						bord.horizontalScrollPolicy = ScrollPolicy.OFF;
+						bord.verticalScrollPolicy = ScrollPolicy.OFF;
+						bord.setStyle("borderStyle","solid");
+						bord.setStyle("borderColor", 0xd22228);
+						bord.setStyle("borderThickness", 3);
+						bord.setStyle("cornerRadius",40);
+						index.ws0.addChild(bord);
+						bord.minWidth = 150;
+						bord.percentWidth = bordbis.percentWidth = 100;
+						bord.height = bordbis.height = form.height - 10;
+						myMiniMap.percentHeight = 100;
+						myMiniMap.visible = true;
+						myMiniMap.navigationClass = null;
+						
+						//			minLayer = new FeatureLayer(featLayer.url, featLayer.proxyURL, featLayer.token) as FeatureLayer;
+						
+						var minLayer = map.getLayer("BatiInEdition") as FeatureLayer;
+						
+						myMiniMap.addLayer(new OpenStreetMapLayer());
+						myMiniMap.addLayer(minLayer);
+						
+						myMiniMap.zoomTo(event.features[k].geometry);
+						myMiniMap.extent = event.features[k].geometry.extent.expand(1.5);
+						
+						
+						myMiniMap.logoVisible = false;
+						myMiniMap.scaleBarVisible = false;
+						myMiniMap.zoomSliderVisible = false;
+						
+						myMiniMap.attributionVisible = false;
+						
+						if (!bord.owns(myMiniMap))
+							bord.addChild(myMiniMap);
+					}
+					else
+					{
+						if(index.ws0.owns(bord))
+						{
+							myGraphicsLayer.clear();
+							myMiniMap.removeLayer(minLayer);
+							//bord.removeChild(myMiniMap);
+							index.ws0.removeChild(bord); 
+							form.percentWidth = index.ws0.percentWidth;
+						}
+					}
+				}// fin de resizeFormHandler
+				
+				function openStructTable():void
+				{
+					var url:String = featLayer.url;
+					var indStruct:int;
+					for(var i:int=0; i<featLayer.layerDetails.relationships.length; i++)
+					{
+						if(featLayer.layerDetails.relationships[i].name == "BCS_Baku.DBO.Structure")
+						{
+							indStruct = featLayer.layerDetails.relationships[i].relatedTableId;
+							url = url.split("Feature")[0];
+							url += "FeatureServer/" + indStruct;
+							struct = new FeatureLayer(url, null, null) as FeatureLayer;
+							struct.token = configData.opLayers[0].token;
+							struct.disableClientCaching = true;
+							struct.refresh();
+							var ind:Number;
+							break;
+						} 
+						else 
+						{
+							Alert.show("Can't find Structure table, sorry... Please contact administrator");	
+						}
+					}
+				}
+				
+				function openCondTable():void
+				{
+					var url:String = featLayer.url;
+					var indCond:int;
+					for(var i:int=0; i<featLayer.layerDetails.relationships.length; i++)
+					{
+						if(featLayer.layerDetails.relationships[i].name == "BCS_Baku.DBO.Condition")
+						{
+							indCond = featLayer.layerDetails.relationships[i].relatedTableId;
+							url = url.split("Feature")[0];
+							url += "FeatureServer/" + indCond;
+							cond = new FeatureLayer(url, null, null) as FeatureLayer;
+							cond.token = configData.opLayers[0].token;
+							cond.disableClientCaching = true;
+							cond.refresh();
+							var ind:Number;
+							break;
+						} 
+						else 
+						{
+							//			Alert.show("Can't find Condition table, sorry... Please contact administrator");	
+						}
+					}
+				}				
+				
+				function editAttachFeatures(ev:MouseEvent):void
+				{
+					if(clickToAdd){
+						clickToAdd = false;
+					}
+					if (clickToMove)
+					{
+						clickToMove =  false;
+					}
+					dispatchEvent(new Event("attachmentGroupClicked", true, true));
+				}				
+				
+				map.infoWindow.addEventListener(flash.events.Event.CLOSE, infoWindowCloseButtonClickHandler)
+				
+				function onButtClick(ev:Event):void
+				{
+					switch (ev.target.name)
+					{
+						case "general":
+							displayGeneralInfo(k,event,12);
+							break;
+						case "structure":
+							displayStructTable(k,event,42);
+							break;
+						case "condition":
+							displayConditionTable(k,event,23);
+							break;
+					}
+				}// fin de onButtClick
+				
+			}//End createInfoWindow
+	
+			public function myFeatureLayer_selectionCompleteHandler(event:FeatureLayerEvent):void
+			{	
+				Alert.show("myFeatureLayer_selectionCompleteHandler","Debugg");
+				if(featLayer.selectedFeatures.length == 0)
+				{
+					map.infoWindow.hide();
+				}
+				var ndFeatSel:uint = event.target.selectedFeatures.length;
+				var numFeatDisp:uint = 0;
+				status.text = ndFeatSel.toString() + " feature(s) selected";
+				
+				if(ndFeatSel > 0)//cas où il y a au moins une entité sélectionnée
+				{
+					createInfoWindow(numFeatDisp, event, ndFeatSel)
+				}
+				
+			}//End myFeatureLayer_SelectionComplete	
+			
+			
+			private function infoWindowCloseButtonClickHandler(event:Event):void
+			{
+				map.infoWindow.removeEventListener(flash.events.Event.CLOSE, infoWindowCloseButtonClickHandler);
+				featLayer.clearSelection();
+				if(clickToAdd){
+					clickToAdd = false;
+				}
+				if (clickToMove)
+				{
+					clickToMove =  false;
+				}
+				status.text="";
+				featLayer.outFields = ["*"];
+				map.getLayer("HoleValidated").refresh();
+				map.infoWindow.hide();
+				featLayer.clearSelection();
+				featLayer.refresh();
+				
+				featLayer.removeEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler);
+				
+				if(index.btn.label == 'Close')
+				{
+					panelIn.play();
+					panelIn.addEventListener(EffectEvent.EFFECT_END,goFadeOut);
+					index.btnArrow.setStyle("upSkin",leftArrow);
+					index.btnArrow.setStyle("downSkin",leftArrow);
+					index.btnArrow.setStyle("overSkin",leftArrow);
+					index.btnArrow.setStyle("disableSkin",leftArrow);
+					function goFadeOut(ev:EffectEvent):void
+					{
+						fadeOut.play();	
+						panelIn.removeEventListener(EffectEvent.EFFECT_END,goFadeOut);
+					}
+				} else {
+					fadeOut.play();
+				}
+			}
+			
+			private function attachmentInspector_initializeHandler(event:FlexEvent):void
+			{
+				super.initializationComplete();
+				attachmentInspector.addEventListener(AttachmentMouseEvent.ATTACHMENT_DOUBLE_CLICK, attachmentDoubleClickHandler);
+			}
+			
+			private function attachmentDoubleClickHandler(event:AttachmentMouseEvent):void
+			{
+				navigateToURL(new URLRequest(event.attachmentInfo.url));
+			}
+			
+			
+			private function attributeGroupClickedHandler(event:Event):void
+			{
+				featLayer.selectFeatures(queryMapClick);
+				//map.infoWindow.content = editor.attributeInspector;
+			}
+			
+			private function attachmentGroupClickedHandler(event:Event):void
+			{
+				map.infoWindow.content = attachmentInspector;
+				callLater(showAttachments);
+				
+				function showAttachments():void
+				{
+					attachmentInspector.showAttachments(featLayer.selectedFeatures[0] as Graphic, featLayer);
+				}
+			}
+			
+			public function numericSortByField(fieldName:String):Function
+			{
+				return function(obj1:Object, obj2:Object):int
+				{
+					var virRegExp:RegExp = /[,]/gi;
+					
+					var string1:String = (obj1[fieldName] == null) ? "" : (obj1[fieldName]).toString();
+					var string2:String = (obj2[fieldName] == null) ? "" : (obj2[fieldName]).toString();
+					
+					if(string1.search(',') > -1)
+					{
+						string1 = string1.replace(virRegExp,".");
+					}
+						
+					else if((string2.search(virRegExp)>-1))
+					{
+						string2 = string2.replace(virRegExp,".");
+					}
+					var value1:Number = (isNaN(parseFloat(string1)) || string1 == null) ? 999999 : parseFloat(string1);
+					var value2:Number = (isNaN(parseFloat(string2)) || string2 == null) ? 999999 : parseFloat(string2);
+					
+					return ObjectUtil.numericCompare(value1, value2);
+				}
+			}
+			
+			private function buildToolTip(item:Object):String{
+				var myString:String = "";
+				if(item != null && item.GEOL_DESC != null){
+					myString = item.GEOL_DESC.toString().length.toString() + "/255";
+				}
+				return myString;
+			}
+			
+			
+			
+			
+			private function clickClosePanelHandler(event:MouseEvent):void
+			{
+				if(index.btn.label == "Open")
+				{
+					var tmp:Object = map.infoWindow.content.getChildByName("butItem");
+					tmp = tmp.getChildByName("hBoxBas");
+					tmp = tmp.getChildByName("relatedBut");
+					
+					if(form.owns(grid)){
+						form.removeChild(grid);
+					}
+					var evt:MenuEvent = new MenuEvent(MenuEvent.ITEM_CLICK);
+					evt.label = (lastClicked == null || lastClicked == "")? "Stratigraphy" : lastClicked;
+					tmp.dispatchEvent(evt);
+					panelOut.play();
+					index.btnArrow.setStyle("upSkin",rightArrow);
+					index.btnArrow.setStyle("downSkin",rightArrow);
+					index.btnArrow.setStyle("overSkin",rightArrow);
+					index.btnArrow.setStyle("disbaleSkin",rightArrow);
+				}
+				else
+				{
+					panelIn.play();
+					form.addChildAt(grid,1);
+					index.btnArrow.setStyle("upSkin",leftArrow);
+					index.btnArrow.setStyle("downSkin",leftArrow);
+					index.btnArrow.setStyle("overSkin",leftArrow);
+					index.btnArrow.setStyle("disableSkin",leftArrow);
+				}
+			}
+			
+			private function widgetOpenedHandler(event:Event):void
+			{
+				var infoOpened:Boolean = false;
+				for each (var widgetId:Number in ViewerContainer.getInstance().widgetManager.getAllLoadedWidgetIds())
+				{
+					
+					if(ViewerContainer.getInstance().widgetManager.getWidget(widgetId).widgetTitle == "MyEdit")
+					{
+						infoOpened = true;
+						AppEvent.dispatch(AppEvent.WIDGET_CLOSE, widgetId);
+					}
+				}
+				if(infoOpened){
+					setTimeout(closeTimeout, 500);
+					function closeTimeout():void
+					{
+						
+						isOpened = true;
+						if(opened)
+						{
+							basewidget_widgetConfigLoaded();
+						}
+					}
+				}
+				else
+				{
+					isOpened = true;
+					if(opened)
+					{
+						basewidget_widgetConfigLoaded();
+						featLayer.refresh();
+						struct.refresh();
+						cond.refresh();
+					}
+				}
+			}		
+			
+			private function widgetClosedHandler(event:Event):void
+			{
+				isOpened = false;
+				var ev:MouseEvent = new MouseEvent(MouseEvent.CLICK);
+				/*map.infoWindow.closeButton.dispatchEvent(ev);*/
+				
+				map.infoWindow.hide();
+				featLayer.clearSelection();
+				featLayer.refresh();
+				status.text = "";
+				if(index.btn.label == "Close")
+				{
+					index.leftPan.dispatchEvent(ev);
+					fadeOut.play();
+				}
+				else if(index.panel.visible)
+				{
+					fadeOut.play();
+				}
+				map.removeEventListener(MapMouseEvent.MAP_CLICK,map_mapClickHandler);
+				featLayer.removeEventListener(FeatureLayerEvent.SELECTION_COMPLETE,myFeatureLayer_selectionCompleteHandler);
+				//var tbPan : Object = VPanelBox.getChildByName("tablePanel");
+				//tbPan.removeAllChildren();
+				
+				if(clickToAdd){
+					clickToAdd = false;
+				}
+				if (clickToMove)
+				{
+					clickToMove =  false;
+				}
+				
+			}
+			
+			private function resizeApplication(event:ResizeEvent):void
+			{
+				//Alert.show("resize");
+				if(stage.stageWidth != event.oldWidth)
+				{
+					//perform action here or just use the above properties in any way you want
+					screenWidth = stage.stageWidth;
+					screenHeight = stage.stageHeight;
+					panelIn.xTo = screenWidth - (5*(65*screenWidth/100)/100);
+					panelIn.xFrom = screenWidth - (5*(65*screenWidth/100)/100) - (95*index.panel.width)/100;
+					panelOut.xFrom = screenWidth - (5*(65*screenWidth/100)/100);
+					panelOut.xTo = screenWidth - (5*(65*screenWidth/100)/100) - (95*index.panel.width)/100;
+					
+				}
+			}
+			
+			
+			private function rollOutFnc(event:MouseEvent):void
+			{
+				Mouse.cursor = MouseCursor.ARROW;
+				fadeColorOut.target = event.target;
+				fadeColorOut.play();
+			}
+			
+			private function rollOverFnc(event:MouseEvent):void
+			{
+				Mouse.cursor = MouseCursor.BUTTON;
+				fadeColorIn.target = event.target;
+				fadeColorIn.play();
+			}
+			private function displayGeneralInfo(k:uint,event:FeatureLayerEvent,holeObjId:Number):void
+			{
+				index.ws1.removeAllChildren();
+				
+				setStructArray(k,event),
+				setCondArray(k,event);
+				
+				getDomainValue();
+				
+				var virRegExp:RegExp = /[.]/gi;
+				var allRegExp:RegExp = /[^0-9,-]/gi;
+				var reExp:RegExp = /[.]/gi;
+				
+				var formGen:Form = new Form();
+				formGen.id = "formGen";
+				
+				var gridG:Grid = new Grid();
+				gridG.name = "gridG";
+				
+				var gridRowG:GridRow = new GridRow();var gridRowG2:GridRow = new GridRow();
+				var gridItemGUL:GridItem = new GridItem(); var gridItemGUR:GridItem = new GridItem();var gridItemGB:GridItem = new GridItem();
+				
+				var gridUL:Grid = new Grid();var gridUR:Grid = new Grid();var gridDC:Grid = new Grid();
+				
+				var gridRowUL1:GridRow = new GridRow();var gridItemUL11:GridItem = new GridItem();var gridItemUL12:GridItem = new GridItem();
+				var gridRowUL2:GridRow = new GridRow();var gridItemUL21:GridItem = new GridItem();var gridItemUL22:GridItem = new GridItem();
+				var gridRowUL3:GridRow = new GridRow();var gridItemUL31:GridItem = new GridItem();var gridItemUL32:GridItem = new GridItem();var gridItemUL33:GridItem = new GridItem();
+				var gridRowUL4:GridRow = new GridRow();var gridItemUL41:GridItem = new GridItem();var gridItemUL42:GridItem = new GridItem();var gridItemUL43:GridItem = new GridItem();
+				
+				var gridRowUR1:GridRow = new GridRow();var gridItemUR11:GridItem = new GridItem();var gridItemUR12:GridItem = new GridItem();
+				var gridRowUR2:GridRow = new GridRow();var gridItemUR21:GridItem = new GridItem();var gridItemUR22:GridItem = new GridItem();
+				var gridRowUR3:GridRow = new GridRow();var gridItemUR31:GridItem = new GridItem();var gridItemUR32:GridItem = new GridItem();
+				var gridRowUR4:GridRow = new GridRow();var gridItemUR41:GridItem = new GridItem();var gridItemUR42:GridItem = new GridItem();
+				var gridRowUR5:GridRow = new GridRow();var gridItemUR51:GridItem = new GridItem();var gridItemUR52:GridItem = new GridItem();
+				
+				var gridRowDC1:GridRow = new GridRow();var gridItemDC11:GridItem = new GridItem();var gridItemDC12:GridItem = new GridItem();var gridItemDC13:GridItem = new GridItem();
+				var gridRowDC2:GridRow = new GridRow();var gridItemDC21:GridItem = new GridItem();var gridItemDC22:GridItem = new GridItem();var gridItemDC23:GridItem = new GridItem();
+				var gridRowDC3:GridRow = new GridRow();var gridItemDC31:GridItem = new GridItem();var gridItemDC32:GridItem = new GridItem();var gridItemDC33:GridItem = new GridItem();
+				var gridRowDC4:GridRow = new GridRow();var gridItemDC41:GridItem = new GridItem();var gridItemDC42:GridItem = new GridItem();var gridItemDC43:GridItem = new GridItem();
+				var gridRowDC5:GridRow = new GridRow();var gridItemDC51:GridItem = new GridItem();var gridItemDC52:GridItem = new GridItem();
+				var gridRowDC6:GridRow = new GridRow();var gridItemDC61:GridItem = new GridItem();var gridItemDC62:GridItem = new GridItem();var gridItemDC63:GridItem = new GridItem();
+				
+				var LabelUIZ:mx.controls.Label = new mx.controls.Label();
+				LabelUIZ.text = "Underground impact zone ";
+				var UIZList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				UIZList.setStyle('color', 0x000000);
+				UIZList.dataProvider = qResultsUIZ;				
+				if (event.features[k].attributes.UIZ != null)
+				{
+					UIZList.selectedIndex = 0;
+					var len:int = UIZList.dataProvider.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (UIZList.dataProvider[j] == event.features[k].attributes.UIZ) 
+						{
+							UIZList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					UIZList.selectedIndex = 0;
+				}
+				UIZList.name = "UIZList";
+				UIZList.editable = false;
+				gridItemUL11.addChild(LabelUIZ);gridItemUL12.addChild(UIZList);
+				gridRowUL1.addChild(gridItemUL11);gridRowUL1.addChild(gridItemUL12);
+				
+				var LabelFI:mx.controls.Label = new mx.controls.Label();
+				LabelFI.text = "First inspection ";
+				var FIList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				FIList.setStyle('color', 0x000000);
+				FIList.dataProvider = qResultsFI;	
+				if (event.features[k].attributes.FI != null)
+				{
+					FIList.selectedIndex = 0;
+					var len:int = FIList.dataProvider.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (FIList.dataProvider[j] == event.features[k].attributes.FI) 
+						{
+							FIList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					FIList.selectedIndex = 0;
+				}
+				FIList.name = "FIList";
+				FIList.editable = false;
+				gridItemUL21.addChild(LabelFI);gridItemUL22.addChild(FIList);
+				gridRowUL2.addChild(gridItemUL21);gridRowUL2.addChild(gridItemUL22);
+				
+				var LabelBD:mx.controls.Label = new mx.controls.Label();
+				LabelBD.text = "Building dimensions : ";
+				var LabelBDW:mx.controls.Label = new mx.controls.Label();
+				LabelBDW.text = "Width ";
+				var WTxt:mx.controls.TextInput = new mx.controls.TextInput();
+				WTxt.setStyle('color',0x000000);
+				if (event.features[k].attributes.BW == null)
+				{
+					WTxt.text = "";
+				}
+				else
+				{
+					WTxt.text = event.features[k].attributes.BW;
+				}
+				WTxt.width = 100;
+				WTxt.name="BW";
+				WTxt.editable = false;
+				gridItemUL31.addChild(LabelBD);gridItemUL32.addChild(LabelBDW);gridItemUL33.addChild(WTxt);
+				gridRowUL3.addChild(gridItemUL31);gridRowUL3.addChild(gridItemUL32);gridRowUL3.addChild(gridItemUL33);
+				
+				var LabelBDE:mx.controls.Label = new mx.controls.Label();
+				LabelBDE.text = "";
+				var LabelBDL:mx.controls.Label = new mx.controls.Label();
+				LabelBDL.text = "Length ";
+				var LTxt:mx.controls.TextInput = new mx.controls.TextInput();
+				LTxt.setStyle('color',0x000000);
+				if (event.features[k].attributes.BL == null)
+				{
+					LTxt.text = "";
+				}
+				else
+				{
+					LTxt.text = event.features[k].attributes.BL;
+				}
+				LTxt.width = 100;
+				LTxt.name = "BL";
+				LTxt.editable = false;
+				gridItemUL41.addChild(LabelBDE);gridItemUL42.addChild(LabelBDL);gridItemUL43.addChild(LTxt);
+				gridRowUL4.addChild(gridItemUL41);gridRowUL4.addChild(gridItemUL42);gridRowUL4.addChild(gridItemUL43);
+				
+				gridUL.addChild(gridRowUL1);gridUL.addChild(gridRowUL2);gridUL.addChild(gridRowUL3);gridUL.addChild(gridRowUL4);
+				
+				var LabelLoc:mx.controls.Label = new mx.controls.Label();
+				LabelLoc.text = "Plan view with picture localisation ";
+				var attachButLoc1:Button = new Button();
+				attachButLoc1.name = "attachButLoc1";
+				attachButLoc1.label = "Edit attachments";
+				gridItemUR11.addChild(LabelLoc);gridItemUR12.addChild(attachButLoc1);
+				gridRowUR1.addChild(gridItemUR11);gridRowUR1.addChild(gridItemUR12);
+				
+				var LabelOver:mx.controls.Label = new mx.controls.Label();
+				LabelOver.text = "Overview : ";
+				var attachButOver1:Button = new Button();
+				attachButOver1.name = "attachButOver1";
+				attachButOver1.label = "Edit attachments";
+				gridItemUR21.addChild(LabelOver);gridItemUR22.addChild(attachButOver1);
+				gridRowUR2.addChild(gridItemUR21);gridRowUR2.addChild(gridItemUR22);
+				
+				var LabelOE1:mx.controls.Label = new mx.controls.Label();
+				LabelOE1.text = " ";
+				var attachButOver2:Button = new Button();
+				attachButOver2.name = "attachButOver2";
+				attachButOver2.label = "Edit attachments";
+				gridItemUR31.addChild(LabelOE1);gridItemUR32.addChild(attachButOver2);
+				gridRowUR3.addChild(gridItemUR31);gridRowUR3.addChild(gridItemUR32);
+				
+				var LabelOE2:mx.controls.Label = new mx.controls.Label();
+				LabelOE2.text = " ";
+				var attachButOver3:Button = new Button();
+				attachButOver3.name = "attachButOver3";
+				attachButOver3.label = "Edit attachments";
+				gridItemUR41.addChild(LabelOE2);gridItemUR42.addChild(attachButOver3);
+				gridRowUR4.addChild(gridItemUR41);gridRowUR4.addChild(gridItemUR42);
+				
+				var LabelOE3:mx.controls.Label = new mx.controls.Label();
+				LabelOE3.text = " ";
+				var attachButOver4:Button = new Button();
+				attachButOver4.name = "attachButOver4";
+				attachButOver4.label = "Edit attachments";
+				gridItemUR51.addChild(LabelOE3);gridItemUR52.addChild(attachButOver4);
+				gridRowUR5.addChild(gridItemUR51);gridRowUR5.addChild(gridItemUR52);
+				
+				gridUR.addChild(gridRowUR1);gridUR.addChild(gridRowUR2);gridUR.addChild(gridRowUR3);gridUR.addChild(gridRowUR4);gridUR.addChild(gridRowUR5);
+				
+				var LabelSD:mx.controls.Label = new mx.controls.Label();
+				LabelSD.text = "Storey data : ";
+				var LabelSAG:mx.controls.Label = new mx.controls.Label();
+				LabelSAG.text = "N. storeys above ground level ";
+				var SAGTxt:mx.controls.TextInput = new mx.controls.TextInput();
+				SAGTxt.setStyle('color',0x000000);
+				if (event.features[k].attributes.NSL == null)
+				{
+					SAGTxt.text = "";
+				}
+				else
+				{
+					SAGTxt.text = event.features[k].attributes.NSL;
+				}
+				SAGTxt.width = 100;
+				SAGTxt.name = "SAG";
+				SAGTxt.editable = false;
+				gridItemDC11.addChild(LabelSD);gridItemDC12.addChild(LabelSAG);gridItemDC13.addChild(SAGTxt);
+				gridRowDC1.addChild(gridItemDC11);gridRowDC1.addChild(gridItemDC12);gridRowDC1.addChild(gridItemDC13);
+				
+				var LabelSDE1:mx.controls.Label = new mx.controls.Label();
+				LabelSDE1.text = "";
+				var LabelNBS:mx.controls.Label = new mx.controls.Label();
+				LabelNBS.text = "N. of basement storeys ";
+				var NBSTxt:mx.controls.TextInput = new mx.controls.TextInput();
+				NBSTxt.setStyle('color',0x000000);
+				if (event.features[k].attributes.NSB == null)
+				{
+					NBSTxt.text = "";
+				}
+				else
+				{
+					NBSTxt.text = event.features[k].attributes.NSB;
+				}
+				NBSTxt.width = 100;
+				NBSTxt.name = "NBS";
+				NBSTxt.editable = false;
+				gridItemDC21.addChild(LabelSDE1);gridItemDC22.addChild(LabelNBS);gridItemDC23.addChild(NBSTxt);
+				gridRowDC2.addChild(gridItemDC21);gridRowDC2.addChild(gridItemDC22);gridRowDC2.addChild(gridItemDC23);
+				
+				var LabelSDE2:mx.controls.Label = new mx.controls.Label();
+				LabelSDE2.text = "";
+				var LabelADOB:mx.controls.Label = new mx.controls.Label();
+				LabelADOB.text = "Approximate depth of overall basement ";
+				var ADOBTxt:mx.controls.TextInput = new mx.controls.TextInput();
+				ADOBTxt.setStyle('color',0x000000);
+				if (event.features[k].attributes.Depth_Storey == null)
+				{
+					ADOBTxt.text = "";
+				}
+				else
+				{
+					ADOBTxt.text = event.features[k].attributes.Depth_Storey;
+				}
+				ADOBTxt.width = 100;
+				ADOBTxt.name = "ADOB";
+				ADOBTxt.editable = false;
+				gridItemDC31.addChild(LabelSDE2);gridItemDC32.addChild(LabelADOB);gridItemDC33.addChild(ADOBTxt);
+				gridRowDC3.addChild(gridItemDC31);gridRowDC3.addChild(gridItemDC32);gridRowDC3.addChild(gridItemDC33);
+				
+				var LabelHB:mx.controls.Label = new mx.controls.Label();
+				LabelHB.text = "Historical Building ";
+				var HBList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				HBList.setStyle('color', 0x000000);
+				HBList.dataProvider = qResultsHB;	
+				if (event.features[k].attributes.HB != null)
+				{
+					HBList.selectedIndex = 0;
+					var len:int = HBList.dataProvider.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (HBList.dataProvider[j] == event.features[k].attributes.HB) 
+						{
+							HBList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					HBList.selectedIndex = 0;
+				}
+				HBList.name = "HBList";
+				HBList.editable = false;
+				var genHBInput:spark.components.TextArea = new spark.components.TextArea();
+				genHBInput.setStyle('color', 0x000000);
+				if (event.features[k].attributes.HB_Descr == null)
+				{
+					genHBInput.text = "";
+				}
+				else
+				{
+					genHBInput.text = event.features[k].attributes.HB_Descr;
+				}
+				genHBInput.name = "genHBInput";
+				genHBInput.editable = false;
+				//genHBInput.width = 100;
+				genHBInput.percentWidth = 100;
+				genHBInput.height = 30;
+				
+				gridItemDC41.addChild(LabelHB);gridItemDC42.addChild(HBList);gridItemDC43.addChild(genHBInput);
+				gridRowDC4.addChild(gridItemDC41);gridRowDC4.addChild(gridItemDC42);gridRowDC4.addChild(gridItemDC43);
+				
+				var LabelBC:mx.controls.Label = new mx.controls.Label();
+				LabelBC.text = "Building category ";
+				var BCList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				BCList.setStyle('color', 0x000000);
+				BCList.dataProvider = qResultsBC;	
+				if (event.features[k].attributes.Building_Category != null)
+				{
+					BCList.selectedIndex = 0;
+					var len:int = qResultsBC.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (BCList.dataProvider[j] == event.features[k].attributes.Building_Category) 
+						{
+							BCList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					BCList.selectedIndex = 0;
+				}
+				BCList.name = "BCList";
+				BCList.editable = false;
+				
+				gridItemDC51.addChild(LabelBC);gridItemDC52.addChild(BCList);
+				gridRowDC5.addChild(gridItemDC51);gridRowDC5.addChild(gridItemDC52);
+				
+				var LabelUB:mx.controls.Label = new mx.controls.Label();
+				LabelUB.text = "Use of building ";
+				var UBList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				UBList.setStyle('color', 0x000000);
+				UBList.dataProvider = qResultsUB;	
+				if (event.features[k].attributes.Use_Building != null)
+				{
+					UBList.selectedIndex = 0;
+					var len:int = UBList.dataProvider.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (UBList.dataProvider[j] == event.features[k].attributes.Use_Building) 
+						{
+							UBList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					UBList.selectedIndex = 0;
+				}
+				UBList.name = "UBList";
+				UBList.editable = false;
+				var genUBInput:spark.components.TextArea = new spark.components.TextArea();
+				genUBInput.setStyle('color', 0x000000);
+				if (event.features[k].attributes.UB_Descr == null)
+				{
+					genUBInput.text = "";
+				}
+				else
+				{
+					genUBInput.text = event.features[k].attributes.UB_Descr;
+				}
+				genUBInput.name = "genUBInput";
+				genUBInput.editable = false;
+				//genUBInput.width = 100;
+				genUBInput.percentWidth = 100;
+				genUBInput.height = 30;
+				
+				gridItemDC61.addChild(LabelUB);gridItemDC62.addChild(UBList);gridItemDC63.addChild(genUBInput);
+				gridRowDC6.addChild(gridItemDC61);gridRowDC6.addChild(gridItemDC62);gridRowDC6.addChild(gridItemDC63);
+				
+				gridDC.addChild(gridRowDC1);gridDC.addChild(gridRowDC2);gridDC.addChild(gridRowDC3);
+				gridDC.addChild(gridRowDC4);gridDC.addChild(gridRowDC5);gridDC.addChild(gridRowDC6);
+				
+				
+				
+				gridItemGUL.addChild(gridUL);
+				gridItemGUR.addChild(gridUR);
+				gridItemGB.addChild(gridDC);
+				gridRowG.addChild(gridItemGUL);
+				gridRowG.addChild(gridItemGUR);
+				gridRowG2.addChild(gridItemGB);
+				gridG.addChild(gridRowG);
+				gridG.addChild(gridRowG2);
+				
+				formGen.addChild(gridG);
+				index.ws1.addChild(formGen);
+				index.ws1.label = "General Informations";
+				index.ws1.height = 500;
+				index.ws1.visible = true;
+			}// end of displayGeneralInf
+			
+			private function displayConditionTable(k:uint,event:FeatureLayerEvent,holeObjId:Number):void
+			{
+				
+				index.ws1.removeAllChildren();
+				setStructArray(k,event);
+				//	setBatiArray(k,event);
+				getCondDomainValue();
+				
+				var formCond:Form = new Form();
+				formCond.id = "formCond";
+				
+				var gridG:Grid = new Grid();
+				gridG.name = "gridG";
+				
+				var gridRowG:GridRow = new GridRow();
+				var gridItemGL:GridItem = new GridItem(); var gridItemGR:GridItem = new GridItem();
+				
+				var gridL:Grid = new Grid();
+				gridL.name = "gridL";
+				var gridRowL:GridRow = new GridRow();var gridRowL2:GridRow = new GridRow();
+				var gridItemL:GridItem = new GridItem();var gridItemL2:GridItem = new GridItem();
+				
+				var gridR:Grid = new Grid();
+				gridR.name = "gridR";
+				var gridRowR:GridRow = new GridRow();var gridRowR2:GridRow = new GridRow();var gridRowR3:GridRow = new GridRow();
+				var gridItemR:GridItem = new GridItem();var gridItemR2:GridItem = new GridItem();var gridItemR3:GridItem = new GridItem();
+				
+				
+				var gridD:Grid = new Grid();
+				var gridRowD:GridRow = new GridRow();var gridRowD2:GridRow = new GridRow();var gridRowD3:GridRow = new GridRow();
+				var gridRowD4:GridRow = new GridRow();var gridRowD5:GridRow = new GridRow();
+				var gridItemD:GridItem = new GridItem();var gridItemD2:GridItem = new GridItem();var gridItemD3:GridItem = new GridItem();
+				var gridItemD4:GridItem = new GridItem();var gridItemD5:GridItem = new GridItem();
+				
+				var GILabel:mx.controls.Label = new mx.controls.Label();
+				GILabel.text = "General Inspection / exterior walls ";
+				gridItemL.addChild(GILabel);gridRowL.addChild(gridItemL);
+				
+				var gridItemD11:GridItem = new GridItem();var gridItemD12:GridItem = new GridItem();var gridItemD13:GridItem = new GridItem();
+				var DPLabel:mx.controls.Label = new mx.controls.Label();
+				DPLabel.text = "Description of patterns ";
+				
+				var attachButDP:Button = new Button();
+				attachButDP.name = "editAttachDP";
+				attachButDP.label = "Edit attachments";
+				
+				gridItemD11.addChild(DPLabel); gridItemD13.addChild(attachButDP);
+				gridRowD.addChild(gridItemD11); gridRowD.addChild(gridItemD13);
+				
+				var gridItemD21:GridItem = new GridItem();var gridItemD22:GridItem = new GridItem();var gridItemD23:GridItem = new GridItem();
+				var SPLabel:mx.controls.Label = new mx.controls.Label();
+				SPLabel.text = "Sketches of patterns ";
+				
+				var attachButSP:Button = new Button();
+				attachButSP.name = "editAttachSP";
+				attachButSP.label = "Edit attachments";
+				
+				gridItemD21.addChild(SPLabel); gridItemD23.addChild(attachButSP);
+				gridRowD2.addChild(gridItemD21); gridRowD2.addChild(gridItemD23);
+				
+				var gridItemD31:GridItem = new GridItem();var gridItemD32:GridItem = new GridItem();
+				var LabelCD:mx.controls.Label = new mx.controls.Label();
+				LabelCD.text = "Category of damage";
+				
+				var CDList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				CDList.setStyle('color', 0x000000);
+				CDList.dataProvider = qResultsCD;				
+				if (condArray[2] != null)
+				{
+					CDList.selectedIndex = 0;
+					var len:int = qResultsCD.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (CDList.dataProvider[j] == condArray[2]) 
+						{
+							CDList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					CDList.selectedIndex = 0;
+				}
+				CDList.name = "CDList";
+				CDList.editable = false;
+				
+				gridItemD31.addChild(LabelCD);gridItemD32.addChild(CDList);
+				gridRowD3.addChild(gridItemD31);gridRowD3.addChild(gridItemD32);
+				
+				var gridItemD41:GridItem = new GridItem();var gridItemD42:GridItem = new GridItem();var gridItemD43:GridItem = new GridItem();
+				var LabelOD:mx.controls.Label = new mx.controls.Label();
+				LabelOD.text = "Other damage";
+				var ODList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				ODList.setStyle('color', 0x000000);
+				ODList.dataProvider = qResultsOD;				
+				if (condArray[3] != null)
+				{
+					ODList.selectedIndex = 0;
+					var len:int = qResultsOD.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (ODList.dataProvider[j] == condArray[3]) 
+						{
+							ODList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					ODList.selectedIndex = 0;
+				}
+				ODList.name = "ODList";
+				ODList.editable = false;
+				var attachButOD:Button = new Button();
+				attachButOD.name = "editAttachOD";
+				attachButOD.label = "Edit attachments";
+				gridItemD41.addChild(LabelOD);gridItemD42.addChild(ODList);gridItemD43.addChild(attachButOD);
+				gridRowD4.addChild(gridItemD41);gridRowD4.addChild(gridItemD42);gridRowD4.addChild(gridItemD43);
+				
+				gridD.addChild(gridRowD);gridD.addChild(gridRowD2);gridD.addChild(gridRowD3); gridD.addChild(gridRowD4);	
+				
+				
+				var gridItemD0:GridItem = new GridItem();
+				var LabelDam:mx.controls.Label = new mx.controls.Label();
+				LabelDam.text = "Description";
+				LabelDam.toolTip = "Description of damages";
+				var genComInputOD:spark.components.TextArea = new spark.components.TextArea();
+				genComInputOD.setStyle('color', 0x000000);
+				if (condArray[4] == null)
+				{
+					genComInputOD.text = "";
+				}
+				else
+				{
+					genComInputOD.text = condArray[4];
+				}
+				genComInputOD.name = "genComInputOD";
+				gridItemD5.colSpan = (2);
+				genComInputOD.editable = false;
+				//genComInputOD.width = 125;
+				genComInputOD.percentWidth = 100;
+				genComInputOD.height = 40;
+				gridItemD5.addChild(genComInputOD);gridItemD0.addChild(LabelDam);
+				gridRowD5.addChild(gridItemD0);gridRowD5.addChild(gridItemD5);gridD.addChild(gridRowD5);
+				
+				gridItemL2.addChild(gridD);gridRowL2.addChild(gridItemL2);
+				
+				var LabelPic:mx.controls.Label = new mx.controls.Label();
+				LabelPic.text = "Pictures ";
+				gridItemR.addChild(LabelPic);gridRowR.addChild(gridItemR);
+				
+				var LabelPText:mx.controls.Label = new mx.controls.Label();
+				LabelPText.text = "Plan view with picture localisation ";
+				gridItemR2.addChild(LabelPText);gridRowR2.addChild(gridItemR2);
+				
+				var gridAttach:Grid = new Grid();
+				var gridItemAttach1:GridItem = new GridItem();var gridItemAttach2:GridItem = new GridItem();var gridItemAttach3:GridItem = new GridItem();
+				var gridItemAttach4:GridItem = new GridItem();var gridItemAttach5:GridItem = new GridItem();
+				var gridRowAttach1:GridRow = new GridRow();var gridRowAttach2:GridRow = new GridRow();var gridRowAttach3:GridRow = new GridRow();
+				var gridRowAttach4:GridRow = new GridRow();var gridRowAttach5:GridRow = new GridRow();
+				
+				var attachButPic1:Button = new Button();
+				attachButPic1.name = "attachButPic1";
+				attachButPic1.label = "Edit attachments";
+				var attachButPic2:Button = new Button();
+				attachButPic2.name = "attachButPic2";
+				attachButPic2.label = "Edit attachments";
+				var attachButPic3:Button = new Button();
+				attachButPic3.name = "attachButPic3";
+				attachButPic3.label = "Edit attachments";
+				var attachButPic4:Button = new Button();
+				attachButPic4.name = "attachButPic4";
+				attachButPic4.label = "Edit attachments";
+				var attachButPic5:Button = new Button();
+				attachButPic5.name = "attachButPic5";
+				attachButPic5.label = "Edit attachments";
+				
+				gridItemAttach1.addChild(attachButPic1);gridRowAttach1.addChild(gridItemAttach1)
+				gridItemAttach2.addChild(attachButPic2);gridRowAttach2.addChild(gridItemAttach2)
+				gridItemAttach3.addChild(attachButPic3);gridRowAttach3.addChild(gridItemAttach3)
+				gridItemAttach4.addChild(attachButPic4);gridRowAttach4.addChild(gridItemAttach4)
+				gridItemAttach5.addChild(attachButPic5);gridRowAttach5.addChild(gridItemAttach5)
+				
+				gridAttach.addChild(gridRowAttach1);gridAttach.addChild(gridRowAttach2);gridAttach.addChild(gridRowAttach3);
+				gridAttach.addChild(gridRowAttach4);gridAttach.addChild(gridRowAttach5);
+				
+				gridItemR3.addChild(gridAttach); gridRowR3.addChild(gridItemR3);
+				
+				var gridItemSpace:GridItem = new GridItem();
+				gridItemSpace.width = 50;
+				
+				gridL.addChild(gridRowL);
+				gridL.addChild(gridRowL2);
+				
+				gridR.addChild(gridRowR);
+				gridR.addChild(gridRowR2);
+				gridR.addChild(gridRowR3);
+				
+				gridItemGL.addChild(gridL);
+				gridItemGR.addChild(gridR);
+				gridRowG.addChild(gridItemGL);
+				gridRowG.addChild(gridItemSpace);
+				gridRowG.addChild(gridItemGR);
+				gridG.addChild(gridRowG);	
+				
+				formCond.addChild(gridG);
+				index.ws1.addChild(formCond);
+				index.ws1.label = "Condition Informations";
+				index.ws1.height = 500;
+				index.ws1.visible = true;
+			}
+			
+			private function displayStructTable(k:uint,event:FeatureLayerEvent,holeObjId:Number):void
+			{
+				
+				index.ws1.removeAllChildren();
+				setCondArray(k,event);
+				//	setBatiArray(k,event);
+				getStructDomainValue();
+				
+				
+				var formStruct:Form = new Form();
+				formStruct.id = "formStruct";
+				
+				var gridG:Grid = new Grid();
+				gridG.name = "gridG";
+				
+				var gridRowG:GridRow = new GridRow();
+				var gridItemGL:GridItem = new GridItem(); var gridItemGR:GridItem = new GridItem();
+				
+				var gridL:Grid = new Grid();
+				gridL.name = "gridL";
+				var gridRowL:GridRow = new GridRow();var gridRowL2:GridRow = new GridRow();var gridRowL3:GridRow = new GridRow();var gridRowL4:GridRow = new GridRow();
+				var gridItemL:GridItem = new GridItem();var gridItemL2:GridItem = new GridItem();var gridItemL3:GridItem = new GridItem();var gridItemL4:GridItem = new GridItem();
+				
+				var gridR:Grid = new Grid();
+				gridR.name = "gridR";
+				var gridRowR:GridRow = new GridRow();var gridRowR2:GridRow = new GridRow();var gridRowR3:GridRow = new GridRow();var gridRowR4:GridRow = new GridRow();
+				var gridItemR:GridItem = new GridItem();var gridItemR2:GridItem = new GridItem();var gridItemR3:GridItem = new GridItem();var gridItemR4:GridItem = new GridItem();
+				
+				var gridVH:Grid = new Grid();
+				gridVH.name = "gridVH";
+				
+				var gridRowVHT:GridRow = new GridRow();
+				var gridRowVH1:GridRow = new GridRow();
+				var gridRowVH2:GridRow = new GridRow();
+				var gridRowVH3:GridRow = new GridRow();
+				var gridRowVH4:GridRow = new GridRow();
+				var gridRowVH5:GridRow = new GridRow();
+				var gridRowVH6:GridRow = new GridRow();
+				var gridRowVH7:GridRow = new GridRow();
+				
+				var gridItemVT:GridItem = new GridItem();var gridItemHT:GridItem = new GridItem();var gridItemGT:GridItem = new GridItem();
+				var gridItemV1:GridItem = new GridItem();var gridItemLV1:GridItem = new GridItem();var gridItemH1:GridItem = new GridItem();var gridItemLH1:GridItem = new GridItem();
+				var gridItemV2:GridItem = new GridItem();var gridItemLV2:GridItem = new GridItem();var gridItemH2:GridItem = new GridItem();var gridItemLH2:GridItem = new GridItem();
+				var gridItemV3:GridItem = new GridItem();var gridItemLV3:GridItem = new GridItem();var gridItemH3:GridItem = new GridItem();var gridItemLH3:GridItem = new GridItem();
+				var gridItemV4:GridItem = new GridItem();var gridItemLV4:GridItem = new GridItem();var gridItemH4:GridItem = new GridItem();var gridItemLH4:GridItem = new GridItem();
+				var gridItemV5:GridItem = new GridItem();var gridItemLV5:GridItem = new GridItem();var gridItemH5:GridItem = new GridItem();var gridItemLH5:GridItem = new GridItem();
+				var gridItemV6:GridItem = new GridItem();var gridItemLV6:GridItem = new GridItem();var gridItemH6:GridItem = new GridItem();var gridItemLH6:GridItem = new GridItem();
+				var gridItemV7:GridItem = new GridItem();var gridItemLV7:GridItem = new GridItem();var gridItemH7:GridItem = new GridItem();var gridItemLH7:GridItem = new GridItem();
+				
+				
+				
+				var HTLabel:mx.controls.Label = new mx.controls.Label();
+				HTLabel.text = "Horizontal bearing structure ";
+				gridItemHT.addChild(HTLabel);
+				var gapLabel:mx.controls.Label = new mx.controls.Label();
+				gapLabel.text = " ";
+				gridItemGT.addChild(gapLabel);
+				var VTLabel:mx.controls.Label = new mx.controls.Label();
+				VTLabel.text = "Vertical bearing structure ";
+				gridItemVT.addChild(VTLabel);
+				gridRowVHT.addChild(gridItemVT);gridRowVHT.addChild(gridItemGT);gridRowVHT.addChild(gridItemHT);
+				
+				var LabelV1:mx.controls.Label = new mx.controls.Label();
+				LabelV1.text = "Reinforced concrete ";
+				var VCheck1:spark.components.CheckBox = new spark.components.CheckBox();
+				VCheck1.name = "Reinforced concrete";
+				VCheck1.selected = structArray[1] == "Reinforced concrete"? true : false;
+				VCheck1.enabled = false;
+				gridItemLV1.addChild(LabelV1);
+				gridItemV1.addChild(VCheck1);
+				
+				var LabelV2:mx.controls.Label = new mx.controls.Label();
+				LabelV2.text = "Steel frame ";
+				var VCheck2:spark.components.CheckBox = new spark.components.CheckBox();
+				VCheck2.name = "Steel frame";
+				VCheck2.selected = structArray[1] == "Steel frame"? true : false;
+				VCheck2.enabled = false;
+				gridItemLV2.addChild(LabelV2);
+				gridItemV2.addChild(VCheck2);
+				
+				var LabelV3:mx.controls.Label = new mx.controls.Label();
+				LabelV3.text = "Masonry (block or stone)";
+				var VCheck3:spark.components.CheckBox = new spark.components.CheckBox();
+				VCheck3.name = "Masonry (block or stone)";
+				VCheck3.selected = structArray[1] == "Masonry (block or stone)"? true : false;
+				VCheck3.enabled = false;
+				gridItemLV3.addChild(LabelV3);
+				gridItemV3.addChild(VCheck3);
+				
+				var LabelV4:mx.controls.Label = new mx.controls.Label();
+				LabelV4.text = "Brick";
+				var VCheck4:spark.components.CheckBox = new spark.components.CheckBox();
+				VCheck4.name = "Brick";
+				VCheck4.selected = structArray[1] == "Brick"? true : false;
+				VCheck4.enabled = false;
+				gridItemLV4.addChild(LabelV4);
+				gridItemV4.addChild(VCheck4);
+				
+				var LabelV5:mx.controls.Label = new mx.controls.Label();
+				LabelV5.text = "Wood";
+				var VCheck5:spark.components.CheckBox = new spark.components.CheckBox();
+				VCheck5.name = "Wood";
+				VCheck5.selected = structArray[1] == "Wood"? true : false;
+				VCheck5.enabled = false;
+				gridItemLV5.addChild(LabelV5);
+				gridItemV5.addChild(VCheck5);
+				
+				var LabelV6:mx.controls.Label = new mx.controls.Label();
+				LabelV6.text = "Mixed ";
+				var VCheck6:spark.components.CheckBox = new spark.components.CheckBox();
+				VCheck6.name = "Mixed";
+				VCheck6.selected = structArray[1] == "Mixed"? true : false;
+				VCheck6.enabled = false;
+				gridItemLV6.addChild(LabelV6);
+				gridItemV6.addChild(VCheck6);
+				
+				anyoneSelectedV();
+				
+				var LabelV7:mx.controls.Label = new mx.controls.Label();
+				LabelV7.text = "Comments";
+				var gridItemV7:GridItem = new GridItem();
+				var genComInput:spark.components.TextArea = new spark.components.TextArea();
+				
+				genComInput.setStyle('color', 0x000000);
+				if (structArray[3] == null)//VB_Descr
+				{
+					genComInput.text = "";
+				}
+				else
+				{
+					genComInput.text = structArray[3];
+				}
+				gridItemV7.colSpan = (1);
+				genComInput.name = "genComInput";
+				genComInput.editable = false;
+				genComInput.width = 125;
+				//genComInput.percentWidth = 100;
+				genComInput.height = 40;
+				gridItemLV7.addChild(LabelV7);gridItemLV7.visible = VCheck6.selected? true : false;
+				gridItemV7.addChild(genComInput);gridItemV7.visible = VCheck6.selected? true : false;
+				
+				var LabelH1:mx.controls.Label = new mx.controls.Label();
+				LabelH1.text = "Reinforced concrete ";
+				var HCheck1:spark.components.CheckBox = new spark.components.CheckBox();
+				HCheck1.name = "Reinforced concrete";
+				HCheck1.selected = structArray[4] == "Reinforced concrete"? true : false;
+				HCheck1.enabled = false;
+				gridItemLH1.addChild(LabelH1);
+				gridItemH1.addChild(HCheck1);
+				
+				var LabelH2:mx.controls.Label = new mx.controls.Label();
+				LabelH2.text = "Steel frame ";
+				var HCheck2:spark.components.CheckBox = new spark.components.CheckBox();
+				HCheck2.name = "Steel frame";
+				HCheck2.selected = structArray[4] == "Steel frame"? true : false;
+				HCheck2.enabled = false;
+				gridItemLH2.addChild(LabelH2);
+				gridItemH2.addChild(HCheck2);
+				
+				var LabelH3:mx.controls.Label = new mx.controls.Label();
+				LabelH3.text = "Masonry (block or stone)";
+				var HCheck3:spark.components.CheckBox = new spark.components.CheckBox();
+				HCheck3.name = "Masonry (block or stone)";
+				HCheck3.selected = structArray[4] == "Masonry (block or stone)"? true : false;
+				HCheck3.enabled = false;
+				gridItemLH3.addChild(LabelH3);
+				gridItemH3.addChild(HCheck3);
+				
+				var LabelH4:mx.controls.Label = new mx.controls.Label();
+				LabelH4.text = "Brick";
+				var HCheck4:spark.components.CheckBox = new spark.components.CheckBox();
+				HCheck4.name = "Brick";
+				HCheck4.selected = structArray[4] == "Brick"? true : false;
+				HCheck4.enabled = false;
+				gridItemLH4.addChild(LabelH4);
+				gridItemH4.addChild(HCheck4);
+				
+				var LabelH5:mx.controls.Label = new mx.controls.Label();
+				LabelH5.text = "Wood";
+				var HCheck5:spark.components.CheckBox = new spark.components.CheckBox();
+				HCheck5.name = "Wood";
+				HCheck5.selected = structArray[4] == "Wood"? true : false;
+				HCheck5.enabled = false;
+				gridItemLH5.addChild(LabelH5);
+				gridItemH5.addChild(HCheck5);
+				
+				var LabelH6:mx.controls.Label = new mx.controls.Label();
+				LabelH6.text = "Mixed ";
+				var HCheck6:spark.components.CheckBox = new spark.components.CheckBox();
+				HCheck6.name = "Mixed";
+				HCheck6.selected = structArray[4] == "Mixed"? true : false;
+				HCheck6.enabled = false;
+				gridItemLH6.addChild(LabelH6);
+				gridItemH6.addChild(HCheck6);
+				
+				anyoneSelectedH();
+				
+				var LabelH7:mx.controls.Label = new mx.controls.Label();
+				LabelH7.text = "Comments";
+				var gridItemH7:GridItem = new GridItem();
+				var genComInputH:spark.components.TextArea = new spark.components.TextArea();
+				
+				genComInputH.setStyle('color', 0x000000);
+				if (structArray[5] == null) //HB_Descr
+				{
+					genComInputH.text = "";
+				}
+				else
+				{
+					genComInputH.text = structArray[5];
+				}
+				gridItemH7.colSpan = (1);
+				genComInputH.name = "genComInputH";
+				genComInputH.editable = false;
+				genComInputH.width = 125;
+				//genComInputH.percentWidth = 100;
+				genComInputH.height = 40;
+				gridItemLH7.addChild(LabelH7);gridItemLH7.visible = HCheck6.selected ? true : false;
+				gridItemH7.addChild(genComInputH);gridItemH7.visible = HCheck6.selected ? true : false;
+				
+				gridRowVH1.addChild(gridItemLV1);gridRowVH1.addChild(gridItemV1);gridRowVH1.addChild(gridItemLH1);gridRowVH1.addChild(gridItemH1);
+				gridRowVH2.addChild(gridItemLV2);gridRowVH2.addChild(gridItemV2);gridRowVH2.addChild(gridItemLH2);gridRowVH2.addChild(gridItemH2);
+				gridRowVH3.addChild(gridItemLV3);gridRowVH3.addChild(gridItemV3);gridRowVH3.addChild(gridItemLH3);gridRowVH3.addChild(gridItemH3);
+				gridRowVH4.addChild(gridItemLV4);gridRowVH4.addChild(gridItemV4);gridRowVH4.addChild(gridItemLH4);gridRowVH4.addChild(gridItemH4);
+				gridRowVH5.addChild(gridItemLV5);gridRowVH5.addChild(gridItemV5);gridRowVH5.addChild(gridItemLH5);gridRowVH5.addChild(gridItemH5);
+				gridRowVH6.addChild(gridItemLV6);gridRowVH6.addChild(gridItemV6);gridRowVH6.addChild(gridItemLH6);gridRowVH6.addChild(gridItemH6);
+				gridRowVH7.addChild(gridItemLV7);gridRowVH7.addChild(gridItemV7);gridRowVH7.addChild(gridItemLH7);gridRowVH7.addChild(gridItemH7);
+				
+				gridVH.addChild(gridRowVHT);gridVH.addChild(gridRowVH1);gridVH.addChild(gridRowVH2);gridVH.addChild(gridRowVH3);
+				gridVH.addChild(gridRowVH4);gridVH.addChild(gridRowVH5);gridVH.addChild(gridRowVH6);gridVH.addChild(gridRowVH7);
+				
+				gridItemL.addChild(gridVH);
+				gridRowL.addChild(gridItemL);
+				
+				var hBoxRoof:HBox = new HBox();
+				//	var gridItemLRT3:GridItem = new GridItem();
+				var roofLabel:mx.controls.Label = new mx.controls.Label();
+				roofLabel.text = "Roof type :";
+				var roofList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				roofList.setStyle('color', 0x000000);
+				roofList.dataProvider = qResultsRT;				
+				if (structArray[11] != null)
+				{
+					roofList.selectedIndex = 0;
+					var len:int = qResultsRT.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (roofList.dataProvider[j] == structArray[11]) 
+						{
+							roofList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					roofList.selectedIndex = 0;
+				}
+				roofList.name = "roofList";
+				roofList.editable = false;
+				hBoxRoof.addChild(roofLabel);hBoxRoof.addChild(roofList);
+				gridItemL2.addChild(hBoxRoof);gridRowL2.addChild(gridItemL2);
+				
+				var gridItemRT4:GridItem = new GridItem();
+				var hBoxComents:HBox = new HBox();
+				var comentsLabel:mx.controls.Label = new mx.controls.Label();
+				comentsLabel.text = "Comments";
+				comentsLabel.visible = false;
+				var genComInputRT:spark.components.TextArea = new spark.components.TextArea();
+				genComInputRT.setStyle('color', 0x000000);
+				if (structArray[12] == null)
+				{
+					genComInputRT.text = "";
+					genComInputRT.visible = roofList.selectedItem == "Other"? true : false;
+					comentsLabel.visible = roofList.selectedItem == "Other"? true : false;
+				}
+				else
+				{
+					genComInputRT.text = structArray[12];
+					genComInputRT.visible = true;
+					comentsLabel.visible = true;
+				}
+				//gridItemRT4.colSpan = (1);
+				genComInputRT.name = "genComInputRT";
+				genComInputRT.editable = false;
+				//genComInputRT.width = 100;
+				genComInputRT.percentWidth = 100;
+				genComInputRT.height = 30;
+				//	genComInputRT.visible = false;
+				hBoxComents.addChild(comentsLabel);hBoxComents.addChild(genComInputRT);
+				gridItemRT4.addChild(hBoxComents);gridRowL3.addChild(gridItemRT4);
+				
+				
+				var hBoxSource:HBox = new HBox();
+				var LabelSource:mx.controls.Label = new mx.controls.Label();
+				LabelSource.text = "Source ";
+				var sourceList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				sourceList.setStyle('color', 0x000000);
+				sourceList.dataProvider = qResultsSI;				
+				if (structArray[13] != null)
+				{
+					sourceList.selectedIndex = 0;
+					var len:int = qResultsSI.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (sourceList.dataProvider[j] == structArray[13]) 
+						{
+							sourceList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					sourceList.selectedIndex = 0;
+				}
+				sourceList.name = "sourceList";
+				sourceList.editable = false;
+				var genSourceInput:spark.components.TextArea = new spark.components.TextArea();
+				
+				genSourceInput.setStyle('color', 0x000000);
+				if (structArray[14] == null)
+				{
+					genSourceInput.text = "";
+					genSourceInput.visible = sourceList.selectedItem == "Other" ? true : false;
+				}
+				else
+				{
+					genSourceInput.text = structArray[14];
+					genSourceInput.visible = true;
+				}
+				genSourceInput.name = "genSourceInput";
+				genSourceInput.editable = false;
+				//genComInputRT.width = 100;
+				genSourceInput.percentWidth = 100;
+				genSourceInput.height = 30;
+				
+				
+				hBoxSource.addChild(LabelSource);hBoxSource.addChild(sourceList);hBoxSource.addChild(genSourceInput);
+				gridItemL4.addChild(hBoxSource);
+				gridRowL4.addChild(gridItemL4);
+				
+				
+				var LabelTF:mx.controls.Label = new mx.controls.Label();
+				LabelTF.text = "Type of fundation and soil reinforcement : ";
+				gridItemR.addChild(LabelTF);
+				gridRowR.addChild(gridItemR);
+				
+				var vBoxTF:VBox = new VBox();
+				var hBoxLL:HBox = new HBox();
+				
+				var LabelTF:mx.controls.Label = new mx.controls.Label();
+				LabelTF.text = "Type of foundation";
+				
+				var LabelSR:mx.controls.Label = new mx.controls.Label();
+				LabelSR.text = "Soil reinforcement";
+				
+				var TFList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				TFList.setStyle('color', 0x000000);
+				TFList.dataProvider = qResultsTF;
+				if (structArray[6] != null)
+				{
+					TFList.selectedIndex = 0;
+					var len:int = qResultsTF.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (TFList.dataProvider[j] == structArray[6]) 
+						{
+							TFList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					TFList.selectedIndex = 0;
+				}
+				TFList.name = "TFList";
+				TFList.editable = false;
+				
+				var SRList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				SRList.setStyle('color', 0x000000);
+				SRList.dataProvider = qResultsSR;				
+				if (structArray[7] != null)
+				{
+					SRList.selectedIndex = 0;
+					var len:int = qResultsSR.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (SRList.dataProvider[j] == structArray[7]) 
+						{
+							SRList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					SRList.selectedIndex = 0;
+				}
+				SRList.name = "SRList";
+				SRList.editable = false;
+				hBoxLL.addChild(LabelTF);hBoxLL.addChild(TFList);hBoxLL.addChild(LabelSR);hBoxLL.addChild(SRList);
+				
+				var genTFInput:spark.components.TextArea = new spark.components.TextArea();
+				
+				genTFInput.setStyle('color', 0x000000);
+				if (structArray[8] == null)
+				{
+					genTFInput.text = "";
+				}
+				else
+				{
+					genTFInput.text = structArray[8];
+				}
+				genTFInput.name = "genTFInput";
+				genComInput.editable = false;
+				//genComInputRT.width = 100;
+				genTFInput.percentWidth = 100;
+				genTFInput.height = 30;
+				genTFInput.editable = true;
+				
+				vBoxTF.addChild(hBoxLL); vBoxTF.addChild(genTFInput);
+				
+				gridItemR2.addChild(vBoxTF);gridRowR2.addChild(gridItemR2);
+				
+				var LabelFMD:mx.controls.Label = new mx.controls.Label();
+				LabelFMD.text = "Fundation's material and depth : ";
+				gridItemR3.addChild(LabelFMD);
+				gridRowR3.addChild(gridItemR3);
+				
+				
+				var hBoxFD1:HBox = new HBox();var hBoxFD2:HBox = new HBox();var hBoxFD3:HBox = new HBox();
+				var vBoxFD:VBox = new VBox();
+				
+				var LabelFM:mx.controls.Label = new mx.controls.Label();
+				LabelFM.text = "Fundation's material";
+				var LabelFM2:mx.controls.Label = new mx.controls.Label();
+				LabelFM2.text = "Fundation's material";
+				
+				var LabelFD:mx.controls.Label = new mx.controls.Label();
+				LabelFD.text = "Depth";
+				
+				var TFList2:mx.controls.ComboBox = new mx.controls.ComboBox();
+				TFList2.setStyle('color', 0x000000);
+				//	TFList2.dataProvider = qResultsFM;	
+				TFList2.dataProvider = TFList.selectedItem == "Shallow" ? qResultsFMS : qResultsFM;	
+				if (structArray[9] != null)
+				{
+					TFList2.selectedIndex = 0;
+					var len:int = qResultsFM.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (TFList2.dataProvider[j] == structArray[9]) 
+						{
+							TFList2.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					TFList2.selectedIndex = 0;
+				}
+				TFList2.name = "TFList2";
+				TFList2.editable = false;
+				
+				var attachButDepth:Button = new Button();
+				attachButDepth.name = "editAttach";
+				attachButDepth.label = "Edit attachments";
+				
+				var TFList3:mx.controls.ComboBox = new mx.controls.ComboBox();
+				TFList3.setStyle('color', 0x000000);
+				//		TFList3.dataProvider = qResultsFM;
+				TFList3.dataProvider = TFList.selectedItem == "Deep" ? qResultsFMD : qResultsFM;	
+				if (structArray[9] != null)
+				{
+					TFList3.selectedIndex = 0;
+					var len:int = qResultsFM.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (TFList3.dataProvider[j] == structArray[9]) 
+						{
+							TFList3.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					TFList3.selectedIndex = 0;
+				}
+				TFList3.name = "TFList3";
+				TFList3.editable = false;
+				
+				var DpthList:mx.controls.ComboBox = new mx.controls.ComboBox();
+				DpthList.setStyle('color', 0x000000);
+				DpthList.dataProvider = qResultsDR;				
+				if (structArray[15] != null)
+				{
+					DpthList.selectedIndex = 0;
+					var len:int = qResultsDR.length;
+					for (var j:int = 0; j < len; j++) 
+					{
+						if (DpthList.dataProvider[j] == structArray[15]) 
+						{
+							DpthList.selectedIndex = j;
+							break;
+						}
+					}
+				}
+				else
+				{
+					DpthList.selectedIndex = 0;
+				}
+				DpthList.name = "DpthList";
+				DpthList.editable = false;
+				
+				var labelCom:mx.controls.Label = new mx.controls.Label();
+				labelCom.text = "Comments";
+				var genComInputFD:spark.components.TextArea = new spark.components.TextArea();
+				
+				genComInputFD.setStyle('color', 0x000000);
+				if (structArray[10] == null)
+				{
+					genComInputFD.text = "";
+				}
+				else
+				{
+					genComInputFD.text = structArray[10];
+				}
+				genComInputFD.name = "genComInputFD";
+				genComInput.editable = false;
+				//genComInputFD.width = 100;
+				genComInputFD.percentWidth = 100;
+				genComInputFD.height = 30;
+				
+				hBoxFD1.addChild(LabelFM);hBoxFD1.addChild(TFList2);hBoxFD1.addChild(attachButDepth);hBoxFD1.visible = TFList.selectedItem == "Shallow"? true : false;
+				hBoxFD2.addChild(LabelFM2);hBoxFD2.addChild(TFList3);hBoxFD2.addChild(LabelFD);hBoxFD2.addChild(DpthList); hBoxFD2.visible = TFList.selectedItem == "Deep" ? true : false;
+				hBoxFD3.addChild(labelCom);hBoxFD3.addChild(genComInputFD); hBoxFD3.visible = false;
+				
+				vBoxFD.addChild(hBoxFD1);vBoxFD.addChild(hBoxFD2);vBoxFD.addChild(hBoxFD3);
+				
+				gridItemR4.addChild(vBoxFD);gridRowR4.addChild(gridItemR4);
+				
+				var gridItemSpace:GridItem = new GridItem();
+				
+				gridL.addChild(gridRowL);
+				gridL.addChild(gridRowL2);
+				gridL.addChild(gridRowL3);
+				gridL.addChild(gridRowL4);
+				
+				gridR.addChild(gridRowR);
+				gridR.addChild(gridRowR2);
+				gridR.addChild(gridRowR3);
+				gridR.addChild(gridRowR4);
+				
+				gridItemGL.addChild(gridL);
+				gridItemGR.addChild(gridR);
+				gridRowG.addChild(gridItemGL);
+				gridRowG.addChild(gridItemSpace);
+				gridRowG.addChild(gridItemGR);
+				gridG.addChild(gridRowG);	
+				
+				formStruct.addChild(gridG);
+				index.ws1.addChild(formStruct);
+				index.ws1.label = "Structure Informations";
+				index.ws1.height = 500;
+				index.ws1.visible = true;
+				
+				function anyoneSelectedV()
+				{
+					if (VCheck1.selected){
+						VCheck2.enabled = false;
+						VCheck3.enabled = false;
+						VCheck4.enabled = false;
+						VCheck5.enabled = false;
+						VCheck6.enabled = false;
+					} else if (VCheck2.selected)
+					{
+						VCheck1.enabled = false;
+						VCheck3.enabled = false;
+						VCheck4.enabled = false;
+						VCheck5.enabled = false;
+						VCheck6.enabled = false;
+					} else if (VCheck3.selected)
+					{
+						VCheck1.enabled = false;
+						VCheck2.enabled = false;
+						VCheck4.enabled = false;
+						VCheck5.enabled = false;
+						VCheck6.enabled = false;
+					} else if (VCheck4.selected)
+					{
+						VCheck1.enabled = false;
+						VCheck3.enabled = false;
+						VCheck2.enabled = false;
+						VCheck5.enabled = false;
+						VCheck6.enabled = false;
+					} else if (VCheck5.selected)
+					{
+						VCheck1.enabled = false;
+						VCheck3.enabled = false;
+						VCheck4.enabled = false;
+						VCheck2.enabled = false;
+						VCheck6.enabled = false;
+					} else if (VCheck6.selected)
+					{
+						VCheck1.enabled = false;
+						VCheck3.enabled = false;
+						VCheck4.enabled = false;
+						VCheck5.enabled = false;
+						VCheck2.enabled = false;
+					}
+				}
+				
+				function anyoneSelectedH()
+				{
+					if (HCheck1.selected){
+						HCheck2.enabled = false;
+						HCheck3.enabled = false;
+						HCheck4.enabled = false;
+						HCheck5.enabled = false;
+						HCheck6.enabled = false;
+					} else if (HCheck2.selected)
+					{
+						HCheck1.enabled = false;
+						HCheck3.enabled = false;
+						HCheck4.enabled = false;
+						HCheck5.enabled = false;
+						HCheck6.enabled = false;
+					} else if (HCheck3.selected)
+					{
+						HCheck1.enabled = false;
+						HCheck2.enabled = false;
+						HCheck4.enabled = false;
+						HCheck5.enabled = false;
+						HCheck6.enabled = false;
+					} else if (HCheck4.selected)
+					{
+						HCheck1.enabled = false;
+						HCheck3.enabled = false;
+						HCheck2.enabled = false;
+						HCheck5.enabled = false;
+						HCheck6.enabled = false;
+					} else if (HCheck5.selected)
+					{
+						HCheck1.enabled = false;
+						HCheck3.enabled = false;
+						HCheck4.enabled = false;
+						HCheck2.enabled = false;
+						HCheck6.enabled = false;
+					} else if (HCheck6.selected)
+					{
+						HCheck1.enabled = false;
+						HCheck3.enabled = false;
+						HCheck4.enabled = false;
+						HCheck5.enabled = false;
+						HCheck2.enabled = false;
+					}
+				}
+				
+			}// end displayStruct
+			
+			function setStructArray(k:uint,event:FeatureLayerEvent)
+			{
+				var query:Query = new Query();
+				query.where = "IDBATI = " + event.features[k].attributes.OBJECTID.toString();
+				query.outFields = ["*"];
+				struct.outFields = ["*"];
+				struct.queryFeatures(query,new AsyncResponder(onQueryResultHandler, onQueryFaultHandler));
+			}
+			
+			function onQueryResultHandler(featureSet:FeatureSet, token:Object = null):void
+			{
+				onQueryResult(featureSet, structEditsStarted);
+			}
+			function onQueryFaultHandler(fault:Fault, token:Object = null):void
+			{
+				onQueryFault(fault);
+			}
+			
+			function structEditsStarted(ev:FeatureLayerEvent):void
+			{
+				if(!struct.willTrigger(FaultEvent.FAULT))
+				{
+					struct.addEventListener(FaultEvent.FAULT, structEditsFault);
+				}
+				
+				if(!struct.willTrigger(FeatureLayerEvent.EDITS_COMPLETE))
+				{
+					struct.addEventListener(FeatureLayerEvent.EDITS_COMPLETE, structEditsCompleted);
+				}
+				
+				//		dataGrid.removeEventListener(DataGridEvent.ITEM_EDIT_END, dgItemEditEnd);
+				//		dataGrid.removeEventListener(DataGridEvent.ITEM_FOCUS_OUT,dgItemEditEnd);
+				//		addRowToTableBut.removeEventListener(MouseEvent.CLICK,addRowToTableHandler);
+				//		delRowFromTableBut.removeEventListener(MouseEvent.CLICK,delRowFromTable);
+				//		addRowToTableBut.enabled = false;
+				//		delRowFromTableBut.enabled = false;
+				struct.removeEventListener(FeatureLayerEvent.EDITS_STARTING,structEditsStarted);	
+			}
+			
+			function structEditsCompleted(ev:FeatureLayerEvent):void
+			{
+				
+				struct.removeEventListener(FaultEvent.FAULT, structEditsFault);
+				struct.removeEventListener(FeatureLayerEvent.EDITS_COMPLETE, structEditsCompleted);
+				cursorManager.removeBusyCursor();
+				
+				struct.clearSelection();
+				struct.refresh();
+				
+				if(ev.featureEditResults.addResults.length > 0)
+				{
+					addResults = geolGridSource.length;
+					var query:Query = new Query();
+					query.where = "IDBATI = " + structArray[2];
+					query.outFields = ["*"];
+					struct.outFields = ["*"];
+					struct.queryFeatures(query,new AsyncResponder(onQueryResultHandler, onQueryFaultHandler));
+					
+					var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+					toastMessage.imageSource = "assets/images/trash.png";
+					toastMessage.sampleCaption = "Added";
+					toastMessage.timeToLive = 2;
+					index.simpleToaster.toast(toastMessage);
+					
+				}
+				else if(ev.featureEditResults.deleteResults.length > 0)
+				{
+					var query:Query = new Query();
+					//		query.where = "IDBATI = " + event.features[k].attributes.OBJECTID;
+					query.outFields = ["*"];
+					struct.outFields = ["*"];
+					struct.queryFeatures(query,new AsyncResponder(onQueryResultHandler, onQueryFaultHandler));
+					
+					var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+					toastMessage.imageSource = "assets/images/trash.png";
+					toastMessage.sampleCaption = "Deleted";
+					toastMessage.timeToLive = 2;
+					index.simpleToaster.toast(toastMessage);
+					
+					
+				}
+				else //cas du update
+				{
+					var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+					toastMessage.imageSource = "assets/images/email1.png";
+					toastMessage.sampleCaption = "Updated";
+					toastMessage.timeToLive = 2;
+					index.simpleToaster.toast(toastMessage);
+				}
+				
+				//	callLater(addAllListener);
+			}
+			
+			function structEditsFault(ev:FaultEvent):void
+			{
+				//		geol.removeEventListener(FaultEvent.FAULT, geolEditsFault);
+				//		geol.removeEventListener(FeatureLayerEvent.EDITS_COMPLETE, geolEditsCompleted);
+				//		callLater(reloadIfFault);
+				//		geol.refresh();
+				struct.removeEventListener(FaultEvent.FAULT, structEditsFault);
+				struct.removeEventListener(FeatureLayerEvent.EDITS_COMPLETE, structEditsCompleted);
+				
+				var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+				toastMessage.imageSource = "assets/images/error.png";
+				toastMessage.sampleCaption = ev.fault.faultCode + ev.fault.faultDetail;
+				toastMessage.timeToLive = 2;
+				index.simpleToaster.toast(toastMessage);
+			}
+			
+			private function onQueryResult(featureSet:FeatureSet, geolEditsStarted:Function, token:Object = null):void
+			{
+				if(!struct.willTrigger(FeatureLayerEvent.EDITS_STARTING))
+				{
+					struct.addEventListener(FeatureLayerEvent.EDITS_STARTING, geolEditsStarted);
+				}
+				
+				//geol.addEventListener(FeatureLayerEvent.EDITS_COMPLETE,geolEditsCompleted);
+				if(featureSet.features.length>0)// on a des données !
+				{
+					isIn = true;
+					for each (var gr:Graphic in featureSet.features)
+					{
+						structArray = [];
+						structArray.push(gr.attributes.OBJECTID);
+						structArray.push(gr.attributes.VB);
+						structArray.push(gr.attributes.IDBATI);
+						structArray.push(gr.attributes.VB_Descr);
+						structArray.push(gr.attributes.HB);
+						structArray.push(gr.attributes.HB_Descr);
+						structArray.push(gr.attributes.TypeF);
+						structArray.push(gr.attributes.SoilR);
+						structArray.push(gr.attributes.SoilR_Descr);
+						structArray.push(gr.attributes.FM);
+						structArray.push(gr.attributes.FM_Descr);
+						structArray.push(gr.attributes.RoofT);
+						structArray.push(gr.attributes.RoofT_Descr);
+						structArray.push(gr.attributes.SourceInf);
+						structArray.push(gr.attributes.SourceInf_Descr);
+						structArray.push(gr.attributes.Depth_Range);
+						
+					}
+				} else
+				{
+					isIn = false;
+					structArray = [];
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+					structArray.push();
+				}
+				
+			}//End function: OnQueryResult
+			
+			private function onQueryFault(fault:Fault, token:Object = null):void
+			{
+				geolGridSource.removeAll();
+				//Alert.show("FAUTE !!!");
+				var error:Text = new Text();
+				error.text = "Aucune entité trouvée pour cet object";
+				index.ws1.addElement(error);
+				//tablePanel.addElement(error);
+			}//END Function onQueryFault
+			
+			
+			function setCondArray(k:uint,event:FeatureLayerEvent)
+			{
+				var query:Query = new Query();
+				query.where = "IDBATI = " + event.features[k].attributes.OBJECTID.toString();
+				query.outFields = ["*"];
+				cond.outFields = ["*"];
+				cond.queryFeatures(query,new AsyncResponder(onQueryCondResultHandler, onQueryCondFaultHandler));
+			}
+			
+			function onQueryCondResultHandler(featureSet:FeatureSet, token:Object = null):void
+			{
+				onQueryCondResult(featureSet, condEditsStarted);
+			}
+			function onQueryCondFaultHandler(fault:Fault, token:Object = null):void
+			{
+				onQueryCondFault(fault);
+			}
+			
+			function condEditsStarted(ev:FeatureLayerEvent):void
+			{
+				if(!geol.willTrigger(FaultEvent.FAULT))
+				{
+					cond.addEventListener(FaultEvent.FAULT, condEditsFault);
+				}
+				
+				if(!geol.willTrigger(FeatureLayerEvent.EDITS_COMPLETE))
+				{
+					cond.addEventListener(FeatureLayerEvent.EDITS_COMPLETE, condEditsCompleted);
+				}
+				
+				//		dataGrid.removeEventListener(DataGridEvent.ITEM_EDIT_END, dgItemEditEnd);
+				//		dataGrid.removeEventListener(DataGridEvent.ITEM_FOCUS_OUT,dgItemEditEnd);
+				//		addRowToTableBut.removeEventListener(MouseEvent.CLICK,addRowToTableHandler);
+				//		delRowFromTableBut.removeEventListener(MouseEvent.CLICK,delRowFromTable);
+				//		addRowToTableBut.enabled = false;
+				//		delRowFromTableBut.enabled = false;
+				cond.removeEventListener(FeatureLayerEvent.EDITS_STARTING,condEditsStarted);	
+			}
+			
+			function condEditsCompleted(ev:FeatureLayerEvent):void
+			{
+				
+				cond.removeEventListener(FaultEvent.FAULT, condEditsFault);
+				cond.removeEventListener(FeatureLayerEvent.EDITS_COMPLETE, condEditsCompleted);
+				cursorManager.removeBusyCursor();
+				
+				cond.clearSelection();
+				cond.refresh()
+				
+				if(ev.featureEditResults.addResults.length > 0)
+				{
+					var query:Query = new Query();
+					query.where = "IDBATI = " + condArray[1];
+					query.outFields = ["*"];
+					cond.outFields = ["*"];
+					cond.queryFeatures(query,new AsyncResponder(onQueryCondResultHandler, onQueryCondFaultHandler));
+					
+					var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+					toastMessage.imageSource = "assets/images/trash.png";
+					toastMessage.sampleCaption = "Added";
+					toastMessage.timeToLive = 2;
+					index.simpleToaster.toast(toastMessage);
+					
+				}
+				else if(ev.featureEditResults.deleteResults.length > 0)
+				{
+					var query:Query = new Query();
+					//		query.where = "IDBATI = " + event.features[k].attributes.OBJECTID;
+					query.outFields = ["*"];
+					cond.outFields = ["*"];
+					cond.queryFeatures(query,new AsyncResponder(onQueryCondResultHandler, onQueryCondFaultHandler));
+					
+					var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+					toastMessage.imageSource = "assets/images/trash.png";
+					toastMessage.sampleCaption = "Deleted";
+					toastMessage.timeToLive = 2;
+					index.simpleToaster.toast(toastMessage);
+					
+					
+				}
+				else //cas du update
+				{
+					var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+					toastMessage.imageSource = "assets/images/email1.png";
+					toastMessage.sampleCaption = "Updated";
+					toastMessage.timeToLive = 2;
+					index.simpleToaster.toast(toastMessage);
+				}
+				
+				//	callLater(addAllListener);
+			}
+			
+			function condEditsFault(ev:FaultEvent):void
+			{
+				//		geol.removeEventListener(FaultEvent.FAULT, geolEditsFault);
+				//		geol.removeEventListener(FeatureLayerEvent.EDITS_COMPLETE, geolEditsCompleted);
+				//		callLater(reloadIfFault);
+				//		geol.refresh();
+				cond.removeEventListener(FaultEvent.FAULT, structEditsFault);
+				cond.removeEventListener(FeatureLayerEvent.EDITS_COMPLETE, structEditsCompleted);
+				
+				var toastMessage:ToastMessageUbuntu = new ToastMessageUbuntu;
+				toastMessage.imageSource = "assets/images/error.png";
+				toastMessage.sampleCaption = ev.fault.faultCode + ev.fault.faultDetail;
+				toastMessage.timeToLive = 2;
+				index.simpleToaster.toast(toastMessage);
+			}
+			
+			private function onQueryCondResult(featureSet:FeatureSet, condEditsStarted:Function, token:Object = null):void
+			{
+				if(!struct.willTrigger(FeatureLayerEvent.EDITS_STARTING))
+				{
+					cond.addEventListener(FeatureLayerEvent.EDITS_STARTING, condEditsStarted);
+				}
+				
+				//geol.addEventListener(FeatureLayerEvent.EDITS_COMPLETE,geolEditsCompleted);
+				if(featureSet.features.length>0)// on a des données !
+				{
+					isInCond = true;
+					for each (var gr:Graphic in featureSet.features)
+					{
+						condArray = [];
+						condArray.push(gr.attributes.OBJECTID);
+						condArray.push(gr.attributes.IDBATI);
+						condArray.push(gr.attributes.Categ_Damage);
+						condArray.push(gr.attributes.Other_Damage);
+						condArray.push(gr.attributes.Other_Damage_Descr);
+						
+					}
+				} else
+				{
+					isInCond = false;
+					condArray = [];
+					condArray.push();
+					condArray.push();
+					condArray.push();
+					condArray.push();
+					condArray.push();
+				}
+				
+			}//End function: OnQueryResult
+			
+			private function onQueryCondFault(fault:Fault, token:Object = null):void
+			{
+				//geolGridSource.removeAll();
+				//Alert.show("FAUTE !!!");
+				var error:Text = new Text();
+				error.text = "Aucune entité trouvée pour cet object";
+				index.ws1.addElement(error);
+				//tablePanel.addElement(error);
+			}//END Function onQueryFault
+			
+			private function getStructDomainValue():void
+			{
+				var returnValue:String = "";
+				var fld:Object;
+				var cVal:CodedValue;
+				var cDomain:CodedValueDomain;
+				for each (fld in struct.layerDetails.fields)
+				{
+					switch (fld.name)
+					{
+						case "SoilR":
+							cDomain = fld.domain;
+							qResultsSR = [];
+							qResultsSR.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsSR.push(cVal.name);
+						}
+							fillSRD();
+							fillSRS();
+							break;
+						case "RoofT":
+							cDomain = fld.domain;
+							qResultsRT = [];
+							qResultsRT.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsRT.push(cVal.name);
+						}
+							break;
+						case "SourceInf":
+							cDomain = fld.domain;
+							qResultsSI = [];
+							qResultsSI.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsSI.push(cVal.name);
+						}
+							break;
+						case "FM":
+							cDomain = fld.domain;
+							qResultsFM = [];
+							qResultsFM.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsFM.push(cVal.name);
+						}
+							fillFMS();
+							fillFMD();
+							break;
+						case "TypeF":
+							cDomain = fld.domain;
+							qResultsTF = [];
+							qResultsTF.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsTF.push(cVal.name);
+						}
+							break;
+						case "Depth_Range":
+							cDomain = fld.domain;
+							qResultsDR = [];
+							qResultsDR.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsDR.push(cVal.name);
+						}
+							break;
+					}	
+				}	
+			}
+			
+			private function fillFMS():void
+			{
+				qResultsFMS = [];
+				qResultsFMS.push(" ");
+				qResultsFMS.push(qResultsFM[1]);
+				qResultsFMS.push(qResultsFM[2]);
+				qResultsFMS.push(qResultsFM[5]);
+			}
+			
+			private function fillFMD():void
+			{
+				qResultsFMD = [];
+				qResultsFMD.push(" ");
+				qResultsFMD.push(qResultsFM[3]);
+				qResultsFMD.push(qResultsFM[4]);
+				qResultsFMD.push(qResultsFM[5]);
+			}
+			
+			private function fillSRS():void
+			{
+				qResultsSRS = [];
+				qResultsSRS.push(" ");
+				qResultsSRS.push(qResultsSR[1]);
+				qResultsSRS.push(qResultsSR[2]);
+				qResultsSRS.push(qResultsSR[3]);
+			}
+			
+			private function fillSRD():void
+			{
+				qResultsSRD = [];
+				qResultsSRD.push(" ");
+				qResultsSRD.push(qResultsSR[4]);
+				qResultsSRD.push(qResultsSR[5]);
+				qResultsSRD.push(qResultsSR[6]);
+			}
+			
+			private function getCondDomainValue():void
+			{
+				var returnValue:String = "";
+				var fld:Object;
+				var rDomain:RangeDomain;
+				var max:Number;
+				var min:Number;
+				var cVal:CodedValue;
+				var cDomain:CodedValueDomain;
+				for each (fld in cond.layerDetails.fields)
+				{
+					switch (fld.name)
+					{
+						case "Categ_Damage":
+							rDomain = fld.domain;
+							max = rDomain.maxValue;
+							min = rDomain.minValue;
+							qResultsCD = [];
+							qResultsCD.push(" ");
+							for (var i:Number = min; i<=max; i++)
+							{
+								qResultsCD.push(i);
+							}
+							break;
+						case "Other_Damage":
+							cDomain = fld.domain;
+							qResultsOD = [];
+							qResultsOD.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsOD.push(cVal.name);
+						}
+							break;
+					}
+					
+				}
+			}
+			
+			private function getDomainValue():void
+			{
+				var returnValue:String = "";
+				var fld:Object;
+				var cVal:CodedValue;
+				var cDomain:CodedValueDomain;
+				for each (fld in featLayer.layerDetails.fields)
+				{
+					switch (fld.name)
+					{
+						case "FI":
+							cDomain = fld.domain;
+							qResultsFI = [];
+							qResultsFI.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsFI.push(cVal.name);
+						}
+							break;
+						case "UIZ":
+							cDomain = fld.domain;
+							qResultsUIZ = [];
+							qResultsUIZ.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsUIZ.push(cVal.name);
+						}
+							break;
+						case "Building_Category":
+							cDomain = fld.domain;
+							qResultsBC = [];
+							qResultsBC.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsBC.push(cVal.name);
+						}
+							break;
+						case "Use_Building":
+							cDomain = fld.domain;
+							qResultsUB = [];
+							qResultsUB.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsUB.push(cVal.name);
+						}
+							break;
+						case "HB":
+							cDomain = fld.domain;
+							qResultsHB = [];
+							qResultsHB.push(" ");
+							for each (cVal in cDomain.codedValues)
+						{
+							qResultsHB.push(cVal.name);
+						}
+							break;				
+					}
+					
+				}
+			}
+			
+		]]>
+		
+		
+	</fx:Script>
+	
+	
+	
+	<fx:Declarations>
+		<esri:GeometryService id="myGeometryService"
+							  url="http://tasks.arcgisonline.com/ArcGIS/rest/services/Geometry/GeometryServer"/>
+		<esri:Query id="queryMapClick"/>
+		
+		<esri:AttachmentInspector id="attachmentInspector"
+								  width="100%"
+								  addEnabled="false"
+								  deleteEnabled="false"/>
+		
+		<s:Fade id="fadeIn" alphaFrom="0" alphaTo="0.9" duration="700"
+				target="{parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel}"
+				effectEnd="if(isOpened){parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.visible = true}"/>
+		<s:Fade id="fadeOut" alphaFrom="0.9" alphaTo="0" duration="500"
+				effectEnd="if(isOpened){parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.visible = false}"
+				target="{parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel}"/>		   
+		
+		<mx:Move id="panelIn" duration="1000" easingFunction="Bounce.easeOut"
+				 effectEnd="if(isOpened){parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.btn.label='Open'}"
+				 target="{parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel}"
+				 xFrom="{screenWidth - (5*(65*screenWidth/100)/100) - (95*parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.width)/100}"
+				 xTo="{screenWidth - (5*(65*screenWidth/100)/100)}"/>
+		<!--xBy="{(95*parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.width)/100}"-->
+		
+		<mx:Move id="panelOut" duration="1200" easingFunction="Bounce.easeOut"
+				 effectEnd="if(isOpened){parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.btn.label='Close'}"
+				 target="{parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel}"
+				 xTo="{screenWidth - (5*(65*screenWidth/100)/100) - (95*parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.width)/100}"
+				 xFrom="{screenWidth - (5*(65*screenWidth/100)/100)}"/>
+		<!--xBy="{-(95*parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.parentDocument.panel.width)/100}"/-->
+		
+		<s:AnimateColor id="fadeColorIn" colorPropertyName="backgroundColor" colorTo="#F2F2F2" duration="100"/>
+		<s:AnimateColor id="fadeColorOut" colorPropertyName="backgroundColor" colorTo="0xffffff"  duration="400"/>
+		
+		
+		<mx:VBox id="pan1" label="Grain Size Analysis" height="100%">
+			
+		</mx:VBox>
+		<mx:HBox id="nextToPrev" height = "90%" width="100%"/>
+		
+		
+		
+		<mx:HBox id="pan2" label="Identification Tests">
+			<mx:Label text="TabNavigator container panel 2"/>
+		</mx:HBox>
+		
+		<mx:VBox id="pan3" label="Triexial">
+			<mx:Label text="TabNavigator container panel 3"/>
+		</mx:VBox>
+		
+		<mx:ViewStack 
+			id="content"
+			width="90%" height="100%">
+			
+		</mx:ViewStack>
+		
+		
+		<mx:Image 
+			id="animateImage"
+			visible="false"
+			includeInLayout="false" />
+		
+		<mx:Parallel id="showEffect" >
+			<mx:Move 
+				id="contentMove" />
+			<mx:Move 
+				id="imageMove" 
+				target="{animateImage}"/>
+			<mx:effectEnd>
+				<![CDATA[
+				animateImage.visible = false;
+				animateImage.includeInLayout = false;
+				]]>
+			</mx:effectEnd>
+		</mx:Parallel>
+		
+		
+		<mx:Canvas id="goToLeftCan" 
+				   width="{5*(pan1.width)/100}" left="0" bottom="0" height="100%" 
+				   backgroundColor="white" alpha="0.9" 
+				   rollOut="rollOutFnc(event)" rollOver="rollOverFnc(event)">
+			<mx:LinkButton id="goToLeft" left = "10" top="{45*goToLeftCan.height/100}"
+						   upSkin="@Embed(source='assets/images/leftArrowBis.png')"
+						   downSkin="@Embed(source='assets/images/leftArrowBis.png')"
+						   overSkin="@Embed(source='assets/images/leftArrowBis.png')"
+						   disabledSkin="@Embed(source='assets/images/leftArrowBis.png')"
+						   width = "15" height = "30"/>
+			
+		</mx:Canvas>
+		
+		<mx:Canvas id="goToRightCan" 
+				   width="{5*(pan1.width)/100}" bottom="0" height="100%" 
+				   backgroundColor="white" alpha="0.9" 
+				   rollOut="rollOutFnc(event)" rollOver="rollOverFnc(event)">
+			<mx:LinkButton id="goToRight" x="10" top="{45*goToRightCan.height/100}" 
+						   upSkin="@Embed(source='assets/images/rightArrowBis.png')"
+						   downSkin="@Embed(source='assets/images/rightArrowBis.png')"
+						   overSkin="@Embed(source='assets/images/rightArrowBis.png')"
+						   disabledSkin="@Embed(source='assets/images/rightArrowBis.png')"
+						   width = "15" height = "30"/>
+		</mx:Canvas>
+		
+		<mx:SeriesInterpolate id="interpolateIn" duration="500" />
+		<!--					  rollOut="rollOutFnc(event)" rollOver="rollOverFnc(event)"
+		-->
+		
+		<mx:HTTPService id="emailService" url="php/mail.php" method="POST"
+						resultFormat="xml" useProxy="false"/>
+	</fx:Declarations>
+	
+	<viewer:WidgetTemplate id="MyInfo" width="400" height="150" closed="{widgetClosedHandler(event);  map.infoWindowRenderersEnabled = true;}"
+						   open="{widgetOpenedHandler(event); map.infoWindowRenderersEnabled = false;}">
+		<mx:VBox top="0">
+			<s:Spacer height="20"/>
+			<mx:VBox id="SelectLayer" width="100%"  top="3" paddingBottom="3" paddingLeft="3"
+					 paddingRight="3" paddingTop="3" verticalAlign="top">
+				<mx:RadioButtonGroup id="selectLayers"/>
+			</mx:VBox>
+			<mx:Label id="status" bottom="10" text=""/>
+		</mx:VBox>
+	</viewer:WidgetTemplate>
+</viewer:BaseWidget>
+
+

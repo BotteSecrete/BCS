@@ -1,0 +1,9 @@
+<?xml version="1.0" ?>
+<configuration>
+	<excludelayer>BatiValidated</excludelayer>
+</configuration>
+
+<!--
+    See Layer List widget tag reference at
+    http://links.esri.com/layerlistwidget
+-->

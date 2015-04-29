@@ -1,0 +1,15 @@
+<?xml version="1.0" ?>
+<configuration>
+    <title>{CODE}</title>
+    <fields>
+        <field name="CODE"/>
+        <field name="DATE_SURVEY" alias="Date of survey" visible="true">
+        	<format dateformat="shortDateShortTime"/>
+   	    </field>
+        <field name="Terminated" alias="Termine?" visible="true"/>
+        <field name="Validated" alias="Valide?" visible="true"/>
+    </fields>
+    <showattachments>true</showattachments>
+    <showrelatedrecords>false</showrelatedrecords>
+</configuration>
+

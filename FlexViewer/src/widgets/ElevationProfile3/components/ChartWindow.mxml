@@ -1,0 +1,270 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--=============================================================================
+* 
+* Copyright © 2010 ESRI. All rights reserved. 
+* 
+* Use subject to ESRI license agreement.
+* 
+* Unpublished—all rights reserved.
+* Use of this ESRI commercial Software, Data, and Documentation is limited to
+* the ESRI License Agreement. In no event shall the Government acquire greater
+* than Restricted/Limited Rights. At a minimum Government rights to use,
+* duplicate, or disclose is subject to restrictions as set for in FAR 12.211,
+* FAR 12.212, and FAR 52.227-19 (June 1987), FAR 52.227-14 (ALT I, II, and III)
+* (June 1987), DFARS 227.7202, DFARS 252.227-7015 (NOV 1995).
+* Contractor/Manufacturer is ESRI, 380 New York Street, Redlands,
+* CA 92373-8100, USA.
+* 
+* SAMPLE CODE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+* INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+* PARTICULAR PURPOSE, ARE DISCLAIMED.  IN NO EVENT SHALL ESRI OR CONTRIBUTORS
+* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+* INTERRUPTION) SUSTAINED BY YOU OR A THIRD PARTY, HOWEVER CAUSED AND ON ANY
+* THEORY OF LIABILITY, WHETHER IN CONTRACT; STRICT LIABILITY; OR TORT ARISING
+* IN ANY WAY OUT OF THE USE OF THIS SAMPLE CODE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE TO THE FULL EXTENT ALLOWED BY APPLICABLE LAW.
+* 
+* =============================================================================-->
+<s:TitleWindow xmlns:fx="http://ns.adobe.com/mxml/2009" 
+			   xmlns:s="library://ns.adobe.com/flex/spark" 
+			   width="500" height="300"
+			   close="onClose(event)"
+			   title="Elevation Profile" 
+			   xmlns:esri="http://www.esri.com/2008/ags" 
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   >
+	<s:layout>
+		<s:VerticalLayout/>
+	</s:layout>
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.layers.GraphicsLayer;
+			import com.esri.viewer.ConfigData;
+			
+			import mx.charts.events.ChartItemEvent;
+			import mx.controls.Alert;
+			import mx.events.CloseEvent;
+			
+			
+			[Bindable(event="chartDataChanged")]
+			private var _aryData				: Array;
+			
+			[Bindable(event="chartDataChanged")]
+			private var _elevationUnits			: String;
+			[Bindable(event="chartDataChanged")]
+			private var _distanceAlongPathUnits	: String;
+			
+			public var glProfileLine			: GraphicsLayer;
+			
+			private var _gpcHilitedDataPoint	: Graphic;
+			[Bindable]
+			private var _config					: XML;
+			
+			public function set chartData( oData:Object ):void {
+				_config = oData[ "config" ];
+				//				dispatchEvent( new Event( "configChanged" ) );
+				
+				var xmlUnitInfo:XMLList = _config.unitsAndLabeling;
+				_elevationUnits = xmlUnitInfo.elevation.label.chart.valueOf().toString();
+				_distanceAlongPathUnits = xmlUnitInfo.distanceAlongPath.label.chart.valueOf().toString();
+				
+				_aryData = consolidateDataForCharts( oData );
+				dispatchEvent( new Event( "chartDataChanged" ) );
+			}
+			
+			protected function onClose( event:CloseEvent ):void
+			{
+				// Here, just remove the cross marker; the line will be cleared 
+				// and the popup removed by the calling module's event handler
+				glProfileLine.remove( _gpcHilitedDataPoint );
+			}
+			
+			protected function onChartPointRollOver( event:ChartItemEvent ):void
+			{
+				if ( _gpcHilitedDataPoint ) glProfileLine.remove( _gpcHilitedDataPoint );
+				// Create a graphic for the data point map position
+				var pt:MapPoint = new MapPoint( event.hitData.item.geometry[ 0 ], event.hitData.item.geometry[ 1 ] );
+				_gpcHilitedDataPoint = new Graphic( pt, smsDataPointLoc );
+				glProfileLine.add( _gpcHilitedDataPoint );
+			}
+			
+			/**
+			 * Merge various arrays of data into a single array of objects for use 
+			 * as a dataProvider for charting components.
+			 */
+			private function consolidateDataForCharts( oData:Object ):Array {
+				// Add elevation values to points; determine the min elevation value
+				// Get the global minimum elevation value so the chart area is correctly filled in for 
+				// negative values. If min value > 0, lower it to zero to fill in for highly positive values.
+				var oResult:Object = oData[ "result" ];
+				var oConfig:XML    = oData[ "config" ];
+				
+				var nFromElevationMetersFactor:Number = Number(oConfig.unitsAndLabeling.elevation.multiplyByToConvertFromMeters.valueOf());
+				var nFromElevationMetersFactorInv:Number = 1;
+				var aryElevations:Array = elevations( oResult, nFromElevationMetersFactor );
+				var nElevationMin:Number = Math.min.apply( null, aryElevations );
+				if ( baseAtZero(_config) )
+					nElevationMin = Math.min( nElevationMin, 0 );
+				//				addElevationsToPoints( oResult, aryElevations );
+				
+				// Mash elevations and distances and geometries together
+				var aryChartData:Array = new Array();
+				var ptPrior:Array = null;
+				var nCurDistAlong:Number = 0;
+				// For each geometry returned...
+				for ( var iGeom:int = 0; iGeom < oResult.geometries.length; iGeom++ ) {
+					var oGeom:Object = oResult.geometries[ iGeom ];
+					
+					// For each path in each geometry...
+					for ( var iPath:int = 0; iPath < oGeom.paths.length; iPath++ ) {
+						var aryPath:Array = oGeom.paths[ iPath ];
+						
+						// For each point in each path...
+						for ( var iPt:int = 0; iPt < aryPath.length; iPt++ ) {
+							var ptCurrent:Array = aryPath[ iPt ];
+							// Find distance from last point
+							var nDistFromLast:Number = ( ptPrior == null ) ? 0 :
+								Math.sqrt(
+									Math.pow( ( ptCurrent[ 0 ] - ptPrior[ 0 ] ), 2 ) + 
+									Math.pow( ( ptCurrent[ 1 ] - ptPrior[ 1 ] ), 2 )
+								) * Number(oConfig.unitsAndLabeling.distanceAlongPath.multiplyByToConvertFromMeters.valueOf()); // Web Mercator is in meters
+							nCurDistAlong += nDistFromLast;
+							
+							// Add info to data array
+							aryChartData.push( {
+								"elevation"		: ptCurrent[ 2 ] * nFromElevationMetersFactor,
+								"elevationLabel": (oConfig.unitsAndLabeling.elevation.label.dataTip.valueOf()).toString(),
+								"geometry"		: [ ptCurrent[ 0 ], ptCurrent[ 1 ] ],
+								"distance"		: nCurDistAlong,
+								"distanceLabel"	: oConfig.unitsAndLabeling.distanceAlongPath.label.dataTip.valueOf().toString(),
+								"elevationMin"	: nElevationMin
+							} );
+							ptPrior = ptCurrent;
+						}
+					}
+				}
+				return aryChartData;
+				
+				/**
+				 * Given the result set of geometries with z-values, produce a new single-dimensional array
+				 * of elevation values. These will eventually be mixed into the location and distance
+				 * array for display in the chart.
+				 * @param oResult: The result object returned from the call to the elevation SOE.
+				 * @param nFromMeters: Factor to multiply by meters to get desired elevation units
+				 * @return A single-dimensional array of elevation values (order unchanged from the 
+				 * original 2-d array) 
+				 **/
+				function elevations( oResult:Object, nFromMeters:Number ):Array {
+					var aryElevations:Array = new Array();
+					//					for ( var iElevationSet:int = 0; iElevationSet < oResult.elevations.length; iElevationSet++ ) {
+					//						var aryElevationSet:Array = oResult.elevations[ iElevationSet ];
+					//						for ( var iElevation:int = 0; iElevation < aryElevationSet.length; iElevation++ ) 
+					//							aryElevations.push( aryElevationSet[ iElevation ] * nFromMeters );
+					//					}
+					// For each geometry returned...
+					for ( var iGeom:int = 0; iGeom < oResult.geometries.length; iGeom++ ) {
+						var oGeom:Object = oResult.geometries[ iGeom ];
+						
+						// For each path in each geometry...
+						for ( var iPath:int = 0; iPath < oGeom.paths.length; iPath++ ) {
+							var aryPath:Array = oGeom.paths[ iPath ];
+							
+							// For each point in each path...
+							for ( var iPt:int = 0; iPt < aryPath.length; iPt++ ) {
+								var ptCurrent:Array = aryPath[ iPt ];
+								aryElevations.push( ptCurrent[ 2 ] * nFromMeters );
+							}
+						}
+					}
+					return aryElevations;
+				}
+				/* 				function addElevationsToPoints( oResult:Object, aryElevations:Array ):void {
+				var aryResult:Array = new Array();
+				var iCurItemIdx:int = -1;
+				
+				// For each geometry...
+				for ( var iGeom:int = 0; iGeom < oResult.geometries.length; iGeom++ ) {
+				var oGeom:Object = oResult.geometries[ iGeom ];
+				
+				// For each path in each geometry...
+				for ( var iPath:int = 0; iPath < oGeom.paths.length; iPath++ ) {
+				var aryPath:Array = oGeom.paths[ iPath ];
+				
+				// For each point in each path...
+				for ( var iPt:int = 0; iPt < aryPath.length; iPt++ ) {
+				var ptCurrent:Array = aryPath[ iPt ];
+				ptCurrent.push( aryElevations[ ++iCurItemIdx ] );
+				}
+				}
+				}
+				} */
+			}
+			
+			private function baseAtZero(config:XML):Boolean {
+				return _config.baseChartAtZero.valueOf().toString().toLocaleLowerCase() == true.toString().toLocaleLowerCase();
+			}
+			
+			private function lblFctn(lblValue:Object, prevLblValue:Object, ax:LinearAxis):String {
+				if(lblValue.toString() == "0"){return lblValue.toString();}
+				else{return lblValue.toString().split("-")[1];}
+			}
+			
+			private function lblFctnFloat(lblValue:Object, prevLblValue:Object, ax:LinearAxis):String {
+				Alert.show(prevLblValue+"","Debugg");
+				return prevLblValue+"";
+			}
+			
+		]]>
+	</fx:Script>
+	<mx:AreaChart id="chtProfile" width="100%" height="100%" 
+				  dataProvider="{_aryData}" 
+				  showDataTips="true"
+				  dataTipRenderer="{DataTipRenderer}" 
+				  itemRollOver="onChartPointRollOver(event)" 
+				  color="#000000"
+				  >
+		<mx:fill>
+			<s:LinearGradient rotation="270">
+				<s:entries>
+					<s:GradientEntry color="#66AAFF"/>
+					<s:GradientEntry color="#FFFFFF"/>
+				</s:entries>
+			</s:LinearGradient>					
+		</mx:fill>
+		<mx:series>
+			<mx:AreaSeries yField="elevation" xField="distance" minField="elevationMin">
+				<mx:areaStroke>
+					<s:SolidColorStroke weight="2" color="#0000AA"/>
+				</mx:areaStroke>
+				<mx:areaFill>
+					<s:LinearGradient rotation="270">
+						<s:entries>
+							<s:GradientEntry color="#FFDEAD"/>
+							<s:GradientEntry color="#8B4513"/>
+						</s:entries>
+					</s:LinearGradient>
+				</mx:areaFill>
+			</mx:AreaSeries>
+		</mx:series>
+		<mx:verticalAxis>
+			<!--<mx:LinearAxis title="Tassement ({_elevationUnits})" baseAtZero="{baseAtZero(_config)}" labelFunction="lblFctn"/>-->
+			<!--<mx:LinearAxis title="Déformation horizontale ({_elevationUnits})" baseAtZero="{baseAtZero(_config)}"/>-->
+			<mx:LinearAxis title="Pente ({_elevationUnits})" baseAtZero="{baseAtZero(_config)}"/>
+		</mx:verticalAxis>
+		<mx:horizontalAxis>
+			<mx:LinearAxis title="Distance le long du profil ({_distanceAlongPathUnits})" />
+		</mx:horizontalAxis>
+	</mx:AreaChart>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<esri:SimpleMarkerSymbol id="smsDataPointLoc" color="#FF0000" size="18" style="cross">
+			<esri:outline>
+				<esri:SimpleLineSymbol width="3"/>
+			</esri:outline>
+		</esri:SimpleMarkerSymbol>
+	</fx:Declarations>
+</s:TitleWindow>

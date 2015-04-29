@@ -1,0 +1,859 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Copyright (c) 2011 ESRI
+
+    All rights reserved under the copyright laws of the United States
+    and applicable international laws, treaties, and conventions.
+
+    You may freely redistribute and use this sample code, with or
+    without modification, provided you include the original copyright
+    notice and use restrictions.
+
+    See use restrictions in use_restrictions.txt.
+-->
+<!---
+    The default skin class for an InfoWindow instance.
+    <p><b>Since:</b> ArcGIS API for Flex 2.3</p>
+-->
+<s:Skin xmlns:fx="http://ns.adobe.com/mxml/2009"
+        xmlns:s="library://ns.adobe.com/flex/spark"
+        xmlns:esri="http://www.esri.com/2008/ags"
+        clipAndEnableScrolling="false"
+        minHeight="8"
+        minWidth="8">
+    <fx:Metadata>
+        /**
+         * A strongly typed property that references the component to which this skin is applied.
+         */
+        [HostComponent("com.esri.ags.components.supportClasses.InfoWindow")]
+    </fx:Metadata>
+    <fx:Script>
+        <![CDATA[
+			import com.esri.ags.components.supportClasses.InfoPlacement;
+			import com.esri.viewer.AppEvent;
+
+            /**
+             * @private
+             */
+            override protected function commitProperties():void
+            {
+                super.commitProperties();
+
+                pathFill.color = getStyle('backgroundColor');
+                pathFill.alpha = getStyle('backgroundAlpha');
+                path.fill = pathFill.alpha > 0.0 ? pathFill : null;
+                pathStroke.weight = getStyle('borderThickness');
+                pathStroke.color = getStyle('borderColor');
+                pathStroke.alpha = getStyle('borderAlpha');
+                path.stroke = pathStroke.weight > 0.0 ? pathStroke : null;
+
+                const shadowDistance:Number = getStyle('shadowDistance');
+                if (shadowDistance == 0 && filters.length > 0)
+                {
+                    filters = [];
+                }
+                else if (shadowDistance > 0)
+                {
+                    const shadowAlpha:Number = getStyle('shadowAlpha');
+                    const shadowAngle:Number = getStyle('shadowAngle');
+                    const shadowColor:Number = getStyle('shadowColor');
+                    if (shadowDistance !== dropShadow.distance || shadowAlpha !== dropShadow.alpha || shadowAngle !== dropShadow.angle || shadowColor !== dropShadow.color)
+                    {
+                        dropShadow.distance = shadowDistance;
+                        dropShadow.alpha = shadowAlpha;
+                        dropShadow.angle = shadowAngle;
+                        dropShadow.color = shadowColor;
+                        filters = [ dropShadow ];
+                    }
+                }
+            }
+
+            /**
+             * @private
+             */
+            override protected function measure():void
+            {
+                const infoPlacementOld:String = hostComponent.infoPlacement || getStyle('infoPlacement');
+                measureWidthHeight(infoPlacementOld);
+                if (hostComponent.isMouseDown)
+                {
+                    updateParts(measuredWidth, measuredHeight, 'none');
+                }
+                else
+                {
+                    const infoPlacementNew:String = updateInfoPlacement(measuredWidth, measuredHeight, infoPlacementOld);
+                    if (infoPlacementNew !== infoPlacementOld)
+                    {
+                        measureWidthHeight(infoPlacementNew);
+                    }
+                    updateParts(measuredWidth, measuredHeight, infoPlacementNew);
+                }
+            }
+
+            private function measureWidthHeight(infoPlacement:String):void
+            {
+                var dx:Number = 0;
+                var dy:Number = 0;
+                const borderThickness:Number = getStyle('borderThickness');
+                const borderThickness2:int = borderThickness + borderThickness;
+                dx += borderThickness2;
+                dy += borderThickness2;
+                const offsetX:Number = getStyle('infoOffsetX');
+                const offsetY:Number = getStyle('infoOffsetY');
+                switch (infoPlacement)
+                {
+                    case InfoPlacement.CENTER:
+                        // No Op !
+                        break;
+                    case InfoPlacement.TOP:
+                    case InfoPlacement.BOTTOM:
+                    {
+                        dy += offsetY;
+                        break;
+                    }
+                    case InfoPlacement.LEFT:
+                    case InfoPlacement.RIGHT:
+                    {
+                        dx += offsetX;
+                        break;
+                    }
+                    default:
+                    {
+                        dx += offsetX;
+                        dy += offsetY;
+                    }
+                }
+                measuredWidth = containerGroup.measuredWidth + dx;
+                measuredHeight = containerGroup.measuredHeight + dy;
+                measuredMinWidth = containerGroup.measuredMinWidth + dx;
+                measuredMinHeight = containerGroup.measuredMinHeight + dy;
+                // Set measured width/height so that infered internal scalingX/Y will be set to 1
+                if (hostComponent.isMouseDown)
+                {
+                    path.measuredWidth = containerGroup.measuredWidth + borderThickness2;
+                    path.measuredHeight = containerGroup.measuredHeight + borderThickness2;
+                }
+                else
+                {
+                    path.measuredWidth = measuredWidth;
+                    path.measuredHeight = measuredHeight;
+                }
+                path.measuredX = path.measuredY = 0;
+            }
+
+            private function updateParts(unscaledWidth:Number, unscaledHeight:Number, infoPlacement:String):void
+            {
+                var data:String = "M 0 0";
+                const unscaledWidth2:Number = unscaledWidth * 0.5;
+                const unscaledHeight2:Number = unscaledHeight * 0.5;
+                const maxRadius:Number = Math.min(unscaledWidth2, unscaledHeight2) * 0.5;
+                const borderThickness:Number = getStyle('borderThickness');
+                const offsetX:Number = Math.abs(getStyle('infoOffsetX'));
+                const offsetY:Number = Math.abs(getStyle('infoOffsetY'));
+                const offsetW:Number = Math.abs(getStyle('infoOffsetW'));
+                const upperLeftRadius:Number = Math.min(maxRadius, getStyle('upperLeftRadius'));
+                const upperRightRadius:Number = Math.min(maxRadius, getStyle('upperRightRadius'));
+                const lowerLeftRadius:Number = Math.min(maxRadius, getStyle('lowerLeftRadius'));
+                const lowerRightRadius:Number = Math.min(maxRadius, getStyle('lowerRightRadius'));
+                switch (infoPlacement)
+                {
+                    case InfoPlacement.UPPERLEFT:
+                    case InfoPlacement.UPPER_LEFT:
+                    {
+                        data += "L " + (-offsetX - offsetW) + " " + (-offsetY);
+                        if (lowerLeftRadius > 0)
+                        {
+                            data += "H " + (-unscaledWidth + lowerLeftRadius);
+                            data += lowerLeftCurve(lowerLeftRadius);
+                        }
+                        else
+                        {
+                            data += "H " + (-unscaledWidth);
+                        }
+                        if (upperLeftRadius > 0)
+                        {
+                            data += "V " + (-unscaledHeight + upperLeftRadius);
+                            data += upperLeftCurve(upperLeftRadius);
+                        }
+                        else
+                        {
+                            data += "V " + (-unscaledHeight);
+                        }
+                        if (upperRightRadius > 0)
+                        {
+                            data += "H " + (-offsetX - upperRightRadius);
+                            data += upperRightCurve(upperRightRadius);
+                        }
+                        else
+                        {
+                            data += "H " + (-offsetX);
+                        }
+                        data += "V " + (-offsetY - offsetW);
+                        containerGroup.move(borderThickness - unscaledWidth, borderThickness - unscaledHeight);
+                        break;
+                    }
+                    case InfoPlacement.TOP:
+                    {
+                        data += "L " + (-offsetW) + " " + (-offsetY);
+                        if (lowerLeftRadius > 0)
+                        {
+                            data += "H " + (-unscaledWidth2 + lowerLeftRadius);
+                            data += lowerLeftCurve(lowerLeftRadius);
+                        }
+                        else
+                        {
+                            data += "H " + (-unscaledWidth2);
+                        }
+                        if (upperLeftRadius > 0)
+                        {
+                            data += "V " + (-unscaledHeight + upperLeftRadius);
+                            data += upperLeftCurve(upperLeftRadius);
+                        }
+                        else
+                        {
+                            data += "V " + (-unscaledHeight);
+                        }
+                        if (upperRightRadius > 0)
+                        {
+                            data += "H " + (unscaledWidth2 - upperRightRadius);
+                            data += upperRightCurve(upperRightRadius);
+                        }
+                        else
+                        {
+                            data += "H " + (unscaledWidth2);
+                        }
+                        if (lowerRightRadius > 0)
+                        {
+                            data += "V " + (-offsetY - lowerRightRadius);
+                            data += lowerRightCurve(lowerRightRadius);
+                        }
+                        else
+                        {
+                            data += "V " + (-offsetY);
+                        }
+                        data += "H " + offsetW;
+                        containerGroup.move(borderThickness - unscaledWidth2, borderThickness - unscaledHeight);
+                        break;
+                    }
+                    case InfoPlacement.LEFT:
+                    {
+                        data += "L " + (-offsetX) + " " + offsetW;
+                        if (lowerRightRadius > 0)
+                        {
+                            data += "V " + (unscaledHeight2 - lowerRightRadius);
+                            data += lowerRightCurve(lowerRightRadius);
+                        }
+                        else
+                        {
+                            data += "V " + unscaledHeight2;
+                        }
+                        if (lowerLeftRadius > 0)
+                        {
+                            data += "H " + (-unscaledWidth + lowerLeftRadius);
+                            data += lowerLeftCurve(lowerLeftRadius);
+                        }
+                        else
+                        {
+                            data += "H " + (-unscaledWidth);
+                        }
+                        if (upperLeftRadius > 0)
+                        {
+                            data += "V " + (-unscaledHeight2 + upperLeftRadius);
+                            data += upperLeftCurve(upperLeftRadius);
+                        }
+                        else
+                        {
+                            data += "V " + (-unscaledHeight2);
+                        }
+                        if (upperRightRadius > 0)
+                        {
+                            data += "H " + (-offsetX - upperRightRadius);
+                            data += upperRightCurve(upperRightRadius);
+                        }
+                        else
+                        {
+                            data += "H " + (-offsetX);
+                        }
+                        data += "V " + (-offsetW);
+                        containerGroup.move(borderThickness - unscaledWidth, borderThickness - unscaledHeight2);
+                        break;
+                    }
+                    case InfoPlacement.CENTER:
+                    {
+                        if (lowerRightRadius > 0)
+                        {
+                            data = "M " + (unscaledWidth2 - lowerRightRadius) + " " + unscaledHeight2;
+                        }
+                        else
+                        {
+                            data = "M " + unscaledWidth2 + " " + unscaledHeight2;
+                        }
+                        if (lowerLeftRadius > 0)
+                        {
+                            data += "H " + (-unscaledWidth2 + lowerLeftRadius);
+                            data += lowerLeftCurve(lowerLeftRadius);
+                        }
+                        else
+                        {
+                            data += "H " + (-unscaledWidth2);
+                        }
+                        if (upperLeftRadius > 0)
+                        {
+                            data += "V " + (-unscaledHeight2 + upperLeftRadius);
+                            data += upperLeftCurve(upperLeftRadius);
+                        }
+                        else
+                        {
+                            data += "V " + (-unscaledHeight2);
+                        }
+                        if (upperRightRadius > 0)
+                        {
+                            data += "H " + (unscaledWidth2 - upperRightRadius);
+                            data += upperRightCurve(upperRightRadius);
+                        }
+                        else
+                        {
+                            data += "H " + unscaledWidth2;
+                        }
+                        if (lowerRightRadius)
+                        {
+                            data += "V " + (unscaledHeight2 - lowerRightRadius);
+                            data += lowerRightCurve(lowerRightRadius);
+                        }
+                        containerGroup.move(borderThickness - unscaledWidth2, borderThickness - unscaledHeight2);
+                        break;
+                    }
+                    case InfoPlacement.RIGHT:
+                    {
+                        data += "L " + offsetX + " " + (-offsetW);
+                        if (upperLeftRadius > 0)
+                        {
+                            data += "V " + (-unscaledHeight2 + upperLeftRadius);
+                            data += upperLeftCurve(upperLeftRadius);
+                        }
+                        else
+                        {
+                            data += "V " + (-unscaledHeight2);
+                        }
+                        if (upperRightRadius > 0)
+                        {
+                            data += "H " + (unscaledWidth - upperRightRadius);
+                            data += upperRightCurve(upperRightRadius);
+                        }
+                        else
+                        {
+                            data += "H " + unscaledWidth;
+                        }
+                        if (lowerRightRadius > 0)
+                        {
+                            data += "V " + (unscaledHeight2 - lowerRightRadius);
+                            data += lowerRightCurve(lowerRightRadius);
+                        }
+                        else
+                        {
+                            data += "V " + unscaledHeight2;
+                        }
+                        if (lowerLeftRadius > 0)
+                        {
+                            data += "H " + (offsetX + lowerLeftRadius);
+                            data += lowerLeftCurve(lowerLeftRadius);
+                        }
+                        else
+                        {
+                            data += "H " + offsetX;
+                        }
+                        data += "V " + offsetW;
+                        containerGroup.move(borderThickness + offsetX, borderThickness - unscaledHeight2);
+                        break;
+                    }
+                    case InfoPlacement.LOWERLEFT:
+                    case InfoPlacement.LOWER_LEFT:
+                    {
+                        data += "L " + (-offsetX) + " " + (offsetY + offsetW);
+                        if (lowerRightRadius > 0)
+                        {
+                            data += "V " + (unscaledHeight - lowerRightRadius);
+                            data += lowerRightCurve(lowerRightRadius);
+                        }
+                        else
+                        {
+                            data += "V " + unscaledHeight;
+                        }
+                        if (lowerLeftRadius > 0)
+                        {
+                            data += "H " + (-unscaledWidth + lowerLeftRadius);
+                            data += lowerLeftCurve(lowerLeftRadius);
+                        }
+                        else
+                        {
+                            data += "H " + (-unscaledWidth);
+                        }
+                        if (upperLeftRadius > 0)
+                        {
+                            data += "V " + (offsetY + upperLeftRadius);
+                            data += upperLeftCurve(upperLeftRadius);
+                        }
+                        else
+                        {
+                            data += "V " + offsetY;
+                        }
+                        data += "H " + (-offsetX - offsetW);
+                        containerGroup.move(borderThickness - unscaledWidth, borderThickness + offsetY);
+                        break;
+                    }
+                    case InfoPlacement.BOTTOM:
+                    {
+                        data += "L " + offsetW + " " + offsetY;
+                        if (upperRightRadius > 0)
+                        {
+                            data += "H " + (unscaledWidth2 - upperRightRadius);
+                            data += upperRightCurve(upperRightRadius);
+                        }
+                        else
+                        {
+                            data += "H " + unscaledWidth2;
+                        }
+                        if (lowerRightRadius > 0)
+                        {
+                            data += "V " + (unscaledHeight - lowerRightRadius);
+                            data += lowerRightCurve(lowerRightRadius);
+                        }
+                        else
+                        {
+                            data += "V " + unscaledHeight;
+                        }
+                        if (lowerLeftRadius > 0)
+                        {
+                            data += "H " + (-unscaledWidth2 + lowerLeftRadius);
+                            data += lowerLeftCurve(lowerLeftRadius);
+                        }
+                        else
+                        {
+                            data += "H " + (-unscaledWidth2);
+                        }
+                        if (upperLeftRadius > 0)
+                        {
+                            data += "V " + (offsetY + upperLeftRadius);
+                            data += upperLeftCurve(upperLeftRadius);
+                        }
+                        else
+                        {
+                            data += "V " + offsetY;
+                        }
+                        data += "H " + (-offsetW);
+                        containerGroup.move(borderThickness - unscaledWidth2, borderThickness + offsetY);
+                        break;
+                    }
+                    case InfoPlacement.LOWERRIGHT:
+                    case InfoPlacement.LOWER_RIGHT:
+                    {
+                        data += "L " + (offsetX + offsetW) + " " + offsetY;
+                        if (upperRightRadius > 0)
+                        {
+                            data += "H " + (unscaledWidth - upperRightRadius);
+                            data += upperRightCurve(upperRightRadius);
+                        }
+                        else
+                        {
+                            data += "H " + unscaledWidth;
+                        }
+                        if (lowerRightRadius > 0)
+                        {
+                            data += "V " + (unscaledHeight - lowerRightRadius);
+                            data += lowerRightCurve(lowerRightRadius);
+                        }
+                        else
+                        {
+                            data += "V " + unscaledHeight;
+                        }
+                        if (lowerLeftRadius > 0)
+                        {
+                            data += "H " + (offsetX + lowerLeftRadius);
+                            data += lowerLeftCurve(lowerLeftRadius);
+                        }
+                        else
+                        {
+                            data += "H " + offsetX;
+                        }
+                        data += "V " + (offsetY + offsetW);
+                        containerGroup.move(borderThickness + offsetX, borderThickness + offsetY);
+                        break;
+                    }
+                    case InfoPlacement.UPPERRIGHT:
+                    case InfoPlacement.UPPER_RIGHT:
+                    {
+                        data += "L " + offsetX + " " + (-offsetY - offsetW);
+                        if (upperLeftRadius > 0)
+                        {
+                            data += "V " + (-unscaledHeight + upperLeftRadius);
+                            data += upperLeftCurve(upperLeftRadius);
+                        }
+                        else
+                        {
+                            data += "V " + (-unscaledHeight);
+                        }
+                        if (upperRightRadius > 0)
+                        {
+                            data += "H " + (unscaledWidth - upperRightRadius);
+                            data += upperRightCurve(upperRightRadius);
+                        }
+                        else
+                        {
+                            data += "H " + unscaledWidth;
+                        }
+                        if (lowerRightRadius > 0)
+                        {
+                            data += "V " + (-offsetY - lowerRightRadius);
+                            data += lowerRightCurve(lowerRightRadius);
+                        }
+                        else
+                        {
+                            data += "V " + (-offsetY);
+                        }
+                        data += "H " + (offsetX + offsetW);
+                        containerGroup.move(borderThickness + offsetX, borderThickness - unscaledHeight);
+                        break;
+                    }
+                    default: // Dragging !!
+                    {
+                        const borderThickness2:Number = borderThickness + borderThickness;
+                        var tdist:Number = containerGroup.measuredWidth + borderThickness2;
+                        var bdist:Number = tdist;
+                        var rdist:Number = containerGroup.measuredHeight + borderThickness2;
+                        const cx:Number = containerGroup.x + hostComponent.deltaX;
+                        const cy:Number = containerGroup.y + hostComponent.deltaY;
+                        containerGroup.move(cx, cy);
+
+                        if (upperLeftRadius > 0)
+                        {
+                            tdist -= upperLeftRadius;
+                            data = "M " + (cx - borderThickness) + " " + (cy - borderThickness + upperLeftRadius);
+                            data += upperLeftCurve(upperLeftRadius);
+                        }
+                        else
+                        {
+                            data = "M " + (cx - borderThickness) + " " + (cy - borderThickness);
+                        }
+                        if (upperRightRadius > 0)
+                        {
+                            tdist -= upperRightRadius;
+                            rdist -= upperRightRadius;
+                            data += "h" + tdist;
+                            data += upperRightCurve(upperRightRadius);
+                        }
+                        else
+                        {
+                            data += "h" + tdist;
+                        }
+                        if (lowerRightRadius > 0)
+                        {
+                            rdist -= lowerRightRadius;
+                            bdist -= lowerRightRadius;
+                            data += "v" + rdist;
+                            data += lowerRightCurve(lowerRightRadius);
+                        }
+                        else
+                        {
+                            data += "v" + rdist;
+                        }
+                        if (lowerLeftRadius > 0)
+                        {
+                            bdist -= lowerLeftRadius;
+                            data += "h-" + bdist;
+                            data += lowerLeftCurve(lowerLeftRadius);
+                        }
+                        else
+                        {
+                            data += "h-" + bdist;
+                        }
+                    }
+                }
+                path.data = data + "Z";
+            }
+
+            private function upperLeftCurve(upperLeftRadius:Number):String
+            {
+                return "q 0 " + (-upperLeftRadius) + " " + upperLeftRadius + " " + (-upperLeftRadius);
+            }
+
+            private function upperRightCurve(upperRightRadius:Number):String
+            {
+                return "q " + upperRightRadius + " 0 " + upperRightRadius + " " + upperRightRadius;
+            }
+
+            private function lowerLeftCurve(lowerLeftRadius:Number):String
+            {
+                return "q " + (-lowerLeftRadius) + " 0 " + (-lowerLeftRadius) + " " + (-lowerLeftRadius);
+            }
+
+            private function lowerRightCurve(lowerRightRadius:Number):String
+            {
+                return "q 0 " + lowerRightRadius + " " + (-lowerRightRadius) + " " + lowerRightRadius;
+            }
+
+            // Placement weights based on current info window placement value.
+
+            private const m_tl:Vector.<int> = new <int>[ 8, 4, 3, 4, 0, 2, 3, 2, 1 ];
+
+            private const m_tt:Vector.<int> = new <int>[ 4, 8, 4, 3, 0, 3, 2, 3, 2 ];
+
+            private const m_tr:Vector.<int> = new <int>[ 3, 4, 8, 2, 0, 4, 1, 2, 3 ];
+
+            private const m_ll:Vector.<int> = new <int>[ 4, 3, 2, 8, 0, 3, 4, 3, 2 ];
+
+            private const m_rr:Vector.<int> = new <int>[ 2, 3, 4, 3, 0, 8, 2, 3, 4 ];
+
+            private const m_bl:Vector.<int> = new <int>[ 2, 2, 1, 4, 0, 2, 8, 4, 3 ];
+
+            private const m_bb:Vector.<int> = new <int>[ 2, 3, 2, 3, 0, 3, 4, 8, 4 ];
+
+            private const m_br:Vector.<int> = new <int>[ 1, 2, 3, 2, 0, 4, 3, 4, 8 ];
+
+            private function updateInfoPlacement(unscaledWidth:Number, unscaledHeight:Number, infoPlacement:String):String
+            {
+                var vec:Vector.<int>;
+                const infoPlacementMode:String = getStyle('infoPlacementMode');
+                if (infoPlacementMode === 'none')
+                {
+                    return infoPlacement;
+                }
+                switch (infoPlacement)
+                {
+                    case InfoPlacement.UPPERLEFT:
+                    case InfoPlacement.UPPER_LEFT:
+                    {
+                        vec = m_tl.concat()
+                        break;
+                    }
+                    case InfoPlacement.UPPERRIGHT:
+                    case InfoPlacement.UPPER_RIGHT:
+                    {
+                        vec = m_tr.concat();
+                        break;
+                    }
+                    case InfoPlacement.LOWERLEFT:
+                    case InfoPlacement.LOWER_LEFT:
+                    {
+                        vec = m_bl.concat();
+                        break;
+                    }
+                    case InfoPlacement.LOWERRIGHT:
+                    case InfoPlacement.LOWER_RIGHT:
+                    {
+                        vec = m_br.concat();
+                        break;
+                    }
+                    case InfoPlacement.LEFT:
+                    {
+                        vec = m_ll.concat();
+                        break;
+                    }
+                    case InfoPlacement.TOP:
+                    {
+                        vec = m_tt.concat();
+                        break;
+                    }
+                    case InfoPlacement.BOTTOM:
+                    {
+                        vec = m_bb.concat();
+                        break;
+                    }
+                    default:
+                    {
+                        vec = m_rr.concat();
+                    }
+                }
+                const unscaledWidth2:Number = unscaledWidth * 0.5;
+                const unscaledHeight2:Number = unscaledHeight * 0.5;
+                if (hostComponent.anchorX - unscaledWidth < 0)
+                {
+                    vec[0] = vec[3] = vec[6] = 0;
+                }
+                if (hostComponent.anchorX - unscaledWidth2 < 0)
+                {
+                    vec[1] = vec[7] = 0;
+                }
+                if (hostComponent.anchorX + unscaledWidth > hostComponent.map.width)
+                {
+                    vec[2] = vec[5] = vec[8] = 0;
+                }
+                if (hostComponent.anchorX + unscaledWidth2 > hostComponent.map.width)
+                {
+                    vec[1] = vec[7] = 0;
+                }
+                if (hostComponent.anchorY - unscaledHeight < 0)
+                {
+                    vec[0] = vec[1] = vec[2] = 0;
+                }
+                if (hostComponent.anchorY - unscaledHeight2 < 0)
+                {
+                    vec[3] = vec[5] = 0;
+                }
+                if (hostComponent.anchorY + unscaledHeight > hostComponent.map.height)
+                {
+                    vec[6] = vec[7] = vec[8] = 0;
+                }
+                if (hostComponent.anchorY + unscaledHeight2 > hostComponent.map.height)
+                {
+                    vec[3] = vec[5] = 0;
+                }
+                var imax:int = 0;
+                var vmax:int = 0;
+                for (var i:int = 0; i < 9; i++)
+                {
+                    var v:int = vec[i];
+                    if (v > vmax)
+                    {
+                        vmax = v;
+                        imax = i;
+                    }
+                }
+                if (vmax > 0)
+                {
+                    switch (imax)
+                    {
+                        case 0:
+                        {
+                            hostComponent.infoPlacement = InfoPlacement.UPPERLEFT;
+                            break;
+                        }
+                        case 1:
+                        {
+                            hostComponent.infoPlacement = InfoPlacement.TOP;
+                            break;
+                        }
+                        case 2:
+                        {
+                            hostComponent.infoPlacement = InfoPlacement.UPPERRIGHT;
+                            break;
+                        }
+                        case 3:
+                        {
+                            hostComponent.infoPlacement = InfoPlacement.LEFT;
+                            break;
+                        }
+                        case 6:
+                        {
+                            hostComponent.infoPlacement = InfoPlacement.LOWERLEFT;
+                            break;
+                        }
+                        case 7:
+                        {
+                            hostComponent.infoPlacement = InfoPlacement.BOTTOM;
+                            break;
+                        }
+                        case 8:
+                        {
+                            hostComponent.infoPlacement = InfoPlacement.LOWERRIGHT;
+                            break;
+                        }
+                        default:
+                        {
+                            hostComponent.infoPlacement = InfoPlacement.RIGHT;
+                        }
+                    }
+                    return hostComponent.infoPlacement;
+                }
+                else
+                {
+                    // Special case when we cannot find a placement weight - make InfoWindow as visible as possible based on 1/2 of its width and/or height
+                    if (hostComponent.anchorY + unscaledHeight2 < hostComponent.map.height)
+                    {
+                        if (hostComponent.anchorX + unscaledWidth2 < hostComponent.map.width)
+                        {
+                            return InfoPlacement.LOWERRIGHT;
+                        }
+                        if (hostComponent.anchorX - unscaledWidth2 > 0)
+                        {
+                            return InfoPlacement.LOWERLEFT;
+                        }
+                    }
+                    if (hostComponent.anchorY - unscaledHeight2 > 0)
+                    {
+                        if (hostComponent.anchorX + unscaledWidth2 < hostComponent.map.width)
+                        {
+                            return InfoPlacement.UPPERRIGHT;
+                        }
+                        if (hostComponent.anchorX - unscaledWidth2 > 0)
+                        {
+                            return InfoPlacement.UPPER_LEFT;
+                        }
+                    }
+                    if (hostComponent.anchorX + unscaledWidth2 < hostComponent.map.width)
+                    {
+                        return InfoPlacement.RIGHT;
+                    }
+                    if (hostComponent.anchorX - unscaledWidth2 > 0)
+                    {
+                        return InfoPlacement.LEFT;
+                    }
+                    if (hostComponent.anchorY + unscaledHeight2 < hostComponent.map.height)
+                    {
+                        return InfoPlacement.BOTTOM;
+                    }
+                    if (hostComponent.anchorY - unscaledHeight2 > 0)
+                    {
+                        return InfoPlacement.TOP;
+                    }
+                }
+                return infoPlacement;
+            }
+			
+			private function onClickMinimize(event:MouseEvent):void
+			{
+				AppEvent.dispatch(AppEvent.MINIMZE_INFOWINDOW);
+			}
+        ]]>
+    </fx:Script>
+    <fx:Declarations>
+        <!--- @private -->
+        <s:DropShadowFilter id="dropShadow"/>
+        <!--- @private -->
+        <s:SolidColorStroke id="pathStroke" pixelHinting="true"/>
+        <!--- @private -->
+        <s:SolidColor id="pathFill"/>
+    </fx:Declarations>
+    <s:states>
+        <s:State name="withHeader"/>
+        <s:State name="withoutHeader"/>
+    </s:states>
+    <!--- @private -->
+    <s:Path id="path"/>
+    <s:VGroup id="containerGroup"
+              gap="{getStyle('verticalGap')}"
+              minHeight="0"
+              minWidth="0"
+              mouseChildren="true"
+              mouseEnabled="false"
+              paddingBottom="{getStyle('paddingBottom')}"
+              paddingLeft="{getStyle('paddingLeft')}"
+              paddingRight="{getStyle('paddingRight')}"
+              paddingTop="{getStyle('paddingTop')}">
+        <s:HGroup id="headerGroup"
+                  width="100%"
+                  includeInLayout.withoutHeader="false"
+                  minWidth="0"
+                  mouseChildren="true"
+                  mouseEnabled="true"
+                  paddingBottom="{getStyle('headerPaddingBottom')}"
+                  paddingLeft="{getStyle('headerPaddingLeft')}"
+                  paddingRight="{getStyle('headerPaddingRight')}"
+                  paddingTop="{getStyle('headerPaddingTop')}"
+                  verticalAlign="middle"
+                  visible.withoutHeader="false">
+            <esri:InfoWindowLabel id="labelText"
+                                  width="100%"
+                                  maxDisplayedLines="1"
+                                  mouseEnabled="false"/>
+            <esri:InfoWindowCloseButton id="closeButton"/>
+			<!--s:ToggleButton id="minimizeButton" label="-" click="onClickMinimize"/-->
+		</s:HGroup>
+        <!--- Skin part for the info window content. -->
+        <s:Group id="contentGroup"
+                 width="100%" height="100%"
+                 minHeight="0"
+                 minWidth="0"
+                 mouseChildren="true"
+                 mouseEnabled="false"/>
+    </s:VGroup>
+</s:Skin>

@@ -1,0 +1,486 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+///////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2010-2011 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+-->
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:viewer="com.esri.viewer.*"
+			   xmlns:managers="com.esri.viewer.managers.*"
+			   xmlns:esri="http://www.esri.com/2008/ags"
+			   xmlns:containers="benContainers.*"
+			   xmlns:flexlib="http://code.google.com/p/flexlib/"
+			   xmlns:flexlibContainer="flexlib.containers.*"
+			   xmlns:flexlibControl="flexlib.controls.*"
+			   xmlns:fnicollet="http://www.flex-tutorial.fr/2009" 
+			   xmlns:analytics="com.google.analytics.components.*"
+               pageTitle="Team America F**k you !"
+			   currentState="viewer">
+
+    <fx:Style source="defaults.css"/>
+
+    <fx:Metadata>
+        [ResourceBundle("ViewerStrings")]
+    </fx:Metadata>
+
+		<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";         
+		@namespace mx "library://ns.adobe.com/flex/mx"; 
+		@namespace containers "src.benContainers.*";
+		@namespace esri "htt://www.esri.com/2008/ags";
+		
+		esri|NavigationSkin
+			{
+				background-color : #FF0000;
+			}
+		
+		.shade {
+			backgroundColor: #ebeceb; 
+			borderStyle: solid;
+			borderThickness: 0;
+			cornerRadius: 0;
+			openIcon: ClassReference(null);
+			closeIcon: ClassReference(null);
+			paddingTop: 0; paddingBottom: 0;
+			
+		}
+		
+		.shadeChk {
+			upIcon: Embed(source="assets/images/plus-grey.png");
+			overIcon: Embed(source="assets/images/plus-white.png");
+			downIcon: Embed(source="assets/images/plus-white.png");
+			selectedUpIcon: Embed(source="assets/images/minus-grey.png");
+			selectedOverIcon: Embed(source="assets/images/minus-white.png");
+			selectedDownIcon: Embed(source="assets/images/minus-white.png");
+			paddingLeft: 0; paddingRight: 0;
+			paddingTop: 0; paddingBottom: 0;
+		}
+		
+		.shadeBtn {
+			skin: ClassReference(null);
+		}
+		
+		.linkButtonStyle {
+			corner-radius:10;	
+			fill-alphas:1,1;
+			padding-left:10;
+		}
+		
+		mx|Form {
+			padding-top:0;
+			padding-bottom:5;	
+		}
+		
+		
+			
+		containers|CollapsiblePanel {
+			skin-class: ClassReference('benContainers.CollapsiblePanelSkin');
+			background-color: #FF0000;
+			content-background-color : #FF0000;
+			alpha: 1;
+			content-background-alpha: 1;
+		}
+		
+		global 
+		{
+			font-family: Verdana, "_sans";
+		}
+		
+		.loginPanelStyle
+		{
+			corner-radius: 10;
+			chrome-color: #d22228;	
+			color: #FFFFFF;
+			background-color: #FFFFFF;
+			border-visible: true;
+			border-color: #d22228;
+			border-alpha: 0.8;
+			drop-shadow-visible: true;
+		}
+		
+		.comboBox
+		{
+			color : #ffffff;/*couleur du texte*/
+			rollOverColor: #959595;/*couleur du fond au survol*/
+			textRollOverColor: #d22228;
+			textSelectedColor: #d22228;/*couleur du texte sélectionné*/
+			selectionColor: #959595;/*couleur du fond sélectionné */
+			borderStyle: none;/*suppression de la bordure*/
+			fillAlphas: 1.0, 1.0;/*couleur de fond*/
+			fillColors: #ffffff, #ffffff;
+			dropdownStyleName: comboBoxDropdown;/*renvoi au style nommé*/
+		}
+		.comboDropDown
+		{
+			dropShadowVisible:false;
+			color:#d22228;
+		}
+		
+		.loginLabelStyle 
+		{             
+			color: #d22228;             
+			fontSize: 11;
+			font-weight: bold;
+		}
+		
+		.loginText{
+			color: #d22228;
+		}
+		
+		.loginButtonStyle 
+		{             
+			chrome-color: #FFFFFF;
+			color: #d22228;
+		}
+		
+		.boilerLabelStyle 
+		{   
+			text-align: center;
+			color: #d22228;             
+			fontSize: 12;
+			font-weight: normal;
+		}
+	</fx:Style> 
+	
+	
+	<fx:Script>
+		<![CDATA[
+			import com.google.analytics.debug.Alert;
+			
+			//import mx.controls.Alert;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			
+			import benContainers.CollapsiblePanelSkin;
+			
+			import flexlib.scheduling.scheduleClasses.schedule_internal;
+			
+			
+			[Bindable] 
+			private var screenWidth:Number = new Number();
+			
+			[Bindable]
+			private var screenHeight:Number = new Number();
+			
+			protected function application1_initializeHandler(event:FlexEvent):void
+			{
+				
+				//addEventListener(ResizeEvent.RESIZE, resizeApplication);
+			}
+			
+			protected function password_keydown(evt:KeyboardEvent):void
+			{
+				if(evt.keyCode == Keyboard.ENTER)
+				{
+					var chargementXML:URLLoader = new URLLoader();// objet de chargement
+					var fichier:URLRequest = new URLRequest("user.xml");// url du fichier chargé
+					chargementXML.addEventListener( Event.COMPLETE, chargementComplet );
+					chargementXML.load( fichier );
+//					collapsingPanel.collapseButton.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+				}
+				// chargement terminé du fichier xml
+				function chargementComplet(pEvt:Event):void {   // on récupère notre xml
+					var users:XML = new XML( pEvt.target.data );//la classe XML est une classe native de Flash, on la trouve dans le package Top Level.
+					var user:XMLList = users.elements(); //le document XML est constitué d'une liste d'éléments XML, en l'occurence ici, une liste de personnes
+					for each(var logIn:XML in user)//pour chaque noeud enfants dans la liste des personnes
+					{
+						if (userName.text == logIn.Login && passWord.text == logIn.password)
+						{
+							currentState = "viewer";
+							break;
+//							collapsingPanel.collapseButton.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+							//addEventListener(ResizeEvent.RESIZE, resizeApplication);
+						}
+					}
+				}
+			}
+			
+			/*private function resizeApplication(event:ResizeEvent):void
+			{
+				if(stage.stageWidth != event.oldWidth || stage.stageHeight != event.oldHeight)
+				{
+					//perform action here or just use the above properties in any way you want
+					screenWidth = stage.stageWidth;
+					screenHeight = stage.stageHeight;
+					collapsingPanel.explicitWidth = collapsingPanel.collapsed ? collapsingPanel.explicitWidth : ((50 * stage.stageWidth / 100) > 950 ?  (50 * stage.stageWidth / 100) : stage.stageWidth - 950);
+					
+					ViewerContainer.getInstance().percentHeight = 100;
+					if (collapsingPanel.collapsed)
+					{
+						ViewerContainer.getInstance().percentWidth = 100;
+						ViewerContainer.getInstance().x = 30;
+					}
+					else
+					{
+						ViewerContainer.getInstance().width = (stage.stageWidth - collapsingPanel.explicitWidth);
+						ViewerContainer.getInstance().x = collapsingPanel.explicitWidth;
+					}	
+				}
+			}*/
+			
+			
+			protected function collapsingPanel_resizeHandler(event:ResizeEvent):void
+			{
+				// TODO Auto-generated method stub
+				if(collapsingPanel.fullScreen)
+				{
+					ws0.percentWidth = ws1.percentWidth = ws2.percentWidth = ws3.percentWidth = 100;
+				}
+				else
+					ws0.width = ws1.width = ws2.width = ws3.width = collapsingPanel.width;
+			}
+			
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		
+		<analytics:FlexTracker
+			xmlns:analytics="com.google.analytics.components.*"
+			id="tracker"
+			account="UA-47629965-1"
+			mode="AS3"
+			visualDebug="false"/>
+		
+		
+		<esri:Map id="miniMap" visible="false" wrapAround180="true">
+			<esri:OpenStreetMapLayer/>
+		</esri:Map>
+	</fx:Declarations>
+	
+	<s:states>
+		<s:State name="login2"/>
+		<s:State name="viewer"/>
+	</s:states>
+	
+	
+	<s:Panel id="loginPanel" title="Viewer Login Screen" styleName="loginPanelStyle" includeIn="login2" verticalCenter="0" horizontalCenter="0" width="40%" height="40%">        
+		<s:VGroup verticalAlign="middle" horizontalAlign="center" width="100%" height="100%">
+			<mx:Text width="50%" text="Please log in to access Viewer" styleName="boilerLabelStyle" />
+			<mx:Form includeIn="login2" >    
+				
+				<mx:FormItem label="Username" labelStyleName="loginLabelStyle">                   
+					<s:TextInput styleName="loginText" id="userName" keyDown="password_keydown(event)"/>               
+				</mx:FormItem>            
+				<mx:FormItem label="Password" labelStyleName="loginLabelStyle">
+					<s:VGroup>
+						<s:TextInput  styleName="loginText" displayAsPassword="true" keyDown="password_keydown(event)" id="passWord" />
+						<s:Label id="lblStatus" styleName="loginLabelStyle"/>
+					</s:VGroup>
+				</mx:FormItem>
+			</mx:Form>
+		</s:VGroup>
+	</s:Panel>	
+	
+    <viewer:ViewerContainer id="viewerContainer" includeIn="viewer">
+        <viewer:configManager>
+            <managers:ConfigManager id="configManager"/>
+        </viewer:configManager>
+        <viewer:dataManager>
+            <managers:DataManager id="dataManager"/>
+        </viewer:dataManager>
+        <viewer:mapManager>
+            <managers:MapManager id="mapManager"/>
+        </viewer:mapManager>
+        <viewer:uiManager>
+            <managers:UIManager id="uiManager"/>
+        </viewer:uiManager>
+        <viewer:widgetManager>
+            <managers:WidgetManager id="widgetManager"/>
+        </viewer:widgetManager>
+    </viewer:ViewerContainer>
+
+	<containers:CollapsiblePanel id="collapsingPanel" skinClass="benContainers.CollapsiblePanelSkin"
+								 width="30" height="100%" minHeight="0" 		 
+								 resize="collapsingPanel_resizeHandler(event)"
+								 includeIn="viewer" title="Borehole Details" >
+		
+		<containers:layout>
+			<s:VerticalLayout  clipAndEnableScrolling="true"  paddingRight="0" paddingLeft="0" paddingTop="0" paddingBottom="0" />
+		</containers:layout>
+		
+		<flexlibContainer:WindowShade id="ws0"
+									  opened="false"
+									  maxHeight="{collapsingPanel.height}"
+									  useHandCursor="true"
+									  openDuration="250"
+									  closeDuration="250"
+									  layout="horizontal"
+									  horizontalScrollPolicy="auto"
+									  verticalScrollPolicy="auto"
+									  styleName="shade"
+									  label=""
+									  visible="false">
+			<flexlibContainer:headerRenderer>
+				<fx:Component>
+					<flexlibControl:CanvasButton width="100%" height="30" styleName="shadeBtn" useHandCursor="true"
+												 rollOut="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 rollOver="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 click="chk.selected = !chk.selected">
+						
+						<fx:Script>
+							<![CDATA[
+								import mx.controls.Alert;
+								
+								import flexlib.containers.WindowShade;
+								
+							]]>
+						</fx:Script>
+						<mx:Label id="header" top="3" left="4" text="{WindowShade(parent).data}" styleName="shadeHead"/>
+						<mx:CheckBox id="chk" top="9" right="6" selected="{WindowShade(parent).opened}" click="{Alert.show('test');}" useHandCursor="true" styleName="shadeChk"
+									 upIcon="@Embed(source='assets/images/plus-grey.png')"
+									 overIcon="@Embed(source='assets/images/plus-white.png')"
+									 downIcon="@Embed(source='assets/images/plus-white.png')"
+									 selectedOverIcon="@Embed(source='assets/images/minus-white.png')"
+									 selectedUpIcon="@Embed(source='assets/images/minus-grey.png')"
+									 selectedDownIcon="@Embed(source='assets/images/minus-white.png')"/>
+					</flexlibControl:CanvasButton>
+				</fx:Component>
+			</flexlibContainer:headerRenderer>
+			
+		</flexlibContainer:WindowShade>
+		
+		<flexlibContainer:WindowShade id="ws1"
+									  opened="true"
+									  useHandCursor="true"
+									  maxHeight ="{collapsingPanel.height}"
+									  openDuration="250"
+									  closeDuration="250"
+									  verticalScrollPolicy="auto"
+									  horizontalScrollPolicy="auto"
+									  styleName="shade"
+									  label=""
+									  visible="false"
+									  width="100%">
+			<flexlibContainer:headerRenderer>
+				<fx:Component>
+					<flexlibControl:CanvasButton width="100%" height="30" styleName="shadeBtn" useHandCursor="true"
+												 rollOut="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 rollOver="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 click="chk.selected = !chk.selected">
+						<fx:Script>
+							<![CDATA[
+								import mx.controls.Alert;
+								
+								import flexlib.containers.WindowShade;
+							]]>
+						</fx:Script>
+						
+						<mx:Label id="header" top="3" left="4" text="{WindowShade(parent).data}" styleName="shadeHead"/>
+						<mx:CheckBox id="chk" top="9" right="6" selected="{WindowShade(parent).opened}" click="{Alert.show('test');}" useHandCursor="true" styleName="shadeChk"
+									 upIcon="@Embed(source='assets/images/plus-grey.png')"
+									 overIcon="@Embed(source='assets/images/plus-white.png')"
+									 downIcon="@Embed(source='assets/images/plus-white.png')"
+									 selectedOverIcon="@Embed(source='assets/images/minus-white.png')"
+									 selectedUpIcon="@Embed(source='assets/images/minus-grey.png')"
+									 selectedDownIcon="@Embed(source='assets/images/minus-white.png')"/>
+					</flexlibControl:CanvasButton>
+				</fx:Component>
+			</flexlibContainer:headerRenderer>
+		</flexlibContainer:WindowShade>
+		
+		
+		
+		<flexlibContainer:WindowShade id="ws2"
+									  opened="true"
+									  layout="absolute"
+									  maxHeight ="{collapsingPanel.height}"
+									  useHandCursor="true"
+									  openDuration="250"
+									  closeDuration="250"
+									  clipContent="true"
+									  horizontalScrollPolicy="auto"
+									  verticalScrollPolicy="auto"
+									  styleName="shade"
+									  label=""
+									  visible="false"
+									  width="100%">
+			
+			<flexlibContainer:headerRenderer>
+				<fx:Component>
+					<flexlibControl:CanvasButton width="100%" height="30" styleName="shadeBtn" useHandCursor="true"
+												 rollOut="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 rollOver="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 click="chk.selected = !chk.selected">
+						<fx:Script>
+							<![CDATA[
+								import mx.controls.Alert;
+								
+								import flexlib.containers.WindowShade;
+							]]>
+						</fx:Script>
+						
+						<mx:Label id="header" top="3" left="4" text="{WindowShade(parent).data}" styleName="shadeHead"/>
+						<mx:CheckBox id="chk" top="9" right="6" selected="{WindowShade(parent).opened}" click="{Alert.show('test');}" useHandCursor="true" styleName="shadeChk"
+									 upIcon="@Embed(source='assets/images/plus-grey.png')"
+									 overIcon="@Embed(source='assets/images/plus-white.png')"
+									 downIcon="@Embed(source='assets/images/plus-white.png')"
+									 selectedOverIcon="@Embed(source='assets/images/minus-white.png')"
+									 selectedUpIcon="@Embed(source='assets/images/minus-grey.png')"
+									 selectedDownIcon="@Embed(source='assets/images/minus-white.png')"/>
+					</flexlibControl:CanvasButton>
+				</fx:Component>
+			</flexlibContainer:headerRenderer>
+			
+		</flexlibContainer:WindowShade>
+		
+		<flexlibContainer:WindowShade id="ws3"
+									  opened="false"
+									  useHandCursor="true"
+									  styleName="shade"
+									  maxHeight ="{collapsingPanel.height-ws2.height}"
+									  
+									  horizontalScrollPolicy="auto"
+									  verticalScrollPolicy="auto"
+									  openDuration="250"
+									  closeDuration="250"
+									  label=""
+									  visible="false"
+									  width="100%">
+			<flexlibContainer:headerRenderer>
+				<fx:Component>
+					<flexlibControl:CanvasButton width="100%" height="30" styleName="shadeBtn" useHandCursor="true"
+												 rollOut="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 rollOver="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 click="chk.selected = !chk.selected">
+						<fx:Script>
+							<![CDATA[
+								import flexlib.containers.WindowShade;
+							]]>
+						</fx:Script>
+						
+						<mx:Label id="header" top="3" left="4" text="{WindowShade(parent).data}" styleName="shadeHead"/>
+						<mx:CheckBox id="chk" top="9" right="6" selected="{WindowShade(parent).opened}" useHandCursor="true" styleName="shadeChk"
+									 upIcon="@Embed(source='assets/images/plus-grey.png')"
+									 overIcon="@Embed(source='assets/images/plus-white.png')"
+									 downIcon="@Embed(source='assets/images/plus-white.png')"
+									 selectedOverIcon="@Embed(source='assets/images/minus-white.png')"
+									 selectedUpIcon="@Embed(source='assets/images/minus-grey.png')"
+									 selectedDownIcon="@Embed(source='assets/images/minus-white.png')"/>
+					</flexlibControl:CanvasButton>
+				</fx:Component>
+			</flexlibContainer:headerRenderer>
+		</flexlibContainer:WindowShade>
+		<!--<mx:Accordion id="vdvBox" openDuration="250" resizeToContent="true" verticalScrollPolicy="auto" horizontalScrollPolicy="auto" width="100%" height="100%"/>
+		-->
+		
+		
+	</containers:CollapsiblePanel>
+	
+	
+</s:Application>

@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--=============================================================================
+* 
+* Copyright © 2010 ESRI. All rights reserved. 
+* 
+* Use subject to ESRI license agreement.
+* 
+* Unpublished—all rights reserved.
+* Use of this ESRI commercial Software, Data, and Documentation is limited to
+* the ESRI License Agreement. In no event shall the Government acquire greater
+* than Restricted/Limited Rights. At a minimum Government rights to use,
+* duplicate, or disclose is subject to restrictions as set for in FAR 12.211,
+* FAR 12.212, and FAR 52.227-19 (June 1987), FAR 52.227-14 (ALT I, II, and III)
+* (June 1987), DFARS 227.7202, DFARS 252.227-7015 (NOV 1995).
+* Contractor/Manufacturer is ESRI, 380 New York Street, Redlands,
+* CA 92373-8100, USA.
+* 
+* SAMPLE CODE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES,
+* INCLUDING THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+* PARTICULAR PURPOSE, ARE DISCLAIMED.  IN NO EVENT SHALL ESRI OR CONTRIBUTORS
+* BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+* CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+* SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+* INTERRUPTION) SUSTAINED BY YOU OR A THIRD PARTY, HOWEVER CAUSED AND ON ANY
+* THEORY OF LIABILITY, WHETHER IN CONTRACT; STRICT LIABILITY; OR TORT ARISING
+* IN ANY WAY OUT OF THE USE OF THIS SAMPLE CODE, EVEN IF ADVISED OF THE
+* POSSIBILITY OF SUCH DAMAGE TO THE FULL EXTENT ALLOWED BY APPLICABLE LAW.
+* 
+* =============================================================================-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009" 
+				   xmlns:s="library://ns.adobe.com/flex/spark" 
+				   xmlns:mx="library://ns.adobe.com/flex/mx" 
+				   xmlns:viewer="com.esri.viewer.*" 
+				   layout="vertical" 
+				   xmlns:esri="http://www.esri.com/2008/ags"
+				   xmlns:symbols="com.esri.ags.symbols.*"
+				   widgetConfigLoaded="init()" 
+				   xmlns:components="widgets.ElevationProfile.components.*" 
+				   >
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.events.DrawEvent;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.utils.JSONUtil;
+			
+			import mx.core.IFlexDisplayObject;
+			import mx.events.ItemClickEvent;
+			import mx.managers.PopUpManager;
+			import mx.managers.PopUpManagerChildList;
+			import mx.rpc.AsyncResponder;
+			import mx.rpc.AsyncToken;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			
+			[Bindable]
+			private var _configXML:XML;
+			
+			
+			private function init():void {
+				if ( configXML ) _configXML = configXML;
+			}
+			protected function onOpened( event:Event ):void
+			{
+				// Add layers
+				map.addLayer( glProfileLine );
+			}
+			private function onClosed( event:Event ):void {
+				closeChartWindow();
+				map.removeLayer( glProfileLine );
+				draw.deactivate();
+			}
+
+			/**
+			 * Finish drawing, send sketch to elevation SOE, and receive results from the SOE.<p/>
+			 * <b>NOTE:</b> If the sketched polyline crosses itself or self-intersects, it will
+			 * be simplified on the server. If this happens, the returned paths may be out of
+			 * order and the chart results will be incorrect.
+			 **/
+			private function onDrawProfile( event:DrawEvent ):void {
+				// Revert to navigation
+				draw.deactivate();
+				
+				// Get geometries for each point
+				var sGeoms:String = JSONUtil.encode( [ event.graphic.geometry ] );
+				var oParams:Object = {
+					"f"				: "json",
+					"geometries"	: sGeoms
+				}
+				// Send geometries off to SOE to get elevations
+				var atToken:AsyncToken = websvcElevations.send( oParams );
+				atToken.addResponder( new AsyncResponder( 
+					
+					//--- Handle results from elevation profile SOE ---//
+					function( event:ResultEvent, token:Object ):void {
+						try {
+							var oResult:Object = JSONUtil.decode( event.result.toString() );
+							if ( oResult.hasOwnProperty( "error" ) )
+								showError( "The server returned an error:\n" + oResult.error.message );
+							else {
+								chtWindow.chartData = {
+									"result"	: oResult,
+									"config"	: _configXML
+								}
+								
+								if ( !systemManager.popUpChildren.contains( chtWindow ) ) {
+									PopUpManager.addPopUp( chtWindow as IFlexDisplayObject, map, false, PopUpManagerChildList.POPUP );
+									PopUpManager.centerPopUp( chtWindow );
+								}
+							}
+						}
+						catch ( err:Error ) {
+							showError( "A problem occurred while parsing and charting the returned elevation data:\n" + err.message.toString() );
+						}
+					},
+					function( event:FaultEvent, token:Object ):void {
+						showError( "Error getting elevation data:\n" + event.fault.message.toString() );
+					} )
+				);
+			}
+			
+			// Utility functions
+			/**
+			 * Close chart window and remove user-drawn line graphic
+			 **/ 
+			private function closeChartWindow():void {
+				glProfileLine.clear();
+				PopUpManager.removePopUp( chtWindow );
+			}
+
+		]]>
+	</fx:Script>
+	<viewer:WidgetTemplate width="264" height="170" id="wTemplate" open="onOpened(event)" closed="onClosed(event)">
+		<viewer:layout>
+			<s:VerticalLayout/>
+		</viewer:layout>
+		<s:Label text="{_configXML.description}" lineBreak="toFit" width="100%">
+		</s:Label>
+		<mx:ToggleButtonBar id="tbbTools" direction="horizontal" selectedIndex="0" buttonHeight="42" buttonWidth="42">
+			<mx:dataProvider>
+				<fx:Array>
+					<fx:Object icon="@Embed('widgets/ElevationProfile/images/i_draw_line.png')" toolTip="Draw line (click, drag, release)"/>
+					<fx:Object icon="@Embed('widgets/ElevationProfile/images/i_draw_polyline.png')" toolTip="Draw polyline (click once for each vertex)"/>
+					<fx:Object icon="@Embed('widgets/ElevationProfile/images/i_draw_freeline.png')" toolTip="Draw freehand line (click, drag, release)"/>
+				</fx:Array>
+			</mx:dataProvider>
+			<mx:itemClick>
+				<![CDATA[
+				switch ( (event as ItemClickEvent).index ) {
+					case 0:		
+						draw.activate( DrawTool.LINE, false );
+						break;
+					case 1:
+						draw.activate( DrawTool.POLYLINE, false );
+						// Navigation-while-drawing issue
+						// Workaround from forum post: http://forums.esri.com/Thread.asp?c=158&f=2421&t=299768#936563
+						map.panEnabled = false; 
+						map.mapNavigationEnabled = false; 
+						map.rubberbandZoomEnabled = false; 
+						break;
+					case 2:
+						draw.activate( DrawTool.FREEHAND_POLYLINE, false );
+						break;
+				}
+				]]>
+			</mx:itemClick>
+		</mx:ToggleButtonBar>
+	</viewer:WidgetTemplate>
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+		<esri:DrawTool id="draw" map="{map}" graphicsLayer="{glProfileLine}" drawStart="(event.currentTarget as DrawTool).graphicsLayer.clear()" drawEnd="onDrawProfile(event)"/>
+		<esri:GraphicsLayer id="glProfileLine" mouseEnabled="false">
+			<esri:symbol>
+				<esri:SimpleLineSymbol color="{_configXML.profileLineColor}" width="{_configXML.profileLineWidth}"/>
+			</esri:symbol>
+		</esri:GraphicsLayer>
+
+		<!-- Using POST since GET doesn't always handle lines with large #s of points -->
+		<s:HTTPService showBusyCursor="true" method="POST" id="websvcElevations" url="{_configXML.elevationSOEURL}" resultFormat="text"/>
+		
+		<!-- Chart pop-up window -->
+		<components:ChartWindow styleName="styleLikeWidgetTemplate" title="{_configXML.chartTitle}" close="closeChartWindow()" id="chtWindow" glProfileLine="{glProfileLine}"/>
+	</fx:Declarations>
+</viewer:BaseWidget>

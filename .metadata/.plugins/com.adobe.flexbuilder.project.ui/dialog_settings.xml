@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<section name="Workbench">
+	<section name="com.adobe.flexbuilder.help.ModulesPropertyPage">
+		<item value="125" key="outputSWFColumnWidth"/>
+		<item value="0" key="sortColumnIndex"/>
+		<item value="225" key="moduleColumnWidth"/>
+		<item value="true" key="sortColumnAscending"/>
+		<item value="125" key="optimizeColumnWidth"/>
+	</section>
+	<section name="com.adobe.flexbuilder.help.WorkersPropertyPage">
+		<item value="0" key="sortColumnIndex"/>
+		<item value="300" key="moduleColumnWidth"/>
+		<item value="true" key="sortColumnAscending"/>
+		<item value="125" key="optimizeColumnWidth"/>
+	</section>
+	<section name="ADD_MODULE_DIALOG_SECTION">
+		<item value="523" key="DIALOG_WIDTH"/>
+		<item value="312" key="DIALOG_Y_ORIGIN"/>
+		<item value="255" key="DIALOG_HEIGHT"/>
+		<item value="220" key="DIALOG_X_ORIGIN"/>
+		<item value="1|Segoe UI|9.0|0|WINDOWS|1|-12|0|0|0|400|0|0|0|1|0|0|0|0|Segoe UI" key="DIALOG_FONT_NAME"/>
+	</section>
+</section>

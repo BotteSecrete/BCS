@@ -1,0 +1,321 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 creationComplete="init(event)">
+	
+	<!--
+	Dispatches events:
+	SelectionFeatureLayerEvent.SHOW_RESULTS
+	
+	Listens for events:
+	LayerEvent.UPDATE_START
+	LayerEvent.UPDATE_END
+	"alllayersadded"
+	-->
+	
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10" paddingRight="10" paddingTop="10" />
+	</s:layout>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.events.LayerEvent;
+			import com.esri.ags.layers.FeatureLayer;
+			import com.esri.ags.tasks.QueryTask;
+			import com.esri.ags.tasks.supportClasses.Query;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.controls.textClasses.TextRange;
+			import mx.events.FlexEvent;
+			import mx.rpc.AsyncResponder;
+			
+			import widgets.Selection.events.SelectionFeatureLayerEvent;
+			import widgets.Selection.utils.PagingQueryTask;
+			import widgets.Selection.utils.SelectionWidgetUtil;
+			
+			[Bindable] public var selectionLayers:Array = [];
+			[Bindable] public var selectionMethod:String;
+			
+			[Bindable] private var targetLayer:FeatureLayer;
+			
+			[Bindable] private var queryFields:Array = [];
+			
+			[Bindable] private var pagingQueryTask:PagingQueryTask = new PagingQueryTask;
+			
+			protected function init(event:FlexEvent):void
+			{
+				systemManager.addEventListener("alllayersadded",allLayersAddedHandler);
+			}
+			
+			private function allLayersAddedHandler(event:Event):void
+			{
+				targetLayerList.selectedIndex = 0;
+				onTargetLayerChange(event);
+			}
+			
+			private function onTargetLayerChange(event:Event):void
+			{
+				queryFields = [];
+				pagingQueryTask = new PagingQueryTask;
+				
+				var i:int = targetLayerList.selectedIndex;
+				targetLayer = selectionLayers[i].layer;	
+				
+				queryFields = selectionLayers[i].fields;
+				
+				targetLayer.removeEventListener(LayerEvent.UPDATE_START, featureLayer_updateStartHandler);
+				targetLayer.removeEventListener(LayerEvent.UPDATE_END, featureLayer_updateEndHandler);
+				targetLayer.addEventListener(LayerEvent.UPDATE_START, featureLayer_updateStartHandler);
+				targetLayer.addEventListener(LayerEvent.UPDATE_END, featureLayer_updateEndHandler);
+				
+				queryFilter.text = '';
+			}
+			
+			protected function featureLayer_updateStartHandler(event:LayerEvent):void
+			{
+				this.cursorManager.setBusyCursor();
+				trace("featureLayer_updateStartHandler attributes");
+			}
+			
+			protected function featureLayer_updateEndHandler(event:LayerEvent):void
+			{
+				this.cursorManager.removeBusyCursor();
+				if (targetLayer.selectedFeatures.length > 0)
+				{
+					dispatchEvent(new SelectionFeatureLayerEvent(
+						SelectionFeatureLayerEvent.SHOW_RESULTS,targetLayer));
+				}
+				trace("featureLayer_updateEndHandler attributes");
+			}
+			
+			private function targetLayerFieldsLabelFunc(item:Object):String 
+			{
+				return item.alias;
+			}
+			
+			private function retreiveFieldValues(event:Event):void
+			{	
+				this.cursorManager.setBusyCursor();
+				var fld:Object = fieldsLst.selectedItem as Object;
+				
+				pagingQueryTask = new PagingQueryTask(targetLayer.url, 
+					fieldsLst.selectedItem.name,
+					fld.type);
+				pagingQueryTask.addEventListener("pagingComplete",pagingQueryTask_complete);
+				pagingQueryTask.execute();
+				
+			}
+			
+			private function pagingQueryTask_complete(event:Event):void
+			{
+				this.cursorManager.removeBusyCursor();
+			}
+			
+			private function operatorClick(event:Event):void
+			{
+				var str:String = event.currentTarget.label;
+				str = str.toUpperCase();
+				updateText(str);
+			}
+			
+			private function fieldListDoublClick(event:Event):void
+			{	
+				retreiveFieldValues(event)
+				updateText(event.currentTarget.selectedItem.name);
+			}
+			private function valListDoublClick(event:Event):void
+			{	
+				updateText(event.currentTarget.value);
+			}
+			
+			private function updateText(val:String):void
+			{
+				if (!val)
+				{
+					return;
+				}
+				
+				var beginIx:int = queryFilter.selectionBeginIndex;
+				var endIx:int = queryFilter.selectionEndIndex;
+				var tr1:TextRange = new TextRange(queryFilter, false, beginIx, endIx);
+				tr1.text = val;
+				
+				//dont add leading or trailing space to wildcard characters
+				if (val == '%' || val == '_' )
+				{
+					moveCursor(beginIx + tr1.text.length);
+					return;
+				}
+				
+				//only add leading space if cursor is not at the start of the text
+				if (beginIx > 0 )
+				{
+					//Check to see if there is a space before and after the selected text
+					//If not add one.
+					var trSpace:TextRange = new TextRange(queryFilter, false, beginIx -1, beginIx);
+					if (trSpace.text != " ")
+					{
+						tr1.text = " " +  val;
+					}
+				}
+				// add a trailing space	
+				trSpace = new TextRange(queryFilter, false, endIx, endIx + 1);
+				if (trSpace.text != " ")
+				{
+					tr1.text += " ";
+				}
+				moveCursor(beginIx + tr1.text.length);
+			}
+			
+			private function moveCursor(endIx:int):void
+			{
+				//move the cursor to the end of the selected text and reset the focus
+				queryFilter.setSelection(endIx, endIx); 
+				queryFilter.setFocus();
+			}   
+			
+			protected function selectBtn_clickHandler(event:MouseEvent):void
+			{
+				this.cursorManager.setBusyCursor();
+				var query:Query = new Query;
+				query.where = queryFilter.text;
+				
+				targetLayer.selectFeatures(query, selectionMethod, new AsyncResponder(onSelectResult, onSelectFault, targetLayer));
+			}
+			
+			private function onSelectResult(info:Array, token:FeatureLayer = null):void
+			{
+				this.cursorManager.removeBusyCursor();
+				var fl:FeatureLayer = token;
+				SelectionWidgetUtil.zoomtoSelectedFeatures(fl);
+				
+				if (fl.selectedFeatures.length == 0)
+				{
+					Alert.show("Selection completed but found no features. Please check your parameters." , 
+						"Nothing Found", Alert.OK);
+				}
+			}
+			
+			//on fault
+			private function onSelectFault(info:Object, token:Object = null):void
+			{
+				this.cursorManager.removeBusyCursor();
+				Alert.show("Could not complete Selection. Please try again.\n" + info.toString(), 
+					"Selection Error", Alert.OK);
+			}
+			
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:HGroup width="300" 
+			  paddingBottom="5"
+			  verticalAlign="middle">
+		<s:Label text="Target Layer:"/>
+		<mx:ComboBox id="targetLayerList" width="100%"
+					 change="onTargetLayerChange(event)"
+					 dataProvider="{selectionLayers}"
+					 labelField="label"/>
+	</s:HGroup>
+	
+	<s:Label text="Fields:" width="42"/>
+	<mx:List id="fieldsLst" 
+			 width="100%" height="61" 
+			 fontSize="10"
+			 dataProvider="{queryFields}" 
+			 doubleClick="fieldListDoublClick(event)" 
+			 doubleClickEnabled="true" 
+			 labelFunction="targetLayerFieldsLabelFunc" />	
+	
+	<s:HGroup height="140" width="100%" 
+			  paddingTop="5" paddingBottom="5">	
+		<s:VGroup height="100%">
+			<s:Label text="Operators:"/>
+			<s:HGroup>
+				<s:VGroup>
+					<s:Button id="equal" label="=" 
+							  width="35" fontSize="10" 
+							  click="operatorClick(event)"/>
+					<s:Button id="less" label="&lt;" 
+							  width="35" fontSize="10"
+							  click="operatorClick(event)"/>
+					<s:Button id="greater" label="&gt;" 
+							  width="35" fontSize="10"
+							  click="operatorClick(event)"/>
+					<s:Button id="under" label="_" 
+							  width="35" fontSize="10"
+							  click="operatorClick(event)"/>
+				</s:VGroup>
+				<s:VGroup>
+					<s:Button id="different" label="&lt;&gt;"
+							  width="35" fontSize="10"
+							  click="operatorClick(event)"/>
+					<s:Button id="lessorqual" label="&lt;=" 
+							  width="35" fontSize="10"
+							  click="operatorClick(event)"/>
+					<s:Button id="greaterorequal" label="&gt;=" 
+							  width="35" fontSize="10"
+							  click="operatorClick(event)"/>
+					<s:Button id="perc" label="%" 
+							  width="35" fontSize="10"
+							  click="operatorClick(event)"/>
+				</s:VGroup>
+				<s:VGroup>
+					<s:Button id="like" label="Like" 
+							  width="40" fontSize="10" 
+							  click="operatorClick(event)"/>
+					<s:Button id="and" label="and" 
+							  width="40" fontSize="10"
+							  click="operatorClick(event)"/>
+					<s:Button id="or" label="or" 
+							  width="40" fontSize="10"  
+							  click="operatorClick(event)"/>		
+				</s:VGroup>    	    	
+			</s:HGroup>		            
+		</s:VGroup>
+		<s:VGroup height="100%" width="100%">
+			<s:Label text="Values:" width="50"/> 
+			<mx:List
+				id="valuesLst" 
+				width="100%" height="100%"
+				fontSize="10"
+				dataProvider="{pagingQueryTask.uniqueValues}"
+				doubleClick="valListDoublClick(event)" 
+				doubleClickEnabled="true"/>	
+			<s:Button id="getUniqueBtn"  label="Get Unique Values " fontSize="10" 
+					  click="retreiveFieldValues(event)"
+					  enabled="{fieldsLst.selectedIndex >= 0}"
+					  visible="{!pagingQueryTask.isQuerying}" 
+					  includeInLayout="{!pagingQueryTask.isQuerying}"/>
+			<s:Label id="uniqueIDStatus"
+					 text="{'Processing: ' + pagingQueryTask.featuresProcessed + 
+					 ' of ' + pagingQueryTask.featuresTotal + ' \n(Esc to Cancel)'}"
+					 width="100%"
+					 visible="{pagingQueryTask.isQuerying}" 
+					 includeInLayout="{pagingQueryTask.isQuerying}"/> 
+		</s:VGroup>		   	  		      
+	</s:HGroup>
+	
+	<s:Label text="SELECT * FROM {targetLayerList.selectedItem.label} WHERE:"
+			 fontSize="10" fontWeight="normal"
+			 visible="{targetLayerList.selectedItem}" width="300" height="12"/>
+	<mx:TextArea id="queryFilter" 
+				 height="100%" width="100%"
+				 selectable="true"/>
+	<s:HGroup width="100%" verticalAlign="middle">
+		<s:Button id="clearFilter" label="Clear"
+				  click="{queryFilter.text = ''; queryFilter.setFocus();}"/>
+		<s:Button id="selectBtn" label="Select"
+				  click="selectBtn_clickHandler(event)"/>
+		<mx:Spacer width="5"/>
+		<s:Label text="{'Features (' + targetLayer.selectedFeatures.length + ')'}" 
+				 visible="{targetLayer.selectedFeatures.length > 0}"/>
+	</s:HGroup>
+	
+</s:Group>

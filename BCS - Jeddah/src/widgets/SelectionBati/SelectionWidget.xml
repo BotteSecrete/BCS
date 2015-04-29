@@ -1,0 +1,147 @@
+<?xml version="1.0" ?>
+<configuration>
+
+<!-- override the default selection symbology -->
+<!--
+	<symbols>
+		<picturemarkersymbol height="30" width="30" xoffset="0" yoffset="0"
+				url="widgets/Selection/assets/images/i_pin3.png" />
+									
+		<simplelinesymbol color="0xFF0000" alpha="0.8" width="2" />
+	
+		<simplefillsymbol color="0xFF0000" alpha="0.5">
+			<outline color="0xFF0000" alpha="0.8" width="2" />
+		</simplefillsymbol>
+	</symbols>
+-->
+
+<!--  Override the default Datagrid style -->
+<!-- 
+	<datagrid   alternatingColor1="0xeff3fa"
+				alternatingColor2="0xffffff"
+				backgroundAlpha="0"
+				horizontalGridLines="true"
+				horizontalGridLineColor="0x666666">
+	</datagrid>
+-->
+ 
+<!-- add the layers to query -->   
+<!-- minscale and maxscale are optional to override the arcGIS settings. 
+ 	 minscale = 0 and maxscale = 0 will display the selected features at all scales -->
+<!-- linkfield has an optional linkprefix="" and linksuffix="" attribute -->
+<!-- fields has an optional all="true" attribute. Use this if you want to search all fields. -->
+<!-- field has an optional alias attribute. This will override the arcGIS alias. 
+     alias can be set in either the fields - field or the infowindowfields - field -->
+ 
+    <layers>
+    <!--
+    	<layer>
+            <name>MyParks</name>
+            <url>http://gis/ArcGIS/rest/services/Parks_General/MapServer/6</url>
+            <minscale>500000</minscale>
+            <maxscale>10</maxscale>
+            <fields>
+                <field name="Site_name" alias="Site Name"/>
+                <field name="spatial.GIS.LandSites_poly.Site_Code" alias="Site Code"/>
+                <field name="spatial.GIS.LandSites_poly.OBJECTID" alias="ObjectID"/>
+                <field name="URL_FIELD" alias="URL"/>
+            </fields>
+            <titlefield>Site_name</titlefield>
+            <linkfield linkprefix="http://www.test1.com." linksuffix=".txt">URL_FIELD</linkfield>
+            <infowindowfields>
+            	<field name="Site_name"/>
+     			<field name="spatial.GIS.LandSites_poly.Site_Code" alias="Site Code"/>
+     			<field name="spatial.GIS.LandSites_poly.OBJECTID"/>
+			</infowindowfields>
+        </layer>
+     -->
+        
+        <layer>
+            <name>Louisville Police Facilities</name>
+            <url>http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Louisville/LOJIC_PublicSafety_Louisville/MapServer/3</url>
+            <fields>
+                <field name="PD_NAME"/>
+            </fields>
+            <titlefield>PD_NAME</titlefield>
+            <linkfield></linkfield>
+        </layer>
+        
+        <layer>
+            <name>TaxParcel</name>
+            <url>http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/TaxParcel/TaxParcelQuery/MapServer/0</url>
+            <fields>
+            	<field name="LOWPARCELID"/>
+     			<field name="PARCELID"/>
+     			<field name="PSTLSTATE"/>
+     			<field name="PSTLCITY"/>
+     			<field name="Shape_Length"/>
+     			<field name="Shape_Area"/>
+            </fields>
+            <titlefield>PARCELID</titlefield>
+            <linkfield></linkfield>
+            <infowindowfields>
+            	<field name="LOWPARCELID "/>
+     			<field name="PARCELID"/>
+     			<field name="PSTLSTATE"/>
+     			<field name="PSTLCITY"/>
+     			<field name="Shape_Length"/>
+     			<field name="Shape_Area"/>
+			</infowindowfields>
+        </layer>
+        
+        <layer>
+            <name>Counties</name>
+            <url>http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/3</url>
+            <fields>
+            	<field name="NAME"/>
+            	<field name="STATE_NAME"/>
+	            <field name="STATE_FIPS"/>
+				<field name="CNTY_FIPS"/>
+				<field name="STCOFIPS"/>
+				<field name="TRACT"/>
+				<field name="BLKGRP"/>
+				<field name="FIPS"/>
+				<field name="POP2000"/> 
+				<field name="POP2007"/>
+				<field name="POP00_SQMI"/> 
+				<field name="POP07_SQMI"/> 
+				<field name="WHITE"/> 
+				<field name="BLACK"/>
+				<field name="AMERI_ES"/> 
+				<field name="ASIAN"/> 
+				<field name="HAWN_PI"/> 
+				<field name="OTHER"/> 
+				<field name="MULT_RACE"/> 
+				<field name="HISPANIC"/> 
+				<field name="MALES"/> 
+				<field name="FEMALES"/>
+            </fields>
+            <titlefield>NAME</titlefield>
+            <linkfield></linkfield>
+            <infowindowfields>
+            	<field name="NAME"/>
+     			<field name="STATE_NAME"/>
+			</infowindowfields>
+        </layer>
+        <layer>
+            <name>States</name>
+            <url>http://sampleserver1.arcgisonline.com/ArcGIS/rest/services/Demographics/ESRI_Census_USA/MapServer/5</url>
+            <fields all="true"/>
+
+            <titlefield>STATE_NAME</titlefield>
+            <linkfield linkprefix="www.google.com/" linksuffix="">STATE_ABBR</linkfield>
+            <infowindowfields>
+            	<field name="STATE_NAME"/>
+            	<field name="STATE_FIPS"/>
+            	<field name="SUB_REGION"/>
+            	<field name="STATE_ABBR"/>
+            	<field name="POP2000"/>
+            	<field name="POP2007"/>
+            	<field name="POP00_SQMI"/>
+            	<field name="POP07_SQMI"/>
+            </infowindowfields>
+        </layer>
+    </layers>
+    <zoomscale>5000</zoomscale>
+    <info>widgets/InfoTemplates/InfoPopupWidget.swf</info>
+</configuration>

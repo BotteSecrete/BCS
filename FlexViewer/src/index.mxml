@@ -1,0 +1,830 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+///////////////////////////////////////////////////////////////////////////
+// Copyright (c) 2010-2011 Esri. All Rights Reserved.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//    http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+///////////////////////////////////////////////////////////////////////////
+-->
+<s:Application xmlns:fx="http://ns.adobe.com/mxml/2009"
+			   xmlns:s="library://ns.adobe.com/flex/spark"
+			   xmlns:mx="library://ns.adobe.com/flex/mx"
+			   xmlns:viewer="com.esri.viewer.*"
+			   xmlns:managers="com.esri.viewer.managers.*"
+			   xmlns:esri="http://www.esri.com/2008/ags"
+			   xmlns:containers="benContainers.*"
+			   xmlns:flexlib="http://code.google.com/p/flexlib/"
+			   xmlns:flexlibContainer="flexlib.containers.*"
+			   xmlns:flexlibControl="flexlib.controls.*"
+			   xmlns:fnicollet="http://www.flex-tutorial.fr/2009" 
+			   xmlns:analytics="com.google.analytics.components.*"
+			   initialize="application1_initializeHandler(event)"
+			   pageTitle="InTerraGIS Viewer"
+			   currentState="Login" >
+	<!--	initialize="openEditMap()"-->
+	
+	<fx:Style source="defaults.css"/>
+	
+	
+	<fx:Metadata>
+		[ResourceBundle("ViewerStrings")]
+	</fx:Metadata>
+	
+		<fx:Style>
+		@namespace s "library://ns.adobe.com/flex/spark";         
+		@namespace mx "library://ns.adobe.com/flex/mx"; 
+		@namespace containers "src.benContainers.*";
+		
+
+
+
+		
+		.shade {
+			backgroundColor: #ebeceb; 
+			borderStyle: solid;
+			borderThickness: 0;
+			cornerRadius: 0;
+			openIcon: ClassReference(null);
+			closeIcon: ClassReference(null);
+			paddingTop: 0; paddingBottom: 0;
+			
+		}
+		
+		.shadeChk {
+			upIcon: Embed(source="assets/images/plus-grey.png");
+			overIcon: Embed(source="assets/images/plus-white.png");
+			downIcon: Embed(source="assets/images/plus-white.png");
+			selectedUpIcon: Embed(source="assets/images/minus-grey.png");
+			selectedOverIcon: Embed(source="assets/images/minus-white.png");
+			selectedDownIcon: Embed(source="assets/images/minus-white.png");
+			paddingLeft: 0; paddingRight: 0;
+			paddingTop: 0; paddingBottom: 0;
+		}
+			
+		.shadeBtn {
+			skin: ClassReference(null);
+		}
+		
+		.linkButtonStyle {
+			corner-radius:10;	
+			fill-alphas:1,1;
+			padding-left:10;
+		}
+		
+		mx|Form {
+			padding-top:0;
+			padding-bottom:5;	
+		}
+			
+			
+		containers|CollapsiblePanel {
+			skin-class: ClassReference('benContainers.CollapsiblePanelSkin');
+			background-color: #FF0000;
+			content-background-color : #FF0000;
+			alpha: 1;
+			content-background-alpha: 1;
+		}
+		
+		global 
+		{
+			font-family: Verdana, "_sans";
+		}
+		
+		.loginPanelStyle
+		{
+			corner-radius: 10;
+			chrome-color: #d22228;	
+			color: #FFFFFF;
+			background-color: #FFFFFF;
+			border-visible: true;
+			border-color: #d22228;
+			border-alpha: 0.8;
+			drop-shadow-visible: true;
+		}
+		
+		.comboBox
+		{
+			color : #ffffff;/*couleur du texte*/
+			rollOverColor: #959595;/*couleur du fond au survol*/
+			textRollOverColor: #d22228;
+			textSelectedColor: #d22228;/*couleur du texte sélectionné*/
+			selectionColor: #959595;/*couleur du fond sélectionné */
+			borderStyle: none;/*suppression de la bordure*/
+			fillAlphas: 1.0, 1.0;/*couleur de fond*/
+			fillColors: #ffffff, #ffffff;
+			dropdownStyleName: comboBoxDropdown;/*renvoi au style nommé*/
+		}
+		.comboDropDown
+		{
+			dropShadowVisible:false;
+			color:#d22228;
+		}
+		
+		.loginLabelStyle 
+		{             
+			color: #d22228;             
+			fontSize: 11;
+			font-weight: bold;
+		}
+		
+		.loginText{
+			color: #d22228;
+		}
+		
+		.loginButtonStyle 
+		{             
+			chrome-color: #FFFFFF;
+			color: #d22228;
+		}
+		
+		.boilerLabelStyle 
+		{   
+			text-align: center;
+			color: #d22228;             
+			fontSize: 12;
+			font-weight: normal;
+		}
+	</fx:Style> 
+	
+	
+	<fx:Script>
+		
+		<![CDATA[
+			import com.esri.viewer.AppEvent;
+
+			import flash.net.URLRequest;
+			import flash.net.SharedObject;
+						
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			//import mx.controls.CheckBox;
+			//import mx.core.FlexGlobals;
+			import mx.core.ScrollPolicy;
+			import mx.events.FlexEvent;
+			import mx.events.ResizeEvent;
+			import mx.rpc.http.mxml.HTTPService;
+			import mx.rpc.events.FaultEvent;
+			import mx.rpc.events.ResultEvent;
+			//import mx.rpc.soap.WebService;
+			
+			
+			import benContainers.CollapsiblePanelSkin;
+			
+			import com.google.analytics.GATracker;
+			import com.google.analytics.AnalyticsTracker;
+			
+			
+			import flexlib.containers.WindowShade;
+			import flexlib.events.WindowShadeEvent;
+			
+			import org.bytearray.gif.player.GIFPlayer;
+
+			[Bindable]
+			private var locales:Array = [{label:"Français",code:"fr_FR"},
+										{label:"English", code:"en_US"}];
+			
+			[Bindable]
+			public static var dpValue:Array = [{ label:"None", data:NaN}];
+			
+			[Bindable]
+			public static var dpHoleType:Array = [{label:"None", data:"None"}];
+			
+
+			[Bindable]
+			public static var dpProjConfig:Array = [];
+//			public static var dpProjConfig:Array = [{label:"Default", data:"https://sygdev.systra.info/config_JeudiInfoPrestaA.xml"}];
+
+			[Bindable]
+			public static var dpRoleConfig:Array = [{label:"None", data:"None"}];
+					
+			private var usr:String;
+			
+			private var player:GIFPlayer = new GIFPlayer();
+			
+			[Bindable] 
+			private var screenWidth:Number = new Number();
+			
+			[Bindable]
+			private var screenHeight:Number = new Number();
+			
+			var configFile:String = new String();
+			var flushStatus:String = null;
+			var sharedObject:SharedObject;
+			
+			protected function application1_initializeHandler(event:FlexEvent):void
+			{
+				//chargement liste déroulante dans table geol
+				var service:HTTPService = new HTTPService(); 
+				service.resultFormat = "e4x";
+				service.url = "customRenderer/biblioGeolLeg.xml"; 
+				service.addEventListener(ResultEvent.RESULT, resultHandler); 
+				service.send(); 
+				
+				addEventListener(ResizeEvent.RESIZE, resizeApplication);
+				function resultHandler(evt:ResultEvent):void
+				{
+					//Remplissage de dpValue
+					var arrcol:ArrayCollection = new ArrayCollection();
+					var xmlResult:XML = new XML(evt.result);
+					dpValue = new Array();
+					dpValue.push({ label:"None", data:NaN});
+					for each(var s:XML in xmlResult.NewsItemRow)
+					{
+						var tmpObj: Object = {label: parseFloat(s.ABBR_CODE) +" | " + s.ABBR_DESC, data: s.ABBR_DESC};
+						dpValue.push(tmpObj);
+					}
+					
+				}
+				
+				/*//chargement liste déroulante dans table geol
+				var serviceHole:HTTPService = new HTTPService(); 
+				serviceHole.resultFormat = "e4x";
+				serviceHole.url = "customRenderer/biblioHoleType.xml"; 
+				serviceHole.addEventListener(ResultEvent.RESULT, resultHandlerHoleType); 
+				serviceHole.send(); 
+				
+				function resultHandlerHoleType(evt:ResultEvent):void
+				{
+					//Remplissage de dpValue
+					var xmlResult:XML = new XML(evt.result);
+					dpHoleType = new Array();
+					dpHoleType.push({label:"None", data:"None"});
+					for each(var s:XML in xmlResult.TYPE)
+					{						
+						var tmpObj: Object = {label:s, data: s};
+						dpHoleType.push(tmpObj);
+					}
+				}*/
+			}
+
+
+			protected function submit_clickHandler(event:MouseEvent):void         
+			{               
+				validate_user_proxy(); //use this to call service
+				var request:URLRequest = new URLRequest("assets/images/ajax-loader.gif");
+				
+				player.load(request);
+				loader.addChild(player);
+				
+			}
+			
+			protected function password_keydown(event:KeyboardEvent):void
+			{
+				if (event.keyCode==Keyboard.ENTER)
+				{
+					validate_user_proxy();
+					var request:URLRequest = new URLRequest("assets/images/ajax-loader.gif");
+					
+					player.load(request);
+					loader.addChild(player);
+				}
+			}
+			
+			protected function validate_user_proxy():void
+			{
+				screenWidth = stage.stageWidth;
+				screenHeight = stage.stageHeight;
+				login_user.send();
+			}
+			
+			private function checkLogin(evt:ResultEvent):void
+			{
+				lblStatus.text = "";	
+				formConfig.visible = false;
+				cbRole.visible = false;
+				sharedObject = SharedObject.getLocal("userData","/");
+				sharedObject.data.user = {username: userName.text};
+				
+				var xmlResult:XML = new XML(evt.result);
+				
+				if(xmlResult.loginsuccess == "yes")
+				{
+					if(xmlResult.Default == "yes" && xmlResult.TypeAuth == "1" )
+					{
+						configFile = "https://sygdev.systra.info/config_JeudiInfoPrestaA.xml";
+						try
+						{
+							flushStatus = sharedObject.flush();
+						}
+						catch (err:Error)
+						{
+							Alert.show("Vous devez autoriser les stockage locale dans Flash Player");
+						}
+						if (flushStatus != null) {
+							switch (flushStatus) {
+								case SharedObjectFlushStatus.PENDING :
+									Alert.show("Requesting permission to save object...\n");
+									sharedObject.addEventListener(NetStatusEvent.NET_STATUS, onFlushStatus);
+									break;
+								case SharedObjectFlushStatus.FLUSHED :
+									currentState = "Viewer";
+									ViewerContainer.configFile = configFile;
+									collapsingPanel.collapseButton.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+									//panColWidth = (50 * stage.stageWidth / 100) > 950 ?  (50 * stage.stageWidth / 100) : stage.stageWidth -950;
+									//collapsingPanel.width = panColWidth;
+									Alert.show("Value flushed to disk.\n");
+									break;
+							}
+						}
+					}
+					else if (xmlResult.Default == "yes" && xmlResult.TypeAuth == "0" )
+					{
+						lblStatus.text = "Access Denied";	
+					}
+					else
+					{
+						var projResult:XML = new XML(xmlResult.Projs);
+						
+						if (xmlResult.TypeAuth == "1")
+						{
+//							dpProjConfig = [{label:"Default", data:"https://sygdev.systra.info/config_JeudiInfoPrestaA.xml"}];
+							dpProjConfig = [];
+						}
+						else
+						{
+							dpProjConfig = new Array();
+						}
+						for each(var s:XML in projResult.proj)
+						{	
+							if (s.projName == "Baku")
+							{
+								var tmpObj: Object = {label:s.projName, data: s.projID};
+								dpProjConfig.push(tmpObj);
+							}
+						}
+						
+						formConfig.visible = true;
+					}
+				}
+				
+				if(xmlResult.loginsuccess == "no")
+				{
+					lblStatus.text = "Invalid username/password";
+				}		
+				
+				loader.removeChild(player);
+			}
+
+			private function loadRoles(event:mx.events.ListEvent):void
+			{
+				if(cbProj.selectedIndex == 0)
+				{
+					if(isNaN(Number(cbProj.selectedItem.data)))
+					{
+						configFile = (cbProj.selectedItem.data).toString();
+						try
+						{
+							flushStatus = sharedObject.flush();
+						}
+						catch (err:Error)
+						{
+							Alert.show("Vous devez autoriser les stockage locale dans Flash Player");
+						}
+						if (flushStatus != null) {
+							switch (flushStatus) {
+								case SharedObjectFlushStatus.PENDING :
+									sharedObject.addEventListener(NetStatusEvent.NET_STATUS, onFlushStatus);
+									break;
+								case SharedObjectFlushStatus.FLUSHED :
+									currentState = "Viewer";
+									ViewerContainer.configFile = configFile;
+									tracker.trackPageview("/"+userName.text+"/"+configFile);
+									collapsingPanel.collapseButton.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+									break;
+							}
+						}
+					}
+					else
+					{
+						loadRoleCb.send();
+					}
+
+				}
+				else
+				{
+					loadRoleCb.send();
+				}
+
+			}
+
+			private function checkRole(evt:ResultEvent):void
+			{
+				
+				var xmlResult:XML = new XML(evt.result);
+				dpRoleConfig = new Array();
+				for each(var s:XML in xmlResult.role)
+				{	
+					var tmpObj: Object = {label:s.roleName, data: s.configURL};
+					dpRoleConfig.push(tmpObj);
+				}
+				
+				cbRole.visible = true;
+				
+			}
+			
+			private function loadConfig(event:mx.events.ListEvent):void
+			{
+				configFile = (cbRole.selectedItem.data).toString();
+				try
+				{
+					flushStatus = sharedObject.flush();
+				}
+				catch (err:Error)
+				{
+					Alert.show("Vous devez autoriser les stockage locale dans Flash Player");
+				}
+				if (flushStatus != null) {
+					switch (flushStatus) {
+						case SharedObjectFlushStatus.PENDING :
+							//Alert.show("Requesting permission to save object...\n");
+							sharedObject.addEventListener(NetStatusEvent.NET_STATUS, onFlushStatus);
+							break;
+						case SharedObjectFlushStatus.FLUSHED :
+							currentState = "Viewer";
+							ViewerContainer.configFile = configFile;
+							tracker.trackPageview("/"+userName.text+"/"+configFile);
+							break;
+					}
+				}
+			}
+		
+			
+			private function onFlushStatus(event:NetStatusEvent):void {
+				trace("User closed permission dialog...\n");
+				switch (event.info.code) {
+					case "SharedObject.Flush.Success" :
+						currentState = "Viewer";
+						ViewerContainer.configFile = configFile;
+						tracker.trackPageview("/"+userName.text+"/"+configFile);
+						//panColWidth = (50 * stage.stageWidth / 100) > 950 ?  (50 * stage.stageWidth / 100) : stage.stageWidth -950;
+						//collapsingPanel.width = panColWidth;
+						//Alert.show("User granted permission -- value saved.\n");
+						collapsingPanel.collapseButton.dispatchEvent(new MouseEvent(MouseEvent.CLICK));
+						break;
+					case "SharedObject.Flush.Failed" :
+						//Alert.show("User denied permission -- value not saved.\n");
+						break;
+				}
+				
+				sharedObject.removeEventListener(NetStatusEvent.NET_STATUS, onFlushStatus); 
+				
+			}
+		
+			
+			private function resizeApplication(event:ResizeEvent):void
+			{
+				if(stage.stageWidth != event.oldWidth || stage.stageHeight != event.oldHeight)
+				{
+					//perform action here or just use the above properties in any way you want
+					screenWidth = stage.stageWidth;
+					screenHeight = stage.stageHeight;
+					collapsingPanel.explicitWidth = collapsingPanel.collapsed ? collapsingPanel.explicitWidth : ((50 * stage.stageWidth / 100) > 950 ?  (50 * stage.stageWidth / 100) : stage.stageWidth - 950);
+
+					ViewerContainer.getInstance().percentHeight = 100;
+					if (collapsingPanel.collapsed)
+					{
+						ViewerContainer.getInstance().percentWidth = 100;
+						ViewerContainer.getInstance().x = 30;
+					}
+					else
+					{
+						ViewerContainer.getInstance().width = (stage.stageWidth - collapsingPanel.explicitWidth);
+						ViewerContainer.getInstance().x = collapsingPanel.explicitWidth;
+					}	
+				}
+			}
+			
+			
+			protected function collapsingPanel_resizeHandler(event:ResizeEvent):void
+			{
+				// TODO Auto-generated method stub
+				if(collapsingPanel.fullScreen)
+				{
+					ws0.percentWidth = ws1.percentWidth = ws2.percentWidth = ws3.percentWidth = 100;
+				}
+				else
+					ws0.width = ws1.width = ws2.width = ws3.width = collapsingPanel.width;
+			}
+
+			
+		]]>
+	</fx:Script> 
+	
+	<fx:Declarations>
+		
+		<mx:HTTPService
+			id="login_user"
+			destination="DefaultHTTPS"
+			result="checkLogin(event)"
+			method="POST"
+			url="https://sygdev.systra.info/PHPSecurity/connexion.php"
+			resultFormat="e4x"
+			useProxy="false">
+			<mx:request xmlns="">
+				<username>{userName.text}</username>
+				<password>{passWord.text}</password>
+			</mx:request>
+			
+		</mx:HTTPService>
+		
+		<mx:HTTPService
+			id="loadRoleCb"
+			result="checkRole(event)"
+			method="POST"
+			url="https://sygdev.systra.info/PHPSecurity/role.php"
+			resultFormat="e4x"
+			useProxy="false">
+			<mx:request xmlns="">
+				<projID>{cbProj.selectedItem.data}</projID>
+			</mx:request>
+		</mx:HTTPService>
+		
+		<esri:Map id="miniMap" visible="false" wrapAround180="true">
+			<esri:OpenStreetMapLayer/>
+		</esri:Map>
+		
+		<analytics:FlexTracker
+			xmlns:analytics="com.google.analytics.components.*"
+			id="tracker"
+			account="UA-47629965-1"
+			mode="AS3"
+			visualDebug="false"/>
+		
+	</fx:Declarations>
+	
+	<s:states>     
+		<s:State name="Viewer"/>     
+		<s:State name="Login"/>
+	</s:states>
+	
+	
+	<s:Panel id="loginPanel" title="Viewer Login Screen" styleName="loginPanelStyle" includeIn="Login" verticalCenter="0" horizontalCenter="0" width="40%" height="40%">        
+		<s:VGroup verticalAlign="middle" horizontalAlign="center" width="100%" height="100%">
+			<mx:Text width="50%" text="Please log in to access Viewer" styleName="boilerLabelStyle" />
+			<mx:Form includeIn="Login" >    
+				
+				<mx:FormItem label="Username" labelStyleName="loginLabelStyle">                   
+					<s:TextInput styleName="loginText" id="userName" keyDown="password_keydown(event)"/>               
+				</mx:FormItem>            
+				<mx:FormItem label="Password" labelStyleName="loginLabelStyle">
+					<s:VGroup>
+						<s:TextInput  styleName="loginText" displayAsPassword="true" keyDown="password_keydown(event)" id="passWord" />
+						<s:Label id="lblStatus" styleName="loginLabelStyle"/>
+					</s:VGroup>
+				</mx:FormItem>   
+				<mx:FormItem label="Configuration" left="20" id="formConfig" visible="false" labelStyleName="loginLabelStyle">         
+<mx:ComboBox id="cbProj"
+		 width = "200"
+		 prompt="Choose your project"
+		 editable="false"
+		 dropdownWidth="250"
+		 styleName="comboBox"
+		 dropdownStyleName="comboDropDown"
+		 change = "loadRoles(event)"
+		 dataProvider="{dpProjConfig}"/>
+<mx:ComboBox id="cbRole"
+			 width = "200"
+			 visible = "false"
+			 prompt="Choose your role"
+			 editable="false"
+			 dropdownWidth="250"
+			 styleName="comboBox"
+			 dropdownStyleName="comboDropDown"
+			 change = "loadConfig(event)"
+			 dataProvider="{dpRoleConfig}"/>
+				</mx:FormItem> 
+				<mx:FormItem>         
+					<s:Button id="Login" label="Login"  styleName="loginButtonStyle" click="submit_clickHandler(event)"/>   
+					<mx:Image id="loader"/> 
+				</mx:FormItem>    
+			</mx:Form>	
+		</s:VGroup>
+	</s:Panel>
+	
+	
+	<viewer:ViewerContainer  id="viewerContainer" includeIn="Viewer">
+		<viewer:configManager>
+			<managers:ConfigManager id="configManager"/>
+		</viewer:configManager>
+		<viewer:dataManager>
+			<managers:DataManager id="dataManager"/>
+		</viewer:dataManager>
+		<viewer:mapManager>
+			<managers:MapManager id="mapManager"/>
+
+		</viewer:mapManager>
+		<viewer:uiManager>
+			<managers:UIManager id="uiManager"/>
+		</viewer:uiManager>
+		<viewer:widgetManager>
+			<managers:WidgetManager id="widgetManager"/>
+		</viewer:widgetManager>
+	</viewer:ViewerContainer>
+	
+	
+	<mx:ComboBox id="cbTest"
+				 dataProvider="{dpValue}"
+				 top="10"
+				 left="400"
+				 visible="false"
+				 includeIn="Viewer"/>
+	
+	<mx:ComboBox id="holeType"
+				 dataProvider="{dpHoleType}"
+				 top="10"
+				 left="400"
+				 visible="false"
+				 includeIn="Viewer"/>
+
+
+	<containers:CollapsiblePanel id="collapsingPanel" skinClass="benContainers.CollapsiblePanelSkin"
+								 width="30" height="100%" minHeight="0" 		 
+								 resize="collapsingPanel_resizeHandler(event)"
+								 includeIn="Viewer" title="Building Details">
+		
+		<containers:layout>
+			<s:VerticalLayout  clipAndEnableScrolling="true"  paddingRight="0" paddingLeft="0" paddingTop="0" paddingBottom="0" />
+		</containers:layout>
+		
+		<flexlibContainer:WindowShade id="ws0"
+							 opened="true"
+							 maxHeight="{collapsingPanel.height}"
+							 useHandCursor="true"
+							 openDuration="250"
+							 closeDuration="250"
+							 layout="horizontal"
+							 horizontalScrollPolicy="auto"
+							 verticalScrollPolicy="auto"
+							 styleName="shade"
+							 label=""
+							 visible="false">
+			<flexlibContainer:headerRenderer>
+				<fx:Component>
+					<flexlibControl:CanvasButton width="100%" height="30" styleName="shadeBtn" useHandCursor="true"
+												 rollOut="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 rollOver="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 click="chk.selected = !chk.selected">
+
+						<fx:Script>
+							<![CDATA[
+								import mx.controls.Alert;
+								
+								import flexlib.containers.WindowShade;
+								
+							]]>
+						</fx:Script>
+						<mx:Label id="header" top="3" left="4" text="{WindowShade(parent).data}" styleName="shadeHead"/>
+						<mx:CheckBox id="chk" top="9" right="6" selected="{WindowShade(parent).opened}" click="{Alert.show('test');}" useHandCursor="true" styleName="shadeChk"
+									 upIcon="@Embed(source='assets/images/plus-grey.png')"
+									 overIcon="@Embed(source='assets/images/plus-white.png')"
+									 downIcon="@Embed(source='assets/images/plus-white.png')"
+									 selectedOverIcon="@Embed(source='assets/images/minus-white.png')"
+									 selectedUpIcon="@Embed(source='assets/images/minus-grey.png')"
+									 selectedDownIcon="@Embed(source='assets/images/minus-white.png')"/>
+					</flexlibControl:CanvasButton>
+				</fx:Component>
+			</flexlibContainer:headerRenderer>
+
+		</flexlibContainer:WindowShade>
+		
+		<flexlibContainer:WindowShade id="ws1"
+									  opened="true"
+									  useHandCursor="true"
+									  maxHeight ="{collapsingPanel.height}"
+									  openDuration="250"
+									  closeDuration="250"
+									  verticalScrollPolicy="auto"
+									  horizontalScrollPolicy="auto"
+									  styleName="shade"
+									  label=""
+									  visible="false"
+									  width="100%">
+			<flexlibContainer:headerRenderer>
+				<fx:Component>
+					<flexlibControl:CanvasButton width="100%" height="30" styleName="shadeBtn" useHandCursor="true"
+												 rollOut="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 rollOver="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 click="chk.selected = !chk.selected">
+						<fx:Script>
+							<![CDATA[
+								import mx.controls.Alert;
+								
+								import flexlib.containers.WindowShade;
+							]]>
+						</fx:Script>
+						
+						<mx:Label id="header" top="3" left="4" text="{WindowShade(parent).data}" styleName="shadeHead"/>
+						<mx:CheckBox id="chk" top="9" right="6" selected="{WindowShade(parent).opened}" click="{Alert.show('test');}" useHandCursor="true" styleName="shadeChk"
+									 upIcon="@Embed(source='assets/images/plus-grey.png')"
+									 overIcon="@Embed(source='assets/images/plus-white.png')"
+									 downIcon="@Embed(source='assets/images/plus-white.png')"
+									 selectedOverIcon="@Embed(source='assets/images/minus-white.png')"
+									 selectedUpIcon="@Embed(source='assets/images/minus-grey.png')"
+									 selectedDownIcon="@Embed(source='assets/images/minus-white.png')"/>
+					</flexlibControl:CanvasButton>
+				</fx:Component>
+			</flexlibContainer:headerRenderer>
+		</flexlibContainer:WindowShade>
+
+		
+	
+		<flexlibContainer:WindowShade id="ws2"
+									  opened="true"
+									  layout="absolute"
+									  maxHeight ="{collapsingPanel.height}"
+									  useHandCursor="true"
+									  openDuration="250"
+									  closeDuration="250"
+									  clipContent="true"
+									  horizontalScrollPolicy="auto"
+									  verticalScrollPolicy="auto"
+									  styleName="shade"
+									  label=""
+									  visible="false"
+									  width="100%">
+			
+			<flexlibContainer:headerRenderer>
+				<fx:Component>
+					<flexlibControl:CanvasButton width="100%" height="30" styleName="shadeBtn" useHandCursor="true"
+												 rollOut="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 rollOver="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 click="chk.selected = !chk.selected">
+						<fx:Script>
+							<![CDATA[
+								import mx.controls.Alert;
+								
+								import flexlib.containers.WindowShade;
+							]]>
+						</fx:Script>
+						
+						<mx:Label id="header" top="3" left="4" text="{WindowShade(parent).data}" styleName="shadeHead"/>
+						<mx:CheckBox id="chk" top="9" right="6" selected="{WindowShade(parent).opened}" click="{Alert.show('test');}" useHandCursor="true" styleName="shadeChk"
+									 upIcon="@Embed(source='assets/images/plus-grey.png')"
+									 overIcon="@Embed(source='assets/images/plus-white.png')"
+									 downIcon="@Embed(source='assets/images/plus-white.png')"
+									 selectedOverIcon="@Embed(source='assets/images/minus-white.png')"
+									 selectedUpIcon="@Embed(source='assets/images/minus-grey.png')"
+									 selectedDownIcon="@Embed(source='assets/images/minus-white.png')"/>
+					</flexlibControl:CanvasButton>
+				</fx:Component>
+			</flexlibContainer:headerRenderer>
+			
+		</flexlibContainer:WindowShade>
+
+		<flexlibContainer:WindowShade id="ws3"
+									  opened="false"
+									  useHandCursor="true"
+									  styleName="shade"
+									  maxHeight ="{collapsingPanel.height-ws2.height}"
+									  
+									  horizontalScrollPolicy="auto"
+									  verticalScrollPolicy="auto"
+									  openDuration="250"
+									  closeDuration="250"
+									  label=""
+									  visible="false"
+									  width="100%">
+			<flexlibContainer:headerRenderer>
+				<fx:Component>
+					<flexlibControl:CanvasButton width="100%" height="30" styleName="shadeBtn" useHandCursor="true"
+												 rollOut="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 rollOver="header.setStyle('color', 0xffffff); chk.dispatchEvent(event);"
+												 click="chk.selected = !chk.selected">
+						<fx:Script>
+							<![CDATA[
+								import flexlib.containers.WindowShade;
+							]]>
+						</fx:Script>
+						
+						<mx:Label id="header" top="3" left="4" text="{WindowShade(parent).data}" styleName="shadeHead"/>
+						<mx:CheckBox id="chk" top="9" right="6" selected="{WindowShade(parent).opened}" useHandCursor="true" styleName="shadeChk"
+									 upIcon="@Embed(source='assets/images/plus-grey.png')"
+									 overIcon="@Embed(source='assets/images/plus-white.png')"
+									 downIcon="@Embed(source='assets/images/plus-white.png')"
+									 selectedOverIcon="@Embed(source='assets/images/minus-white.png')"
+									 selectedUpIcon="@Embed(source='assets/images/minus-grey.png')"
+									 selectedDownIcon="@Embed(source='assets/images/minus-white.png')"/>
+					</flexlibControl:CanvasButton>
+				</fx:Component>
+			</flexlibContainer:headerRenderer>
+		</flexlibContainer:WindowShade>
+		<!--mx:Accordion id="vdvBox" openDuration="250" resizeToContent="true" verticalScrollPolicy="auto" horizontalScrollPolicy="auto" width="100%" height="100%"/-->
+	
+		
+		
+	</containers:CollapsiblePanel>
+	
+
+	<fnicollet:Toaster id="simpleToaster" width="100%" height="100%">
+	</fnicollet:Toaster>
+</s:Application>

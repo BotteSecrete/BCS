@@ -1,0 +1,16 @@
+<?xml version="1.0" ?>
+<configuration>
+    <title>Stations</title>
+    <fields>
+        <field name="RefName" alias="Station : " visible="true"/>
+    </fields>
+    <showattachments>true</showattachments>
+</configuration>
+
+<!--
+    Pop-up configuration file for:
+    http://sampleserver3.arcgisonline.com/ArcGIS/rest/services/SanFrancisco/311Incidents/FeatureServer/0
+
+    See pop-up documentation at
+    http://links.esri.com/flexviewer/popups
+-->

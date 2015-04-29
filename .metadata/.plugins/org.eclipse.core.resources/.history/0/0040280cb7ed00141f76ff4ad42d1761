@@ -1,0 +1,96 @@
+import com.esri.ags.Graphic;
+import com.esri.ags.events.FeatureLayerEvent;
+import com.esri.ags.events.MapMouseEvent;
+import com.esri.ags.geometry.Extent;
+import com.esri.ags.geometry.Polygon;
+import com.esri.ags.geometry.Polyline;
+
+import flash.events.MouseEvent;
+
+import mx.controls.Alert;
+import mx.events.FlexEvent;
+
+private var graphic:Graphic;
+private var lastEditGraphic:Graphic;
+private var lastActiveEditTypes:String;
+
+// ActionScript file
+private function drawEditPolygon(event:MapMouseEvent):void
+{
+	event.currentTarget.addEventListener(MouseEvent.MOUSE_MOVE, map_mouseMoveHandler);
+	event.currentTarget.addEventListener(MouseEvent.MOUSE_UP, map_mouseUpHandler);
+}
+
+private function map_mouseMoveHandler(event:MouseEvent):void
+{
+	event.currentTarget.removeEventListener(MouseEvent.MOUSE_MOVE, map_mouseMoveHandler);
+	event.currentTarget.removeEventListener(MouseEvent.MOUSE_UP, map_mouseUpHandler);
+}
+
+private function map_mouseUpHandler(event:MouseEvent):void
+{
+	event.currentTarget.removeEventListener(MouseEvent.MOUSE_MOVE, map_mouseMoveHandler);
+	event.currentTarget.removeEventListener(MouseEvent.MOUSE_UP, map_mouseUpHandler);
+	
+	if (event.target is Graphic || event.target.parent is Graphic)
+	{
+		if (event.target is Graphic)
+		{
+			graphic = Graphic(event.target);
+		}
+		else if (event.target.parent is Graphic) //check for PictureMarkerSymbol
+		{
+			graphic = Graphic(event.target.parent);
+		}
+		
+		if (lastEditGraphic !== graphic)
+		{
+			lastEditGraphic = graphic;
+			lastActiveEditTypes = "moveRotateScale"; // make sure move and edit vertices is the 1st mode
+		}
+		if (graphic.geometry is Polyline || graphic.geometry is Polygon)
+		{
+			if (lastActiveEditTypes == "moveEditVertices")
+			{
+				lastActiveEditTypes = "moveRotateScale";
+				myEditTool.activate(EditTool.MOVE | EditTool.SCALE | EditTool.ROTATE, [ graphic ]);
+			}
+			else
+			{
+				lastActiveEditTypes = "moveEditVertices";
+				myEditTool.activate(EditTool.MOVE | EditTool.EDIT_VERTICES, [ graphic ]);
+			}
+		}
+		else if (graphic.geometry is Extent)
+		{
+			myEditTool.activate(EditTool.MOVE | EditTool.SCALE, [ graphic ]);
+		}
+		else if (graphic.graphicsLayer == myGraphicsLayer)
+		{
+			myEditTool.activate(EditTool.MOVE | EditTool.EDIT_VERTICES, [ graphic ]);
+		}
+	}
+	else
+	{
+		Alert.show("fin d'édition ! \n"+graphic.attributes);
+		myEditTool.deactivate();
+		lastActiveEditTypes = "moveRotateScale"; // make sure move and edit vertices is the 1st mode
+	}
+}
+
+function updateDrawPolygon(objectID:Number):void
+{
+	var attributes:Object = {};
+	
+	attributes = {OBJECTID:objectID};
+	var feature:Graphic = new Graphic(graphic.geometry as Polygon, null, attributes);
+	var updates:Array = [ feature ];
+	featLayer.addEventListener(FeatureLayerEvent.EDITS_COMPLETE,myFeatureLayer_editsCompleteHandler);
+	featLayer.applyEdits(null,updates,null);
+	
+	//featLayer.addEventListener(FeatureLayerEvent.EDITS_COMPLETE,myFeatureLayer_editsCompleteHandler);
+	map.centerAt(graphic.geometry.extent.center);
+}
+
+
+

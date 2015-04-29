@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     ////////////////////////////////////////////////////////////////////////////////
+     //
+     // Copyright (c) 2010 ESRI
+     //
+     // All rights reserved under the copyright laws of the United States.
+     // You may freely redistribute and use this software, with or
+     // without modification, provided you include the original copyright
+     // and use restrictions.  See use restrictions in the file:
+     // <install location>/License.txt
+     //
+     ////////////////////////////////////////////////////////////////////////////////
+-->
+<s:ItemRenderer xmlns:fx="http://ns.adobe.com/mxml/2009"
+                xmlns:s="library://ns.adobe.com/flex/spark"
+                xmlns:mx="library://ns.adobe.com/flex/mx"
+                autoDrawBackground="false"
+				doubleClickEnabled="true"
+                doubleClick="itemrenderer_clickHandler(event)"
+                dataChange="itemrenderer_dataChangeHandler(event)"
+                minHeight="30">
+
+    <fx:Script>
+        <![CDATA[
+            import com.esri.ags.symbols.Symbol;
+			import mx.controls.Alert;
+            import mx.events.FlexEvent;
+			import mx.collections.ArrayCollection;
+
+            private const LOCATE_RESULT_CLICK:String = "locateResultClick";
+
+			private const LOCATE_RESULT_SAVE:String = "locateResultSave";
+            
+			private const LOCATE_RESULT_DELETE:String = "locateResultDelete";
+			
+			private const LayerVisiblity_RESULT:String = "LayerVisiblity";
+						
+			private const HeatRadius_RESULT:String = "HeatRadius";
+			
+			private const ShowPoints_RESULT:String = "ShowPoints";
+			
+			private const HeatTypeChange_RESULT:String = "ChangeHeatType";
+
+			[Bindable]
+			private var locateResult:LocateResult;
+			
+			[Bindable]
+			public var heatType:ArrayCollection = new ArrayCollection([
+				{label:"THERMAL",data:"THERMAL"},
+				{label:"RAINBOW",data:"RAINBOW"},
+				{label:"RED-WHITE-BLUE",data:"RED-WHITE-BLUE"}
+			]);
+			
+
+            private var lastResultSymbol:Symbol;
+           // private var lastResultSwatch:UIComponent;
+
+            private function itemrenderer_dataChangeHandler(event:FlexEvent):void
+            {
+                locateResult = data as LocateResult;
+            }
+
+            private function itemrenderer_clickHandler(event:MouseEvent):void
+            {
+                dispatchEvent(new Event(LOCATE_RESULT_CLICK, true)); // bubbles
+				
+            }
+			
+			private function saveResult(event:MouseEvent):void
+			{
+				event.stopPropagation(); // don't let this click event go up to the ItemRenderer
+				dispatchEvent(new Event(LOCATE_RESULT_SAVE, true)); // bubbles
+			}
+			
+            private function deleteResult(event:MouseEvent):void
+            {
+                event.stopPropagation(); // don't let this click event go up to the ItemRenderer
+                dispatchEvent(new Event(LOCATE_RESULT_DELETE, true)); // bubbles
+            }
+
+			protected function hslider1_changeHandler(event:Event):void
+			{
+				//graphicsLayer.alpha = hSlider.value;
+				dispatchEvent(new Event(LayerVisiblity_RESULT, true));
+			}
+
+			protected function hslider2_changeHandler(event:Event):void
+			{
+				dispatchEvent(new Event(HeatRadius_RESULT, true));
+			}
+			
+			protected function showPointsUpdate(event:Event):void
+			{
+				event.stopPropagation(); // don't let this click event go up to the ItemRenderer
+				dispatchEvent(new Event(ShowPoints_RESULT, true));
+			}
+			
+			protected function heatTypeChange():void
+			{
+				dispatchEvent(new Event(HeatTypeChange_RESULT, true));
+			}
+        ]]>
+    </fx:Script>
+
+    <s:states>
+        <s:State name="normal"/>
+        <s:State name="hovered"/>
+        <s:State name="selected"/>
+    </s:states>
+
+	<!-- border/background rectangle -->
+	<s:Rect left="0" right="0" top="0" bottom="0"
+			radiusX="4"
+			radiusY="4">
+		<s:stroke>
+			<mx:SolidColorStroke alpha="{getStyle('borderAlpha')}"
+								 color="{getStyle('borderColor')}"
+								 color.selected="{getStyle('focusColor')}"
+								 weight="1"/>
+		</s:stroke>
+		<s:fill>
+			<s:SolidColor alpha="0.3"
+						  alpha.hovered="0.8"
+						  alpha.selected="1"
+						  color.hovered="{getStyle('rollOverColor')}"
+						  color.normal="{getStyle('contentBackgroundColor')}"
+						  color.selected="{getStyle('selectionColor')}"/>
+		</s:fill>
+		
+	</s:Rect>
+	
+	<s:HGroup width="100%" height="100%"
+			  paddingBottom="3"
+			  paddingLeft="3"
+			  paddingRight="3"
+			  paddingTop="3"
+			  verticalAlign="middle">
+		<mx:Image width="18" height="18"
+				  source="{locateResult.icon}"
+				  />
+		
+		<s:VGroup width="100%" height="100%"
+				  verticalAlign="middle">
+			<s:Label width="100%"
+					 fontWeight="bold"
+					 maxDisplayedLines="-1"
+					 text="{locateResult.title}"/>
+			<s:HGroup width="100%" verticalAlign="middle">
+				
+				<s:Label width="50%"
+						 fontWeight="normal"
+						 maxDisplayedLines="-1"
+						 text="{locateResult.content}"/>
+				
+				<s:Label width="40%" textAlign="right"
+						 fontWeight="normal"
+						 text="Show Points:" includeInLayout="{locateResult.heatMap}" visible="{locateResult.heatMap}"/>
+				<s:CheckBox id="showPoints" change="showPointsUpdate(event)" includeInLayout="{locateResult.heatMap}" visible="{locateResult.heatMap}" />
+				
+			</s:HGroup>
+			<s:HGroup verticalAlign="middle" includeInLayout="{locateResult.heatMap}" visible="{locateResult.heatMap}">
+				<s:Label text="Theme:"/>
+				<mx:ComboBox id="heatTypeCombo" dataProvider="{heatType}" change="heatTypeChange()" />
+			</s:HGroup>
+			
+			<s:HGroup width="100%" verticalAlign="middle">
+				<s:Label width="40%"
+						 fontWeight="normal"
+						 maxDisplayedLines="-1"
+						 text="Transparency:"/>
+				<s:HSlider id="hSlider" width="60%" minimum="0" maximum="1" value="1" snapInterval="0.1" stepSize="0.1" change="hslider1_changeHandler(event)" />
+			</s:HGroup> 
+			<s:HGroup width="100%" verticalAlign="middle" includeInLayout="{locateResult.heatMap}" visible="{locateResult.heatMap}">	
+				<s:Label width="40%"
+						 fontWeight="normal"
+						 text="Heat Radius:"/>
+				<s:HSlider id="hSlider2" width="60%" minimum="15" maximum="60" value="25" snapInterval="0.1" stepSize="5" change="hslider2_changeHandler(event)" />
+			</s:HGroup>  
+		</s:VGroup>
+		<!-- mx:Image width="18" height="18"
+				  buttonMode="true"
+				  click="saveResult(event)"
+				  source="assets/images/i_save.png"
+				  toolTip="Save result to Draw File"
+				  useHandCursor="true"/ -->
+		<mx:Image width="18" height="18"
+				  buttonMode="true"
+				  click="deleteResult(event)"
+				  source="assets/images/w_close_red.png"
+				  toolTip="Delete result"
+				  useHandCursor="true"/>
+	</s:HGroup>
+	
+		
+</s:ItemRenderer>

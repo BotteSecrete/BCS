@@ -1,0 +1,43 @@
+﻿<?xml version="1.0" ?>
+<configuration>
+    <elevationSOEURL>https://sygdev.systra.info/arcgis/rest/services/TSS/RasterWebMercator/MapServer/exts/ElevationsSOE_NET/ElevationLayers/0/GetElevations</elevationSOEURL>
+    <profileLineWidth>2</profileLineWidth>
+    <profileLineColor>0x000099</profileLineColor>
+    <description>Draw a line with the tools below; ArcGIS will create an elevation profile chart for it.</description>
+    <chartTitle>Elevation Profile</chartTitle>
+    <baseChartAtZero>true</baseChartAtZero>
+    <unitsAndLabeling>
+        <elevation>
+            <label>
+                <chart>meters</chart>
+                <dataTip>m</dataTip>
+            </label>
+            <multiplyByToConvertFromMeters>1</multiplyByToConvertFromMeters>
+        </elevation>
+        <distanceAlongPath>
+            <label>
+                <chart>kilometers</chart>
+                <dataTip>km</dataTip>
+            </label>
+            <multiplyByToConvertFromMeters>0.001</multiplyByToConvertFromMeters>
+        </distanceAlongPath>
+    </unitsAndLabeling>
+    <template-ignoredByCode>
+        <unitsAndLabeling>
+            <elevation>
+                <label>
+                    <chart/>
+                    <dataTip/>
+                </label>
+                <multiplyByToConvertFromMeters/>
+            </elevation>
+            <distanceAlongPath>
+                <label>
+                    <chart/>
+                    <dataTip/>
+                </label>
+                <multiplyByToConvertFromMeters/>
+            </distanceAlongPath>
+        </unitsAndLabeling>
+    </template-ignoredByCode>
+</configuration>

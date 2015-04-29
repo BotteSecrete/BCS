@@ -1,0 +1,16 @@
+<Users>
+	<User>
+		<Login>Laurent</Login>
+		<password>123456</password>
+	</User>
+	
+	<User>
+		<Login>Fatima</Login>
+		<password>456789</password>
+	</User>
+	
+	<User>
+		<Login>Maxime</Login>
+		<password>789123</password>
+	</User>
+</Users>

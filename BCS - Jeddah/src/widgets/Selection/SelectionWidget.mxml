@@ -1,0 +1,951 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+     ////////////////////////////////////////////////////////////////////////////////
+     //
+     // Copyright (c) 2010 ESRI
+     //
+     // All rights reserved under the copyright laws of the United States.
+     // You may freely redistribute and use this software, with or
+     // without modification, provided you include the original copyright
+     // and use restrictions.  See use restrictions in the file:
+     // <install location>/License.txt
+     //
+     ////////////////////////////////////////////////////////////////////////////////
+-->
+<viewer:BaseWidget xmlns:fx="http://ns.adobe.com/mxml/2009"
+                   xmlns:s="library://ns.adobe.com/flex/spark"
+                   xmlns:mx="library://ns.adobe.com/flex/mx"
+                   xmlns:Query="widgets.Query.*"
+                   xmlns:viewer="com.esri.viewer.*"
+				   xmlns:esri="http://www.esri.com/2008/ags"
+                   widgetConfigLoaded="init()" 
+				   xmlns:Selection="widgets.Selection.*" xmlns:components="widgets.Selection.components.*">
+	
+	<!--
+	Dispatches events:
+	SelectionFeatureLayerEvent.LAYER_RESULTS
+	SelectionGraphicEvent.OVER_GRAPHIC
+	Event."alllayersadded"
+	Event.'featurelayer_selection'
+	
+	Listens for events:
+	SelectionFeatureLayerEvent.ADD_GRAPHIC_LISTENER
+	SelectionFeatureLayerEvent.REMOVE_GRAPHIC_LISTENER
+	SelectionFeatureLayerEvent.SHOW_RESULTS
+	SelectionGraphicEvent.OVER_GRID
+	SelectionGraphicEvent.CLICK_GRID
+	LayerEvent.LOAD
+	GraphicEvent.GRAPHIC_ADD
+	FeatureLayerEvent.SELECTION_COMPLETE
+	FeatureLayerEvent.SELECTION_CLEAR
+	-->
+	
+	<viewer:states>
+		<s:State name="selectByAttributesView"/>
+		<!--<s:State name="selectionOptionsView"/>-->
+		<s:State name="selectionResultsView"/>
+		<!--<s:State name="selectByLocationView"/>-->
+		<s:State name="selectByDrawingView"/>
+	</viewer:states>
+	
+	<viewer:transitions>
+		<s:Transition autoReverse="true" toState="*">
+			<s:Fade targets="{[ selectionByDrawing, selectByAttributes, selectionResults]}"/><!-- selectionOptions,selectByLocation,-->
+		</s:Transition>
+	</viewer:transitions>
+	
+	<fx:Declarations>
+		<!--<esri:SimpleFillSymbol id="sfs"
+							   alpha="0.5"
+							   color="0x000000"
+							   style="solid">
+			<esri:SimpleLineSymbol color="0xFF0000"/>
+		</esri:SimpleFillSymbol>
+		
+		<esri:SimpleMarkerSymbol id="highlightedSymbol"
+								 color="0xFF0000"
+								 style="circle">
+			<esri:SimpleLineSymbol/>
+		</esri:SimpleMarkerSymbol>
+		
+		<esri:SimpleMarkerSymbol id="defaultSymbol"
+								 alpha="0.5"
+								 color="0x0000FF"
+								 size="12"
+								 style="circle">
+			<esri:SimpleLineSymbol/>
+		</esri:SimpleMarkerSymbol>
+		
+		<esri:GraphicsLayer id="myGraphicLayer"/>
+		
+		<esri:DrawTool id="myDrawTool"
+					   fillSymbol="{sfs}"
+					   map="{map}"/>-->
+		
+		
+	</fx:Declarations>
+	
+	<fx:Script source="varGlob.as"/>
+	
+    <fx:Script>
+        <![CDATA[
+			import com.esri.ags.Graphic;
+			import com.esri.ags.FeatureSet;
+			import com.esri.ags.events.FeatureLayerEvent;
+			import com.esri.ags.events.GraphicEvent;
+			import com.esri.ags.events.LayerEvent;
+			import com.esri.ags.events.MapEvent;
+			import com.esri.ags.geometry.Geometry;
+			import com.esri.ags.geometry.MapPoint;
+			import com.esri.ags.geometry.Polygon;
+			import com.esri.ags.geometry.Polyline;
+			import com.esri.ags.layers.FeatureLayer;
+			import com.esri.ags.layers.supportClasses.CodedValue;
+			import com.esri.ags.layers.supportClasses.CodedValueDomain;
+			import com.esri.ags.layers.supportClasses.FeatureType;
+			import com.esri.ags.layers.supportClasses.Field;
+			import com.esri.ags.layers.supportClasses.LayerDetails;
+			import com.esri.ags.symbols.PictureMarkerSymbol;
+			import com.esri.ags.symbols.SimpleFillSymbol;
+			import com.esri.ags.symbols.SimpleLineSymbol;
+			import com.esri.ags.symbols.Symbol;
+			import com.esri.viewer.AppEvent;
+			import com.esri.viewer.IInfowindowTemplate;
+			import com.esri.viewer.ViewerContainer;
+			import com.esri.ags.tasks.supportClasses.Query;
+			
+			import mx.collections.ArrayCollection;
+			import mx.controls.Alert;
+			import mx.core.UIComponent;
+			import mx.events.FlexEvent;
+			import mx.formatters.DateFormatter;
+			import mx.rpc.Fault;
+			import mx.rpc.AsyncResponder;
+			
+			import spark.components.supportClasses.ItemRenderer;
+			
+			import widgets.Selection.events.SelectionFeatureLayerEvent;
+			import widgets.Selection.events.SelectionGraphicEvent;
+			import widgets.Selection.events.SelectionOptionsEvent;
+			import widgets.Selection.utils.SelectionWidgetUtil;
+			
+			private const ICON_URL:String = "widgets/Selection/assets/images/";
+			
+			[Bindable] private var configSelectionLayers:Array;
+			private var infoUrl:String;
+			
+			private var optionsLabel:String;
+			private var attributesearchLabel:String;
+			private var locationsearchLabel:String;
+			private var resultsLabel:String;
+			private var drawingsearchLabel:String;
+			
+			private var queryLayer:FeatureLayer;
+			
+			private var zoomScale:Number = 50000;
+			private var dateFormatter:DateFormatter = new DateFormatter();
+			
+			[Bindable]
+			private var selectionMethod:String = FeatureLayer.SELECTION_NEW;
+			
+			// symbols
+			private var resultMarkerSymbol:Symbol;
+			private var resultLineSymbol:Symbol;
+			private var resultFillSymbol:Symbol;
+			
+			private var numLayers:int;
+			private var layersAdded:int=0;
+			
+			
+			//[Bindable] private var featureLayers:Vector.<FeatureLayer> = new Vector.<FeatureLayer>();
+			[Bindable] private var featureLayers:Array = [];
+			
+            private function init():void
+            {
+				map.addEventListener(MapEvent.LAYER_ADD, onLayerAdd, false, 100);
+				
+				systemManager.addEventListener(SelectionFeatureLayerEvent.ADD_GRAPHIC_LISTENER,addGraphicListenerHandler);
+				systemManager.addEventListener(SelectionFeatureLayerEvent.REMOVE_GRAPHIC_LISTENER,removeGraphicHandler);
+				systemManager.addEventListener(SelectionGraphicEvent.OVER_GRID, overGridHandler);
+				systemManager.addEventListener(SelectionGraphicEvent.CLICK_GRID, clickGridHandler);
+				systemManager.addEventListener(SelectionFeatureLayerEvent.SHOW_RESULTS,show_resultsHandler);
+				
+				this.cursorManager.setBusyCursor();
+				if (configXML)
+				{
+					//labels
+//					optionsLabel = configXML.labels.optionslabel || "Selection Options";
+					drawingsearchLabel = configXML.labels.drawingsearchlabel || "Selection by Drawing";
+					attributesearchLabel = configXML.labels.attributesearchabel || "Select by Attributes";
+					locationsearchLabel = configXML.labels.locationsearchlabel || "Select by Location";
+//					resultsLabel = configXML.labels.resultslabel || "Selection Results";
+					
+					
+					// infoUrl
+//					infoUrl = configXML.info;
+					
+					configSelectionLayers = [];
+					
+					var lyrList:XMLList = configXML..layer;
+					
+					numLayers = lyrList.length();
+					
+					for (var i:int = 0; i < lyrList.length(); i++)
+					{
+						var lyrURL:String = lyrList[i].url;
+						var lyrLabel:String = lyrList[i].name;
+						
+						var featureLayer:FeatureLayer = new FeatureLayer(lyrURL);
+						featureLayer.name = lyrLabel;
+						
+						//Override the min and max zoom scale if they are in the config
+						if ((lyrList[i].maxscale as XMLList).length() > 0 )
+							featureLayer.maxScale = lyrList[i].maxscale;
+						if ((lyrList[i].minscale as XMLList).length() > 0 )
+							featureLayer.minScale = lyrList[i].minscale;
+						
+						featureLayer.addEventListener(LayerEvent.LOAD, featureLayer_loadHandler);
+					}
+					
+					//marker symbol
+					const resultMarkerSymbolURL:String = configXML.symbols.picturemarkersymbol.@url || widgetIcon;
+					const resultMarkerSymbolHeight:Number = configXML.symbols.picturemarkersymbol.@height || 30;
+					const resultMarkerSymbolWidth:Number = configXML.symbols.picturemarkersymbol.@width || 30;
+					const resultMarkerSymbolXOffset:Number = configXML.symbols.picturemarkersymbol.@xoffset || 0;
+					const resultMarkerSymbolYOffset:Number = configXML.symbols.picturemarkersymbol.@yoffset || 0;
+					resultMarkerSymbol = new PictureMarkerSymbol(resultMarkerSymbolURL, resultMarkerSymbolWidth, resultMarkerSymbolHeight, resultMarkerSymbolXOffset, resultMarkerSymbolYOffset);
+					
+					//line symbol
+					const resultLineSymbolColor:uint = configXML.symbols.simplelinesymbol.@color || 0xFF0000;
+					const resultLineSymbolAlpha:Number = configXML.symbols.simplelinesymbol.@alpha || 0.8;
+					const resultLineSymbolWidth:Number = configXML.symbols.simplelinesymbol.@width || 2;
+					resultLineSymbol = new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultLineSymbolColor, resultLineSymbolAlpha, resultLineSymbolWidth);
+					
+					// fill symbol
+					const resultFillSymbolColor:uint = configXML.symbols.simplefillsymbol.@color || 0xFF0000;
+					const resultFillSymbolAlpha:Number = configXML.symbols.simplefillsymbol.@alpha || 0.5;
+					const resultFillSymbolOutlineColor:uint = configXML.symbols.simplefillsymbol.outline.@color || 0xFF0000;
+					const resultFillSymbolOutlineAlpha:Number = configXML.symbols.simplefillsymbol.outline.@alpha || 0.8;
+					const resultFillSymbolOutlineWidth:Number = configXML.symbols.simplefillsymbol.outline.@width || 2;
+					resultFillSymbol = new SimpleFillSymbol(SimpleFillSymbol.STYLE_SOLID, resultFillSymbolColor, resultFillSymbolAlpha, new SimpleLineSymbol(SimpleLineSymbol.STYLE_SOLID, resultFillSymbolOutlineColor, resultFillSymbolOutlineAlpha, resultFillSymbolOutlineWidth));
+					
+//					var data:Object =
+//						{
+//							id: String(this.widgetId),
+//							url: infoUrl,
+//							config: null
+//						};
+//					ViewerContainer.dispatchEvent(new AppEvent(AppEvent.DATA_CREATE_INFOWIDGET, data, infoReady));
+					
+					// TODO: for non-point, zoom to feature extent
+					if (Number(configXML.zoomscale) > 0)
+					{
+						zoomScale = Number(configXML.zoomscale);
+					}
+					
+					//datagrid styling
+					selectionResults.configXML = configXML;
+				}
+				
+//				wTemplate.addTitlebarButton(ICON_URL + "i_options.png", optionsLabel, showStateOptions);
+				wTemplate.addTitlebarButton(ICON_URL + "i_draw.png", drawingsearchLabel, showStateDrawingSearch);
+				wTemplate.addTitlebarButton(ICON_URL + "i_searchtext.png", attributesearchLabel, showStateAttributeSearch);
+//				wTemplate.addTitlebarButton(ICON_URL + "i_searchgraphical.png", locationsearchLabel, showStateLocationSearch);
+				wTemplate.addTitlebarButton(ICON_URL + "i_table.png", resultsLabel, showStateResults);
+				
+				
+				wTemplate.selectedTitlebarButtonIndex = 1;
+				
+//				queryGeol();
+				map.addLayer(selectionByDrawing.myGraphicLayer);
+				selectionByDrawing.myDrawTool.map = map;
+			}
+			
+			
+			
+			private function onLayerAdd(event:MapEvent):void
+			{
+				event.stopImmediatePropagation();
+			}
+			
+			private function featureLayer_loadHandler(event:LayerEvent):void
+			{
+				layersAdded ++;
+				var featureLayer:FeatureLayer = event.layer as FeatureLayer;
+				
+				var lyrList:XMLList = configXML..layer;
+				var layerIndex:int;
+				for (var i:int = 0; i < lyrList.length(); i++)
+				{
+					if (lyrList[i].name == event.layer.name)
+					{
+						layerIndex = i;
+						break;
+					}
+				}
+				
+				var lyrFields:XMLList = lyrList[i].fields;
+				var lyrInfowindowFields:XMLList = lyrList[i].infowindowfields;
+				var lyrTitleField:String = lyrList[i].titlefield;
+				var lyrLinkField:String = lyrList[i].linkfield;
+				var useAMF:String = lyrList[i].useamf;
+				var useProxy:Boolean = lyrList[i].useproxy[0] && lyrList[i].useproxy == "true";
+				
+				if (useProxy && configData.proxyUrl)
+				{
+					featureLayer.proxyURL = configData.proxyUrl;
+				}
+				if (useAMF)
+				{
+					featureLayer.useAMF = useAMF == "true";
+				}
+				
+				var allFields:Boolean = false;
+				var allInfoWindowFields:Boolean = false;
+				if (lyrFields && lyrFields[0].@all[0] == "true")
+				{
+					allFields = true;
+				}
+				
+				//get the fields and store in an array
+				var fields:Array = configureFields(allFields, lyrFields.field, featureLayer)
+				var infoWindowFields:Array = [];
+				
+				if (lyrInfowindowFields.length() > 0) 
+				{
+					if (lyrInfowindowFields[0].@all[0] == "true")
+					{
+						allInfoWindowFields = true;
+					}
+					infoWindowFields = configureFields(allInfoWindowFields, lyrInfowindowFields.field, featureLayer)
+				}  
+				
+				if (lyrFields && lyrFields[0].@all[0] == "true")
+				{
+					featureLayer.outFields = [ "*" ];
+				}
+				
+				var selectionLayer:Object =
+					{
+						layer: featureLayer,
+						label: featureLayer.name,
+						fields: fields,
+						infowindowfields: infoWindowFields,
+						titlefield: lyrTitleField,
+						linkfield: lyrLinkField
+					};
+				
+				configSelectionLayers.push(selectionLayer);
+				
+				featureLayer.mode = FeatureLayer.MODE_SELECTION;
+				featureLayer.addEventListener(GraphicEvent.GRAPHIC_ADD, featureLayer_graphicAddHandler);
+				featureLayer.addEventListener(FeatureLayerEvent.SELECTION_COMPLETE, featureLayer_selectionHandler);
+				featureLayer.addEventListener(FeatureLayerEvent.SELECTION_CLEAR, featureLayer_selectionHandler);
+				
+				featureLayers.push(featureLayer);
+				map.addLayer(featureLayer); 
+				
+				if (layersAdded == numLayers)
+				{
+					//dispatch event to let everyone know all the layers are added.
+					dispatchEvent(new Event("alllayersadded",true));
+					this.cursorManager.removeBusyCursor();
+				}
+			}
+			
+			private function configureFields(getAllFields:Boolean, fieldsXML:XMLList, featureLayer:FeatureLayer):Array
+			{
+				//get the fields and store in an array
+				var fields:Array = [];
+				
+				//loop through each field in the FeatureLayer
+				for each (var fld:Field in featureLayer.layerDetails.fields)
+				{
+					//Add all fields if this is in the config
+					if (getAllFields)
+					{
+						if (fld.type == Field.TYPE_GEOMETRY ||
+							fld.type == Field.TYPE_OID ||
+							fld.type == Field.TYPE_BLOB ||
+							fld.type == Field.TYPE_RASTER ||
+							fld.type == Field.TYPE_XML)
+						{
+							// ignore fields with certain types listed above (!= with the || wouldnt work)
+						}
+						else
+						{
+							fields.push(fld);
+						}
+					}
+					else
+					{
+						featureLayer.outFields = [];
+						
+						//need to loop through each field in the config file
+						//only add to the fields if it is in there
+						for each (var fieldXML:XML in fieldsXML)
+						{
+							if (fieldXML.@name[0])
+							{
+								featureLayer.outFields.push(fieldXML.@name[0].toString());
+							}
+							if (fieldXML.@name[0] == fld.name)
+							{
+								// Check to see if congigXml has alias fields listed.
+								if (fieldXML.@alias[0])
+								{
+									fld.alias = fieldXML.@alias[0];
+								}
+								
+								fields.push(fld);
+							}
+						}
+					}
+				}
+				return fields;
+			}
+			
+			private function addGraphicListenerHandler(event:SelectionFeatureLayerEvent):void
+			{
+				if (event.featureLayer.hasEventListener(GraphicEvent.GRAPHIC_ADD) == false)
+				{
+					event.featureLayer.addEventListener(GraphicEvent.GRAPHIC_ADD, featureLayer_graphicAddHandler);
+				}
+			}
+			private function removeGraphicHandler(event:SelectionFeatureLayerEvent):void
+			{
+				if (event.featureLayer.hasEventListener(GraphicEvent.GRAPHIC_ADD) == true)
+				{
+					event.featureLayer.removeEventListener(GraphicEvent.GRAPHIC_ADD, featureLayer_graphicAddHandler);
+				}
+			}
+			
+			private function show_resultsHandler(event:SelectionFeatureLayerEvent):void
+			{
+				showStateResults();
+			}
+			
+			protected function featureLayer_selectionHandler(event:FeatureLayerEvent):void
+			{
+				dispatchEvent( new Event( 'featurelayer_selection', true ) );
+				
+				var flEvent:SelectionFeatureLayerEvent = new SelectionFeatureLayerEvent(
+					SelectionFeatureLayerEvent.LAYER_RESULTS,event.featureLayer);
+				dispatchEvent(flEvent);
+				
+				if (event.type == FeatureLayerEvent.SELECTION_CLEAR)
+				{
+					this.showInfoWindow(null);
+				}
+				
+			}
+			
+			protected function featureLayer_graphicAddHandler(event:GraphicEvent):void
+			{
+				var graphic:Graphic = event.graphic;
+				
+				var targetLayer:FeatureLayer = event.currentTarget as FeatureLayer;
+				queryLayer = targetLayer;
+				var layerDetails:LayerDetails = targetLayer.layerDetails;
+				var iTargetLayer:int;
+				
+				for (var ii:int = 0; ii< configSelectionLayers.length; ii++)
+				{
+					if (configSelectionLayers[ii].label == targetLayer.name)
+					{
+						iTargetLayer = ii;
+						break;
+					}
+				}
+				
+				var value:String = "";
+				var title:String = "";
+				var content:String = "";
+				var link:String = "";
+				
+				var arrFields:Array;
+				if (configSelectionLayers[iTargetLayer].infowindowfields.length > 0)
+				{
+					arrFields = configSelectionLayers[iTargetLayer].infowindowfields;
+				}
+				else
+				{
+					arrFields = configSelectionLayers[iTargetLayer].fields
+				}
+				for (var icount:int = 0; icount< arrFields.length; icount++)
+				{
+					var fld:Field = arrFields[icount];
+					displayFields(fld.name, fld);
+				}
+				
+				
+				function displayFields(fieldName:String, field:Field):void
+				{
+					value = graphic.attributes[fieldName] ? String(graphic.attributes[fieldName]) : "";
+					
+					if (value)
+					{
+						var isDateField:Boolean;
+						var dateFormat:String;
+						
+						if (!isDateField && field)
+						{
+							isDateField = field.type == Field.TYPE_DATE;
+						}
+						if (isDateField)
+						{
+							var dateMS:Number = Number(value);
+							if (!isNaN(dateMS))
+							{
+								value = msToDate(dateMS, dateFormat);
+							}
+						}
+						else
+						{
+							var typeID:String = layerDetails.typeIdField ? graphic.attributes[layerDetails.typeIdField] : null;
+							if (fieldName == layerDetails.typeIdField)
+							{
+								// replace value with feature type name
+								var featureType:FeatureType = getFeatureType(typeID);
+								if (featureType && featureType.name)
+								{
+									value = featureType.name;
+								}
+							}
+							else
+							{
+								// replace value with coded value name if one exists
+								var codedValue:CodedValue = getCodedValue(fieldName, value, typeID);
+								if (codedValue)
+								{
+									value = codedValue.name;
+								}
+							}
+						}
+					}
+					
+					if (fieldName.toUpperCase() == String(configSelectionLayers[iTargetLayer].titlefield).toUpperCase())
+					{
+						title = value;
+						if (!title)
+						{
+							title = widgetTitle;
+						}
+					}
+					else if (fieldName.toUpperCase() == String(configSelectionLayers[iTargetLayer].linkfield).toUpperCase())
+					{
+						
+						var prefix:String = "";
+						var suffix:String = ""
+						
+						//Check for link prefix/suffix
+						var lyrList:XMLList = configXML..layer;
+						for (var i:int = 0; i < lyrList.length(); i++)
+						{
+							if (targetLayer.name == lyrList[i].name)
+							{
+								prefix = lyrList[i].linkfield.@linkprefix || "";
+								suffix = lyrList[i].linkfield.@linksuffix || "";
+								break;
+							}
+						}
+						link = prefix + value + suffix;
+					}
+					else
+					{
+						content += field.alias;
+						content += ": " + value + "\n";
+					}
+					/* else if (fieldName.toUpperCase() != "SHAPE_LENGTH" && fieldName.toUpperCase() != "SHAPE_AREA")
+					{
+						content += field.alias;
+						content += ": " + value + "\n";
+					} */
+				}
+				
+				graphic.addEventListener(MouseEvent.ROLL_OVER, mouseOverGraphicHandler);
+				
+				var searchResult:SelectionResult = new SelectionResult();
+				searchResult.title = title;
+				searchResult.content = content;
+				searchResult.point = getGeomCenter(graphic);
+				searchResult.link = link ? link : null;
+				searchResult.geometry = graphic.geometry;
+				
+				switch (graphic.geometry.type)
+				{
+					case Geometry.MAPPOINT:
+					{
+						graphic.symbol = searchResult.symbol = resultMarkerSymbol;
+						break;
+					}
+					case Geometry.POLYLINE:
+					{
+						graphic.symbol = searchResult.symbol = resultLineSymbol;
+						break;
+					}
+					case Geometry.POLYGON:
+					{
+						graphic.symbol = searchResult.symbol = resultFillSymbol;
+						break;
+					}
+				}
+				
+				graphic.attributes["title"] = searchResult.title;
+				graphic.attributes["content"] = searchResult.content;
+				graphic.attributes["point"] = searchResult.point;
+				graphic.attributes["link"] = searchResult.link;
+			}
+			
+			private function graphicsLayer_hideHandler(event:FlexEvent):void
+			{
+				if (map.infoWindow.content === infoTemplate)
+				{
+					map.infoWindow.hide();
+				}
+			}
+			
+			private var infoTemplate:IInfowindowTemplate;
+			
+			private function infoReady(event:AppEvent):void
+			{
+				var id:Number = Number(event.data.id);
+				if (id == this.widgetId)
+				{
+					infoTemplate = event.data.infoWidget;
+				}
+			}
+			
+			override public function showInfoWindow(infoData:Object):void
+			{
+				if (infoData)
+				{
+					if (infoData.point)
+					{
+						map.infoWindow.content = infoTemplate as UIComponent;
+						map.infoWindow.label = infoData.title || "";
+						infoTemplate.data = infoData;
+						map.infoWindow.show(infoData.point);
+					}
+				}
+				else
+				{
+					map.infoWindow.hide();
+				}
+			}
+			
+			private var hitimer:uint;
+			
+			private function widgetClosedHandler(event:Event):void
+			{
+				if (featureLayers)
+				{
+					for (var i:int = 0; i< featureLayers.length; i++)
+					{
+						featureLayers[i].visible = false;
+					}
+				}
+				
+				this.showInfoWindow(null);
+				setMapNavigation(null, null);
+			}
+			
+			private function widgetOpenedHandler(event:Event):void
+			{
+				if (featureLayers)
+				{
+					for (var i:int = 0; i< featureLayers.length; i++)
+					{
+						featureLayers[i].visible = true;
+					}
+				}
+			}
+			
+			private function showStateAttributeSearch():void
+			{
+				this.currentState = "selectByAttributesView";
+			}
+			
+			private function showStateOptions():void
+			{
+				this.currentState = "selectionOptionsView";
+			}
+			
+			private function showStateLocationSearch():void
+			{
+				this.currentState = "selectByLocationView";
+			}
+			
+			private function showStateDrawingSearch():void
+			{
+				this.currentState = "selectByDrawingView";
+			}
+			
+			private function showStateResults():void
+			{
+				this.currentState = "selectionResultsView";
+				wTemplate.selectedTitlebarButtonIndex = 2;
+				// used to indicate selected titlebar button when automatically switching state
+			}
+			
+			
+			private function getField(fieldName:String):Field
+			{
+				var result:Field;
+				
+				if (queryLayer)
+				{
+					for each (var field:Field in queryLayer.layerDetails.fields)
+					{
+						if (fieldName == field.name)
+						{
+							result = field;
+							break;
+						}
+					}
+				}
+				
+				return result;
+			}
+			
+			private function getFeatureType(typeID:String):FeatureType
+			{
+				var result:FeatureType;
+				
+				if (queryLayer)
+				{
+					for each (var featureType:FeatureType in queryLayer.layerDetails.types)
+					{
+						if (typeID == featureType.id)
+						{
+							result = featureType;
+							break;
+						}
+					}
+				}
+				
+				return result;
+			}
+			
+			private function msToDate(ms:Number, dateFormat:String):String
+			{
+				var date:Date = new Date(ms);
+				if (date.milliseconds == 999) // workaround for REST bug
+				{
+					date.milliseconds++;
+				}
+				
+				if (dateFormat)
+				{
+					dateFormatter.formatString = dateFormat;
+					var result:String = dateFormatter.format(date);
+					if (result)
+					{
+						return result;
+					}
+					else
+					{
+						return dateFormatter.error;
+					}
+				}
+				else
+				{
+					return date.toLocaleString();
+				}
+			}
+			
+			private var layerDomainsCache:Dictionary = new Dictionary(); // map from queryLayer to domainsCache
+			
+			private function getCodedValue(fieldName:String, fieldValue:String, typeID:String):CodedValue
+			{
+				var result:CodedValue;
+				
+				var domainsCache:Object = layerDomainsCache[queryLayer];
+				if (!domainsCache)
+				{
+					domainsCache = {}; // map from (fieldName + typeID) to CodedValueDomain
+					layerDomainsCache[queryLayer] = domainsCache;
+				}
+				
+				var domainsKey:String = fieldName + typeID;
+				var codedValueDomain:CodedValueDomain;
+				
+				if (domainsKey in domainsCache)
+				{
+					codedValueDomain = domainsCache[domainsKey];
+				}
+				else
+				{
+					if (typeID)
+					{
+						var featureType:FeatureType = getFeatureType(typeID);
+						if (featureType)
+						{
+							codedValueDomain = featureType.domains[fieldName] as CodedValueDomain;
+						}
+					}
+					else
+					{
+						var field:Field = getField(fieldName);
+						if (field)
+						{
+							codedValueDomain = field.domain as CodedValueDomain;
+						}
+					}
+					domainsCache[domainsKey] = codedValueDomain;
+				}
+				
+				if (codedValueDomain)
+				{
+					for each (var codedValue:CodedValue in codedValueDomain.codedValues)
+					{
+						if (fieldValue == codedValue.code)
+						{
+							result = codedValue;
+							break;
+						}
+					}
+				}
+				
+				return result;
+			}
+			
+			//get geom center
+			private function getGeomCenter(graphic:Graphic):MapPoint
+			{
+				var pt:MapPoint;
+				switch (graphic.geometry.type)
+				{
+					case Geometry.MAPPOINT:
+					{
+						pt = graphic.geometry as MapPoint;
+						break;
+					}
+					case Geometry.POLYLINE:
+					{
+						const pl:Polyline = graphic.geometry as Polyline;
+						const pathCount:Number = pl.paths.length;
+						const pathIndex:int = int((pathCount / 2) - 1);
+						const midPath:Array = pl.paths[pathIndex];
+						const ptCount:Number = midPath.length;
+						const ptIndex:int = int((ptCount / 2) - 1);
+						pt = pl.getPoint(pathIndex, ptIndex);
+						break;
+					}
+					case Geometry.POLYGON:
+					{
+						const poly:Polygon = graphic.geometry as Polygon;
+						pt = poly.extent.center;
+						break;
+					}
+				}
+				return pt;
+			}
+			
+			private function mouseOverGraphicHandler(event:MouseEvent):void
+			{
+				var gra:Graphic = event.currentTarget as Graphic;
+				var fl:FeatureLayer = event.currentTarget.graphicsLayer as FeatureLayer;
+				var infoData:Object = gra.attributes;
+				
+				this.showInfoWindow(infoData);
+				
+				var e:SelectionGraphicEvent = new SelectionGraphicEvent(
+					SelectionGraphicEvent.OVER_GRAPHIC, 
+					gra.attributes, fl)
+				dispatchEvent(e);
+			}
+			
+			private function overGridHandler(event:SelectionGraphicEvent) : void
+			{
+				trace(event.featureLayer.hasEventListener(GraphicEvent.GRAPHIC_ADD) + " " + event.featureLayer.name);
+				var graphic:Graphic = findGraphicByAttribute(event.attribute, event.featureLayer)
+				if (graphic)
+				{
+					var infoData:Object = graphic.attributes;
+					this.showInfoWindow(infoData);
+				}
+			}
+			
+			private function clickGridHandler(event:SelectionGraphicEvent):void
+			{
+				var graphic:Graphic = findGraphicByAttribute(event.attribute, event.featureLayer)
+				if (graphic)
+				{
+					map.extent = SelectionWidgetUtil.getGraphicExtent(graphic);
+				}
+				
+			}
+			
+			public function findGraphicByAttribute( attribute:Object, featureLayer:FeatureLayer) : Graphic
+			{
+				for each( var graphic : Graphic in featureLayer.graphicProvider)
+				{
+					if ( graphic.attributes == attribute)
+					{
+						return graphic;
+					}
+				}			
+				return null; 
+			}
+			
+			protected function selectionMethodChangeHandler(event:SelectionOptionsEvent):void
+			{
+				selectionMethod = event.selectionMethod;
+			}
+
+		]]>
+	</fx:Script>
+	
+	<viewer:WidgetTemplate id="wTemplate"
+						   width="360" height="420" minHeight="420"
+						   closed="widgetClosedHandler(event)"
+						   open="widgetOpenedHandler(event)">
+		
+		<components:SelectByAttributes
+			id="selectByAttributes"
+			selectionLayers="{configSelectionLayers}"
+			visible="false"
+			visible.selectByAttributesView="true" 
+			width="100%" height="100%"
+			selectionMethod="{selectionMethod}">
+		</components:SelectByAttributes>
+		
+		<!--<components:SelectByLocation
+			id="selectByLocation"
+			visible="false"
+			visible.selectByLocationView="true" 
+			width="100%" height="100%"
+			selectionLayers="{configSelectionLayers}"
+			selectionMethod="{selectionMethod}">
+		</components:SelectByLocation>-->
+		
+		<!--<components:SelectionOptions id="selectionOptions"
+									 width="100%" height="100%"
+									 visible="false"
+									 visible.selectionOptionsView="true"
+									 selectionLayers="{configSelectionLayers}"
+									 selectionMethodChange="selectionMethodChangeHandler(event)">
+		</components:SelectionOptions>-->
+		
+		<components:SelectionByDrawing  id="selectionByDrawing"
+									 width="100%" height="100%"
+									 visible="false"
+									 visible.selectByDrawingView="true"
+									 selectionLayers="{configSelectionLayers}"
+									 selectionMethod="{selectionMethod}">
+			
+		</components:SelectionByDrawing>
+		
+		<components:SelectionResults id="selectionResults"
+									 width="100%" height="100%"
+									 visible="false"
+									 visible.selectionResultsView="true"
+									 selectionLayers="{configSelectionLayers}">
+		</components:SelectionResults>
+		
+    </viewer:WidgetTemplate>
+	
+	
+
+</viewer:BaseWidget>

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<s:Group xmlns:fx="http://ns.adobe.com/mxml/2009" 
+		 xmlns:s="library://ns.adobe.com/flex/spark" 
+		 xmlns:mx="library://ns.adobe.com/flex/mx"
+		 creationComplete="init(event)">
+	
+	<!--
+	Dispatches events:
+	SelectionOptionsEvent."selectionMethodChange"
+	SelectionFeatureLayerEvent.SHOW_RESULTS
+	
+	Listens for events:
+	"featurelayer_selection"
+	"alllayersadded"
+	-->
+	
+	<s:layout>
+		<s:VerticalLayout paddingLeft="10" paddingRight="10" paddingTop="10" paddingBottom="10"/>
+	</s:layout>
+	
+	<fx:Metadata>
+		[Event(name="selectionMethodChange", type="widgets.Selection.events.SelectionOptionsEvent")]
+	</fx:Metadata>
+	
+	<fx:Script>
+		<![CDATA[
+			import com.esri.ags.layers.FeatureLayer;
+			
+			import mx.controls.listClasses.ListItemRenderer;
+			import mx.events.FlexEvent;
+			import mx.events.ListEvent;
+			
+			import spark.events.IndexChangeEvent;
+			
+			import widgets.Selection.events.SelectionFeatureLayerEvent;
+			import widgets.Selection.events.SelectionOptionsEvent;
+			import widgets.Selection.utils.SelectionWidgetUtil;
+			
+			[Bindable] public var selectionLayers:Array = [];
+			private var cm:ContextMenu = new ContextMenu();
+			
+			protected function init(event:FlexEvent):void
+			{
+				//need to listen for when layers selections change 
+				systemManager.addEventListener("featurelayer_selection",featureLayer_selectionHandler);
+				systemManager.addEventListener("alllayersadded",featureLayer_selectionHandler);
+				
+				//add context menu to list
+				//var cm:ContextMenu = new ContextMenu();
+				cm.hideBuiltInItems();
+				// Context Menu to Open table in Excel
+				var item:ContextMenuItem = new ContextMenuItem("Zoom to Selected Features");
+				item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, zoomSelectedHandler);
+				cm.customItems.push(item);
+				
+				item = new ContextMenuItem("Clear Selected Features", true);
+				item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, clearSelectedHandler);
+				cm.customItems.push(item);
+				
+				item = new ContextMenuItem("Show Results", true);
+				item.addEventListener(ContextMenuEvent.MENU_ITEM_SELECT, showresultsHandler);
+				cm.customItems.push(item);
+			}
+			
+			protected function featureLayer_selectionHandler(event:Event):void
+			{
+				layersList.invalidateList();
+			}
+			
+			private function zoomSelectedHandler(event:ContextMenuEvent):void
+			{
+				var obj:Object = event.contextMenuOwner;
+				var fl:FeatureLayer = obj.data.layer;
+				
+				SelectionWidgetUtil.zoomtoSelectedFeatures(fl);
+			}
+			
+			private function clearSelectedHandler(event:ContextMenuEvent):void
+			{
+				var obj:Object = event.contextMenuOwner;
+				var fl:FeatureLayer = obj.data.layer;
+				fl.clearSelection();
+			}
+			
+			private function showresultsHandler(event:ContextMenuEvent):void
+			{
+				var obj:Object = event.contextMenuOwner;
+				var fl:FeatureLayer = obj.data.layer;
+				dispatchEvent(new SelectionFeatureLayerEvent(
+								SelectionFeatureLayerEvent.SHOW_RESULTS,fl));
+			}
+			
+			private function layersLabelFunc(item:Object):String 
+			{
+				var fl:FeatureLayer = item.layer as FeatureLayer;
+				if (fl)
+				{
+					return fl.name + " (" + fl.selectedFeatures.length + ")";
+				}
+				else 
+				{
+					return null;
+				}
+			}
+
+			protected function layersList_itemRollOverHandler(event:ListEvent):void
+			{
+				//Add context menu to each item in list
+				ListItemRenderer(event.itemRenderer).contextMenu = cm;
+			}
+
+			protected function selectionMethod_changeHandler(event:IndexChangeEvent):void
+			{	
+				var optionsEvent:SelectionOptionsEvent = new SelectionOptionsEvent( 
+															"selectionMethodChange",
+															selectionMethod.selectedItem.data);
+				dispatchEvent( optionsEvent );
+			}
+			
+			protected function clearAll_clickHandler(event:MouseEvent):void
+			{
+				for (var i:int = 0; i< selectionLayers.length; i++)
+				{
+					var fl:FeatureLayer = selectionLayers[i].layer;
+					fl.clearSelection();
+				}
+			}
+
+		]]>
+	</fx:Script>
+	
+	<fx:Declarations>
+		<!-- Place non-visual elements (e.g., services, value objects) here -->
+	</fx:Declarations>
+	
+	<s:Label text="Selection Options..." 
+			 width="300" paddingBottom="5"
+			 fontSize="12" fontWeight="bold"/>
+	
+	<s:Label text="Selection Method:" width="100%"/>
+	<s:DropDownList id="selectionMethod" width="100%" 
+					requireSelection="true"
+					change="selectionMethod_changeHandler(event)">
+		<s:dataProvider>
+			<mx:ArrayList>
+				<fx:Object label="Create New Selection" data="{FeatureLayer.SELECTION_NEW}"/>
+				<fx:Object label="Add to Current Selection" data="{FeatureLayer.SELECTION_ADD}"/>
+				<fx:Object label="Remove From Current Selection" data="{FeatureLayer.SELECTION_SUBTRACT}"/>
+			</mx:ArrayList>
+		</s:dataProvider>
+	</s:DropDownList>
+	
+	<mx:Spacer width="100%" height="20"/>
+	
+	<s:Label text="Layers:  (right click on layer for more options)" paddingTop="5"/>
+	<mx:List id="layersList" 
+			 width="100%" height="100%" 
+			 paddingBottom="5"
+			 dataProvider="{selectionLayers}"
+			 labelFunction="layersLabelFunc"
+			 itemRollOver="layersList_itemRollOverHandler(event)"/>	
+	<s:Button id="clearAll"
+			  label="Clear All Selections"
+			  click="clearAll_clickHandler(event)"/>
+</s:Group>
